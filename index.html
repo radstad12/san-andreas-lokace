@@ -17,15 +17,16 @@
       left: 300px;
       right: 0;
       bottom: 0;
-      background: #222;
+      overflow: hidden;
     }
     #map {
       width: 100%;
       height: 100%;
       background-image: url('mapa.png');
-      background-size: contain;
       background-repeat: no-repeat;
       background-position: center;
+      background-size: contain;
+      transform-origin: center center;
       position: relative;
       cursor: crosshair;
     }
@@ -45,6 +46,7 @@
       padding: 5px;
       background: #fff;
       border-left: 5px solid;
+      cursor: pointer;
     }
     .dot, .zone {
       position: absolute;
@@ -59,6 +61,8 @@
     .zone {
       border: 2px dashed;
       background-color: rgba(255, 0, 0, 0.2);
+      width: 100px;
+      height: 100px;
     }
     #controls {
       margin-bottom: 10px;
@@ -66,6 +70,18 @@
     input, select {
       width: 100%;
       margin-top: 5px;
+    }
+    button {
+      width: 100%;
+      margin-top: 10px;
+      padding: 5px;
+      background: #d9534f;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #c9302c;
     }
   </style>
 </head>
@@ -83,6 +99,7 @@
       <label>Lokace:</label><input id="location" placeholder="např. Los Santos" />
     </div>
     <div id="list"></div>
+    <button onclick="clearAll()">🗑 Smazat vše</button>
   </div>
   <div id="map-container">
     <div id="map"></div>
@@ -92,6 +109,11 @@
     const list = document.getElementById("list");
 
     let zones = [];
+    let zoom = 1;
+    let panX = 0;
+    let panY = 0;
+    let isPanning = false;
+    let startX, startY;
 
     function save() {
       localStorage.setItem("zones", JSON.stringify(zones));
@@ -104,7 +126,14 @@
         const div = document.createElement("div");
         div.className = "item";
         div.style.borderColor = z.color;
-        div.innerHTML = \`<b>\${z.name}</b><br><small>\${z.type}, \${z.gang || "-"} / \${z.location || "-"}</small>\`;
+        div.innerHTML = `<b>${z.name}</b><br><small>${z.type}, ${z.gang || "-"} / ${z.location || "-"}</small>`;
+        div.onclick = () => {
+          if (confirm("Smazat tuto položku?")) {
+            zones.splice(i, 1);
+            save();
+            renderZones();
+          }
+        };
         list.appendChild(div);
       });
     }
@@ -126,8 +155,6 @@
           el.style.backgroundColor = z.color + "33";
           el.style.left = z.x + "%";
           el.style.top = z.y + "%";
-          el.style.width = "100px";
-          el.style.height = "100px";
           map.appendChild(el);
         }
       });
@@ -152,6 +179,43 @@
       renderZones();
     });
 
+    function clearAll() {
+      if (confirm("Opravdu smazat všechny body a rajóny?")) {
+        zones = [];
+        save();
+        renderZones();
+      }
+    }
+
+    // Zoom kolečkem
+    document.getElementById("map-container").addEventListener("wheel", (e) => {
+      e.preventDefault();
+      zoom += e.deltaY * -0.001;
+      zoom = Math.min(Math.max(0.5, zoom), 3);
+      map.style.transform = `scale(${zoom}) translate(${panX}px, ${panY}px)`;
+    });
+
+    // Posouvání myší
+    map.addEventListener("mousedown", (e) => {
+      isPanning = true;
+      startX = e.clientX;
+      startY = e.clientY;
+    });
+
+    window.addEventListener("mouseup", () => {
+      isPanning = false;
+    });
+
+    window.addEventListener("mousemove", (e) => {
+      if (!isPanning) return;
+      panX += (e.clientX - startX) / zoom;
+      panY += (e.clientY - startY) / zoom;
+      startX = e.clientX;
+      startY = e.clientY;
+      map.style.transform = `scale(${zoom}) translate(${panX}px, ${panY}px)`;
+    });
+
+    // Načtení při spuštění
     window.onload = () => {
       const saved = localStorage.getItem("zones");
       if (saved) zones = JSON.parse(saved);
