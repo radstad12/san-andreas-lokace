@@ -1,0 +1,123 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>San Andreas Lokace</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      overflow: hidden;
+      font-family: sans-serif;
+    }
+    #map-container {
+      position: relative;
+      width: 100%;
+      height: 100%;
+    }
+    #map {
+      width: 100%;
+      height: 100%;
+      background: url('mapa.png') no-repeat center center;
+      background-size: contain;
+      position: relative;
+    }
+    .marker, .zone {
+      position: absolute;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+    }
+    .marker {
+      width: 12px;
+      height: 12px;
+      background: red;
+      border-radius: 50%;
+    }
+    canvas.zone {
+      pointer-events: auto;
+    }
+  </style>
+</head>
+<body>
+  <div id="map-container">
+    <div id="map"></div>
+    <canvas class="zone" id="zoneCanvas"></canvas>
+  </div>
+  <script>
+    const map = document.getElementById('map');
+    const zoneCanvas = document.getElementById('zoneCanvas');
+    const ctx = zoneCanvas.getContext('2d');
+    const markers = JSON.parse(localStorage.getItem('markers') || '[]');
+    const zones = JSON.parse(localStorage.getItem('zones') || '[]');
+
+    function resizeCanvas() {
+      zoneCanvas.width = map.clientWidth;
+      zoneCanvas.height = map.clientHeight;
+      drawZones();
+    }
+
+    window.addEventListener('resize', resizeCanvas);
+
+    function addMarker(x, y) {
+      const marker = document.createElement('div');
+      marker.className = 'marker';
+      marker.style.left = `${x}px`;
+      marker.style.top = `${y}px`;
+      map.appendChild(marker);
+      markers.push({ x, y });
+      localStorage.setItem('markers', JSON.stringify(markers));
+    }
+
+    function drawZones() {
+      ctx.clearRect(0, 0, zoneCanvas.width, zoneCanvas.height);
+      ctx.fillStyle = 'rgba(0, 255, 0, 0.3)';
+      zones.forEach(zone => {
+        ctx.beginPath();
+        ctx.moveTo(zone[0].x, zone[0].y);
+        for (let i = 1; i < zone.length; i++) {
+          ctx.lineTo(zone[i].x, zone[i].y);
+        }
+        ctx.closePath();
+        ctx.fill();
+      });
+    }
+
+    function addZonePoint(x, y) {
+      if (!window.currentZone) window.currentZone = [];
+      window.currentZone.push({ x, y });
+      drawZones();
+      ctx.beginPath();
+      ctx.arc(x, y, 3, 0, 2 * Math.PI);
+      ctx.fillStyle = 'green';
+      ctx.fill();
+    }
+
+    zoneCanvas.addEventListener('click', e => {
+      const rect = zoneCanvas.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      if (e.shiftKey) {
+        addZonePoint(x, y);
+      } else {
+        addMarker(x, y);
+      }
+    });
+
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Enter' && window.currentZone?.length > 2) {
+        zones.push(window.currentZone);
+        localStorage.setItem('zones', JSON.stringify(zones));
+        window.currentZone = null;
+        drawZones();
+      }
+    });
+
+    // Init
+    markers.forEach(m => addMarker(m.x, m.y));
+    resizeCanvas();
+  </script>
+</body>
+</html>
