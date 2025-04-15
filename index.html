@@ -2,226 +2,137 @@
 <html lang="cs">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>San Andreas Lokace</title>
   <style>
     html, body {
       margin: 0;
       padding: 0;
       overflow: hidden;
-      font-family: Arial, sans-serif;
-    }
-    #map-container {
-      position: absolute;
-      top: 0;
-      left: 300px;
-      right: 0;
-      bottom: 0;
-      overflow: hidden;
+      font-family: sans-serif;
     }
     #map {
-      width: 100%;
-      height: 100%;
-      background-image: url('mapa.png');
-      background-repeat: no-repeat;
-      background-position: center;
+      width: 100vw;
+      height: 100vh;
+      background: url('mapa.png') no-repeat center center;
       background-size: contain;
-      transform-origin: center center;
       position: relative;
-      cursor: crosshair;
     }
-    #sidebar {
+    .marker, .zone {
       position: absolute;
-      top: 0;
-      left: 0;
-      bottom: 0;
-      width: 300px;
-      background: #f4f4f4;
-      overflow-y: auto;
-      padding: 10px;
-      box-shadow: 2px 0 5px rgba(0,0,0,0.3);
-    }
-    .item {
-      margin-bottom: 10px;
-      padding: 5px;
-      background: #fff;
-      border-left: 5px solid;
+      border-radius: 50%;
       cursor: pointer;
     }
-    .dot, .zone {
-      position: absolute;
-      transform: translate(-50%, -50%);
-    }
-    .dot {
-      width: 12px;
-      height: 12px;
-      border-radius: 50%;
-      border: 2px solid #fff;
+    .marker {
+      width: 14px;
+      height: 14px;
+      background-color: red;
+      border: 2px solid white;
     }
     .zone {
-      border: 2px dashed;
-      background-color: rgba(255, 0, 0, 0.2);
-      width: 100px;
-      height: 100px;
+      border: 2px dashed black;
     }
-    #controls {
-      margin-bottom: 10px;
-    }
-    input, select {
-      width: 100%;
-      margin-top: 5px;
-    }
-    button {
-      width: 100%;
-      margin-top: 10px;
-      padding: 5px;
-      background: #d9534f;
+    #sidebar {
+      position: fixed;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 250px;
+      background: rgba(0, 0, 0, 0.8);
       color: white;
-      border: none;
-      cursor: pointer;
+      padding: 10px;
+      overflow-y: auto;
+      z-index: 999;
     }
-    button:hover {
-      background: #c9302c;
+    #sidebar h2 {
+      font-size: 16px;
+      margin-top: 10px;
+    }
+    .list-item {
+      margin: 4px 0;
     }
   </style>
 </head>
 <body>
   <div id="sidebar">
-    <div id="controls">
-      <label>Název:</label><input id="name" />
-      <label>Barva:</label><input id="color" type="color" value="#ff0000"/>
-      <label>Typ:</label>
-      <select id="type">
-        <option value="point">Bod</option>
-        <option value="zone">Rajón</option>
-      </select>
-      <label>Gang:</label><input id="gang" placeholder="např. Grove" />
-      <label>Lokace:</label><input id="location" placeholder="např. Los Santos" />
-    </div>
-    <div id="list"></div>
-    <button onclick="clearAll()">🗑 Smazat vše</button>
+    <h2>Lokace</h2>
+    <div id="locations"></div>
+    <h2>Gangy</h2>
+    <div id="gangs"></div>
   </div>
-  <div id="map-container">
-    <div id="map"></div>
-  </div>
+  <div id="map"></div>
+
   <script>
-    const map = document.getElementById("map");
-    const list = document.getElementById("list");
+    const map = document.getElementById('map');
+    const locationsList = document.getElementById('locations');
+    const gangsList = document.getElementById('gangs');
+    let scale = 1;
 
-    let zones = [];
-    let zoom = 1;
-    let panX = 0;
-    let panY = 0;
-    let isPanning = false;
-    let startX, startY;
+    const locations = [];
+    const gangs = [];
 
-    function save() {
-      localStorage.setItem("zones", JSON.stringify(zones));
-      renderList();
-    }
-
-    function renderList() {
-      list.innerHTML = "";
-      zones.forEach((z, i) => {
-        const div = document.createElement("div");
-        div.className = "item";
-        div.style.borderColor = z.color;
-        div.innerHTML = `<b>${z.name}</b><br><small>${z.type}, ${z.gang || "-"} / ${z.location || "-"}</small>`;
-        div.onclick = () => {
-          if (confirm("Smazat tuto položku?")) {
-            zones.splice(i, 1);
-            save();
-            renderZones();
-          }
-        };
-        list.appendChild(div);
-      });
-    }
-
-    function renderZones() {
-      map.querySelectorAll(".dot, .zone").forEach(el => el.remove());
-      zones.forEach(z => {
-        if (z.type === "point") {
-          const el = document.createElement("div");
-          el.className = "dot";
-          el.style.backgroundColor = z.color;
-          el.style.left = z.x + "%";
-          el.style.top = z.y + "%";
-          map.appendChild(el);
-        } else if (z.type === "zone") {
-          const el = document.createElement("div");
-          el.className = "zone";
-          el.style.borderColor = z.color;
-          el.style.backgroundColor = z.color + "33";
-          el.style.left = z.x + "%";
-          el.style.top = z.y + "%";
-          map.appendChild(el);
-        }
-      });
-    }
-
-    map.addEventListener("click", (e) => {
+    map.addEventListener('dblclick', (e) => {
       const rect = map.getBoundingClientRect();
-      const x = ((e.clientX - rect.left) / rect.width) * 100;
-      const y = ((e.clientY - rect.top) / rect.height) * 100;
+      const x = (e.clientX - rect.left) / scale;
+      const y = (e.clientY - rect.top) / scale;
+      const name = prompt('Zadej název lokace nebo bodu:');
+      if (!name) return;
 
-      const zone = {
-        name: document.getElementById("name").value || "Bezejmenné",
-        color: document.getElementById("color").value,
-        type: document.getElementById("type").value,
-        gang: document.getElementById("gang").value,
-        location: document.getElementById("location").value,
-        x, y,
-      };
+      const color = prompt('Zadej barvu (např. red, #00ff00):', 'red');
 
-      zones.push(zone);
-      save();
-      renderZones();
+      const marker = document.createElement('div');
+      marker.className = 'marker';
+      marker.style.left = `${x}px`;
+      marker.style.top = `${y}px`;
+      marker.style.backgroundColor = color || 'red';
+      marker.title = name;
+
+      map.appendChild(marker);
+      locations.push({ name, x, y, color });
+
+      const li = document.createElement('div');
+      li.className = 'list-item';
+      li.textContent = name;
+      locationsList.appendChild(li);
     });
 
-    function clearAll() {
-      if (confirm("Opravdu smazat všechny body a rajóny?")) {
-        zones = [];
-        save();
-        renderZones();
-      }
-    }
-
-    // Zoom kolečkem
-    document.getElementById("map-container").addEventListener("wheel", (e) => {
+    map.addEventListener('contextmenu', (e) => {
       e.preventDefault();
-      zoom += e.deltaY * -0.001;
-      zoom = Math.min(Math.max(0.5, zoom), 3);
-      map.style.transform = `scale(${zoom}) translate(${panX}px, ${panY}px)`;
+      const rect = map.getBoundingClientRect();
+      const x = (e.clientX - rect.left) / scale;
+      const y = (e.clientY - rect.top) / scale;
+      const name = prompt('Zadej název rajonu / území:');
+      if (!name) return;
+
+      const width = parseInt(prompt('Šířka území (px):', '100'));
+      const height = parseInt(prompt('Výška území (px):', '100'));
+      const color = prompt('Barva pozadí území:', 'rgba(0,255,0,0.3)');
+
+      const zone = document.createElement('div');
+      zone.className = 'zone';
+      zone.style.left = `${x}px`;
+      zone.style.top = `${y}px`;
+      zone.style.width = `${width}px`;
+      zone.style.height = `${height}px`;
+      zone.style.backgroundColor = color;
+      zone.title = name;
+
+      map.appendChild(zone);
+      gangs.push({ name, x, y, width, height, color });
+
+      const li = document.createElement('div');
+      li.className = 'list-item';
+      li.textContent = name;
+      gangsList.appendChild(li);
     });
 
-    // Posouvání myší
-    map.addEventListener("mousedown", (e) => {
-      isPanning = true;
-      startX = e.clientX;
-      startY = e.clientY;
+    // Přiblížení pomocí kolečka
+    map.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      scale += e.deltaY * -0.001;
+      scale = Math.min(Math.max(.5, scale), 3);
+      map.style.transform = `scale(${scale})`;
+      map.style.transformOrigin = '0 0';
     });
-
-    window.addEventListener("mouseup", () => {
-      isPanning = false;
-    });
-
-    window.addEventListener("mousemove", (e) => {
-      if (!isPanning) return;
-      panX += (e.clientX - startX) / zoom;
-      panY += (e.clientY - startY) / zoom;
-      startX = e.clientX;
-      startY = e.clientY;
-      map.style.transform = `scale(${zoom}) translate(${panX}px, ${panY}px)`;
-    });
-
-    // Načtení při spuštění
-    window.onload = () => {
-      const saved = localStorage.getItem("zones");
-      if (saved) zones = JSON.parse(saved);
-      renderZones();
-      renderList();
-    };
   </script>
 </body>
 </html>
