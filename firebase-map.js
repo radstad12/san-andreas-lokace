@@ -75,15 +75,13 @@ function render() {
 
     data.forEach(item => {
       if (!item.categories?.includes(cat)) return;
-      if (!expandedCategories.has(cat)) return;
+
+      // vždy vykresli značky na mapu (kvůli tooltipům)
+      if (item.type === 'point') renderMarker(item);
+      if (item.type === 'polygon') renderPolygon(item);
+
       const matchSearch = (item.name && item.name.toLowerCase().includes(search)) || (item.desc && item.desc.toLowerCase().includes(search));
-      if (search === "" || matchSearch) {
-        if (item.type === 'point') {
-          renderMarker(item);
-        }
-        if (item.type === 'polygon') {
-          renderPolygon(item);
-        }
+      if (expandedCategories.has(cat) && (search === "" || matchSearch)) {
         const div = document.createElement("div");
         div.className = "item";
         div.innerHTML = `<div><span class="dot" style="background:${item.color}"></span>${item.name}</div><span class="delete-btn" onclick="window.deleteItem(${item.id}); event.stopPropagation()">🗑</span>`;
