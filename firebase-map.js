@@ -108,7 +108,8 @@ function renderMarker(item) {
   el.style.background = item.color;
   el.style.width = el.style.height = `${item.size || 6}px`;
   el.onmouseenter = e => {
-    showTooltip(e, `${item.name || ''}${item.desc ? ': ' + item.desc : ''}`);
+    const text = `${item.name || ''}${item.desc ? ': ' + item.desc : ''}`;
+  if (text.trim()) showTooltip(e, text);
   };
   el.onmouseleave = hideTooltip;
   map.appendChild(el);
@@ -172,7 +173,15 @@ function openForm(type, coords) {
     const size = +document.getElementById("form-size").value;
     const selectedCats = Array.from(wrapper.querySelectorAll("input[type=checkbox]:checked")).map(i => i.value);
     if (!name || selectedCats.length === 0) return alert("Zadej název a vyber kategorii.");
-    const item = { id: Date.now(), type, name, desc, color, size, categories: selectedCats };
+    const item = {
+      id: Date.now(),
+      type,
+      name: name.trim(),
+      desc: desc.trim(),
+      color,
+      size,
+      categories: selectedCats
+    };
     if (type === "point") { item.x = coords.x; item.y = coords.y; }
     else { item.points = coords; }
     if (!planningMode) {
