@@ -1,375 +1,266 @@
 <!DOCTYPE html>
 <html lang="cs">
 <head>
-  <meta charset="UTF-8" />
-  <title>Archangels MC Mapa</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Archangels MC - Mapa</title>
   <style>
     html, body {
       margin: 0;
       padding: 0;
-      overflow: hidden;
-      font-family: sans-serif;
-    }
-
-    #map-container {
-      width: 100vw;
-      height: 100vh;
-      overflow: hidden;
-      position: relative;
-    }
-
-    #map {
-      background: url('mapa.png') no-repeat center center;
-      background-size: contain;
-      width: 100%;
       height: 100%;
-      transform-origin: 0 0;
-      position: absolute;
-      cursor: grab;
+      overflow: hidden;
+      font-family: Arial, sans-serif;
+      background-color: #111;
+      color: #fff;
     }
-
-    .marker, .zone {
-      position: absolute;
-      cursor: pointer;
-    }
-
-    .marker {
-      width: 16px;
-      height: 16px;
-      border-radius: 50%;
-      border: 2px solid white;
-      opacity: 0.8;
-    }
-
-    .zone {
-      border: 2px dashed #000;
-      opacity: 0.4;
-    }
-
-    .highlight {
-      outline: 2px solid yellow;
-    }
-
     #sidebar {
       position: fixed;
-      left: -250px;
+      left: 0;
       top: 0;
       bottom: 0;
-      width: 250px;
-      background: rgba(20, 20, 20, 0.95);
-      color: white;
+      width: 280px;
+      background: #1a1a1a;
       overflow-y: auto;
-      transition: left 0.3s ease;
-      z-index: 999;
-      padding: 10px;
+      z-index: 10;
+      border-right: 2px solid #222;
+      padding: 20px;
     }
-
-    #sidebar.open {
-      left: 0;
+    #sidebar h1 {
+      font-size: 20px;
+      margin-bottom: 20px;
+      color: #ff5050;
     }
-
-    #toggle-sidebar {
-      position: fixed;
-      left: 0;
-      top: 10px;
-      z-index: 1000;
-      background: #111;
-      color: white;
-      padding: 5px 10px;
-      cursor: pointer;
-    }
-
-    h1 {
-      text-align: center;
-      margin: 10px 0;
-      font-size: 18px;
-    }
-
     .category {
       margin-bottom: 10px;
     }
-
     .category h2 {
-      font-size: 14px;
       cursor: pointer;
+      margin: 10px 0;
+      font-size: 16px;
+      border-bottom: 1px solid #333;
+      padding-bottom: 5px;
     }
-
-    .category-content {
+    .category-items {
       display: none;
       margin-left: 10px;
     }
-
     .item {
-      font-size: 13px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin: 3px 0;
+      font-size: 14px;
+      margin: 5px 0;
+      cursor: pointer;
     }
-
     .dot {
-      width: 10px;
-      height: 10px;
+      width: 12px;
+      height: 12px;
       border-radius: 50%;
-      margin-right: 5px;
+      margin-right: 8px;
     }
-
-    .item span {
-      display: flex;
-      align-items: center;
+    .delete-btn {
+      color: #888;
+      font-size: 12px;
       cursor: pointer;
     }
-
-    .delete {
-      color: red;
+    #map {
+      position: absolute;
+      top: 0;
+      left: 280px;
+      right: 0;
+      bottom: 0;
+      background: #000 url('mapa.png') no-repeat center center;
+      background-size: contain;
+      cursor: grab;
+    }
+    .marker, .polygon {
+      position: absolute;
+      transform: translate(-50%, -50%);
       cursor: pointer;
-      margin-left: 5px;
+    }
+    .marker {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      border: 2px solid white;
+    }
+    .tooltip {
+      position: absolute;
+      background: rgba(0,0,0,0.8);
+      color: #fff;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      pointer-events: none;
+      white-space: nowrap;
+      z-index: 99;
     }
   </style>
 </head>
 <body>
-  <div id="toggle-sidebar">≡</div>
   <div id="sidebar">
     <h1>Archangels MC</h1>
     <div class="category" data-cat="Lokace">
-      <h2>Lokace</h2>
-      <div class="category-content" id="lokace"></div>
+      <h2 onclick="toggleCategory(this)">📍 Lokace</h2>
+      <div class="category-items" id="cat-Lokace"></div>
     </div>
     <div class="category" data-cat="Území">
-      <h2>Území</h2>
-      <div class="category-content" id="uzemi"></div>
+      <h2 onclick="toggleCategory(this)">🗺️ Území</h2>
+      <div class="category-items" id="cat-Území"></div>
     </div>
     <div class="category" data-cat="Dodávky">
-      <h2>Dodávky</h2>
-      <div class="category-content" id="dodavky"></div>
+      <h2 onclick="toggleCategory(this)">📦 Dodávky</h2>
+      <div class="category-items" id="cat-Dodávky"></div>
     </div>
   </div>
-
-  <div id="map-container">
-    <div id="map"></div>
-  </div>
-
+  <div id="map"></div>
   <script>
     const map = document.getElementById('map');
-    const sidebar = document.getElementById('sidebar');
-    const toggleSidebar = document.getElementById('toggle-sidebar');
-    const categoryEls = {
-      Lokace: document.getElementById('lokace'),
-      Území: document.getElementById('uzemi'),
-      Dodávky: document.getElementById('dodavky')
-    };
-
-    let scale = 1;
-    let offsetX = 0;
-    let offsetY = 0;
-    let isDragging = false;
-    let startX, startY;
-
-    let data = {
-      markers: [],
-      zones: []
-    };
-
-    let polygonPoints = [];
-
-    // INIT ------------------
-
-    function loadData() {
-      const saved = localStorage.getItem('mapData');
-      if (saved) data = JSON.parse(saved);
-      data.markers.forEach(drawMarker);
-      data.zones.forEach(drawZone);
-    }
+    let data = JSON.parse(localStorage.getItem('archangels_map') || '[]');
+    let currentPolygon = [];
+    let scale = 1, originX = 0, originY = 0, isDragging = false, dragStart;
 
     function saveData() {
-      localStorage.setItem('mapData', JSON.stringify(data));
+      localStorage.setItem('archangels_map', JSON.stringify(data));
     }
 
-    function toggleCategory(catEl) {
-      const content = catEl.querySelector('.category-content');
+    function toggleCategory(header) {
+      const content = header.nextElementSibling;
       content.style.display = content.style.display === 'block' ? 'none' : 'block';
     }
 
-    document.querySelectorAll('.category').forEach(cat => {
-      cat.querySelector('h2').addEventListener('click', () => toggleCategory(cat));
+    function renderAll() {
+      document.querySelectorAll('.marker, .polygon').forEach(e => e.remove());
+      ['Lokace','Území','Dodávky'].forEach(cat => {
+        const container = document.getElementById('cat-' + cat);
+        container.innerHTML = '';
+        data.filter(d => d.category === cat).forEach((d, i) => {
+          if (d.type === 'point') renderMarker(d);
+          else if (d.type === 'polygon') renderPolygon(d);
+          const item = document.createElement('div');
+          item.className = 'item';
+          item.innerHTML = `<div><span class="dot" style="background:${d.color};display:inline-block"></span>${d.name}</div><span class="delete-btn" onclick="deleteItem(${d.id})">🗑️</span>`;
+          item.onclick = () => zoomTo(d);
+          container.appendChild(item);
+        });
+      });
+    }
+
+    function renderMarker(d) {
+      const el = document.createElement('div');
+      el.className = 'marker';
+      el.style.left = `${d.x * 100}%`;
+      el.style.top = `${d.y * 100}%`;
+      el.style.background = d.color;
+      el.title = d.desc;
+      map.appendChild(el);
+    }
+
+    function renderPolygon(d) {
+      const el = document.createElement('div');
+      el.className = 'polygon';
+      const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+      svg.setAttribute("width", "100%");
+      svg.setAttribute("height", "100%");
+      svg.style.position = 'absolute';
+      svg.style.left = 0;
+      svg.style.top = 0;
+      svg.style.pointerEvents = 'none';
+      const poly = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
+      poly.setAttribute("points", d.points.map(p => `${p.x * map.clientWidth},${p.y * map.clientHeight}`).join(' '));
+      poly.setAttribute("fill", d.color + '55');
+      poly.setAttribute("stroke", d.color);
+      svg.appendChild(poly);
+      el.appendChild(svg);
+      el.title = d.desc;
+      map.appendChild(el);
+    }
+
+    function zoomTo(d) {
+      if (d.type === 'point') {
+        map.scrollTo({
+          left: d.x * map.scrollWidth - map.clientWidth / 2,
+          top: d.y * map.scrollHeight - map.clientHeight / 2,
+          behavior: 'smooth'
+        });
+      } else if (d.type === 'polygon') {
+        const avgX = d.points.reduce((a,b)=>a+b.x,0)/d.points.length;
+        const avgY = d.points.reduce((a,b)=>a+b.y,0)/d.points.length;
+        map.scrollTo({
+          left: avgX * map.scrollWidth - map.clientWidth / 2,
+          top: avgY * map.scrollHeight - map.clientHeight / 2,
+          behavior: 'smooth'
+        });
+      }
+    }
+
+    function deleteItem(id) {
+      data = data.filter(d => d.id !== id);
+      saveData();
+      renderAll();
+    }
+
+    function askDetails(type, points = null, x = null, y = null) {
+      const name = prompt('Název:');
+      if (!name) return;
+      const color = prompt('Barva (#hex nebo jméno):', '#00ffff');
+      const desc = prompt('Popis:');
+      const category = prompt('Kategorie (Lokace, Území, Dodávky):', 'Lokace');
+      const id = Date.now();
+      if (type === 'point') {
+        data.push({ id, type, name, color, desc, category, x, y });
+      } else {
+        data.push({ id, type, name, color, desc, category, points });
+      }
+      saveData();
+      renderAll();
+    }
+
+    map.addEventListener('dblclick', e => {
+      if (e.shiftKey) {
+        const rect = map.getBoundingClientRect();
+        const x = (e.clientX - rect.left) / rect.width;
+        const y = (e.clientY - rect.top) / rect.height;
+        currentPolygon.push({ x, y });
+        if (currentPolygon.length > 2 && confirm('Uzavřít území?')) {
+          askDetails('polygon', [...currentPolygon]);
+          currentPolygon = [];
+        }
+      } else {
+        const rect = map.getBoundingClientRect();
+        const x = (e.clientX - rect.left) / rect.width;
+        const y = (e.clientY - rect.top) / rect.height;
+        askDetails('point', null, x, y);
+      }
     });
 
-    toggleSidebar.onclick = () => {
-      sidebar.classList.toggle('open');
-    };
+    map.addEventListener('wheel', e => {
+      e.preventDefault();
+      const zoomIntensity = 0.1;
+      scale += e.deltaY * -zoomIntensity / 100;
+      scale = Math.min(Math.max(0.5, scale), 3);
+      map.style.transform = `scale(${scale}) translate(${originX}px, ${originY}px)`;
+    }, { passive: false });
 
-    // MAP BEHAVIOR ------------------
-
-    map.addEventListener('mousedown', (e) => {
+    map.addEventListener('mousedown', e => {
       isDragging = true;
-      startX = e.clientX - offsetX;
-      startY = e.clientY - offsetY;
+      dragStart = { x: e.clientX, y: e.clientY };
       map.style.cursor = 'grabbing';
     });
-
-    map.addEventListener('mouseup', () => {
+    window.addEventListener('mouseup', () => {
       isDragging = false;
       map.style.cursor = 'grab';
     });
-
-    map.addEventListener('mousemove', (e) => {
-      if (isDragging) {
-        offsetX = e.clientX - startX;
-        offsetY = e.clientY - startY;
-        updateTransform();
-      }
+    window.addEventListener('mousemove', e => {
+      if (!isDragging) return;
+      originX += (e.clientX - dragStart.x) / scale;
+      originY += (e.clientY - dragStart.y) / scale;
+      dragStart = { x: e.clientX, y: e.clientY };
+      map.style.transform = `scale(${scale}) translate(${originX}px, ${originY}px)`;
     });
 
-    map.addEventListener('wheel', (e) => {
-      e.preventDefault();
-      const prevScale = scale;
-      scale += e.deltaY * -0.001;
-      scale = Math.min(Math.max(0.5, scale), 3);
-
-      // Keep zoom centered on mouse
-      const rect = map.getBoundingClientRect();
-      const dx = (e.clientX - rect.left) / prevScale;
-      const dy = (e.clientY - rect.top) / prevScale;
-      offsetX -= dx * (scale - prevScale);
-      offsetY -= dy * (scale - prevScale);
-
-      updateTransform();
-    });
-
-    function updateTransform() {
-      map.style.transform = translate(${offsetX}px, ${offsetY}px) scale(${scale});
-    }
-
-    // CREATE MARKERS/ZONES ------------------
-
-    map.addEventListener('dblclick', (e) => {
-      const rect = map.getBoundingClientRect();
-      const x = (e.clientX - rect.left - offsetX) / scale;
-      const y = (e.clientY - rect.top - offsetY) / scale;
-
-      if (e.shiftKey) {
-        polygonPoints.push({ x, y });
-        drawTempPolygon();
-        if (polygonPoints.length > 2 && confirm("Uzavřít oblast?")) {
-          const name = prompt("Název území:");
-          const desc = prompt("Popis:");
-          const color = prompt("Barva (např. rgba(0,255,0,0.3)):", "rgba(0,255,0,0.3)");
-          const category = prompt("Kategorie (Území / Lokace / Dodávky):", "Území");
-          const zone = { name, desc, color, points: [...polygonPoints], category };
-          data.zones.push(zone);
-          drawZone(zone);
-          polygonPoints = [];
-          saveData();
-        }
-        return;
-      }
-
-      const name = prompt("Název bodu:");
-      const desc = prompt("Popis:");
-      const color = prompt("Barva (např. red nebo #ff0000):", "red");
-      const category = prompt("Kategorie (Území / Lokace / Dodávky):", "Lokace");
-      const marker = { x, y, name, desc, color, category };
-      data.markers.push(marker);
-      drawMarker(marker);
-      saveData();
-    });
-
-    function drawTempPolygon() {
-      document.querySelectorAll('.temp-line').forEach(el => el.remove());
-      if (polygonPoints.length < 2) return;
-      for (let i = 0; i < polygonPoints.length - 1; i++) {
-        const line = document.createElement('div');
-        line.className = 'temp-line';
-        Object.assign(line.style, {
-          position: 'absolute',
-          background: 'yellow',
-          height: '2px',
-          width: '2px',
-          left: ${polygonPoints[i].x}px,
-          top: ${polygonPoints[i].y}px
-        });
-        map.appendChild(line);
-      }
-    }
-
-    function drawMarker(marker) {
-      const el = document.createElement('div');
-      el.className = 'marker';
-      el.style.left = ${marker.x}px;
-      el.style.top = ${marker.y}px;
-      el.style.backgroundColor = marker.color;
-      el.title = ${marker.name}\n${marker.desc};
-      el.style.opacity = 0.7;
-      map.appendChild(el);
-
-      const item = document.createElement('div');
-      item.className = 'item';
-      const dot = document.createElement('span');
-      dot.className = 'dot';
-      dot.style.backgroundColor = marker.color;
-      const label = document.createElement('span');
-      label.textContent = marker.name;
-      label.onclick = () => zoomTo(marker.x, marker.y);
-      const del = document.createElement('span');
-      del.textContent = '×';
-      del.className = 'delete';
-      del.onclick = () => {
-        el.remove();
-        item.remove();
-        data.markers = data.markers.filter(m => m !== marker);
-        saveData();
-      };
-      item.append(dot, label, del);
-      categoryEls[marker.category]?.appendChild(item);
-    }
-
-    function drawZone(zone) {
-      const el = document.createElement('div');
-      el.className = 'zone';
-      const path = zone.points.map(p => ${p.x}px ${p.y}px).join(', ');
-      const polygon = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
-
-      const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-      svg.setAttribute("style", "position:absolute; pointer-events:none;");
-      svg.setAttribute("width", "100%");
-      svg.setAttribute("height", "100%");
-      svg.innerHTML = <polygon points="${zone.points.map(p => `${p.x},${p.y}).join(' ')}" fill="${zone.color}" stroke="black" stroke-width="2" />`;
-      map.appendChild(svg);
-
-      const item = document.createElement('div');
-      item.className = 'item';
-      const dot = document.createElement('span');
-      dot.className = 'dot';
-      dot.style.backgroundColor = zone.color;
-      const label = document.createElement('span');
-      label.textContent = zone.name;
-      label.onclick = () => {
-        const avg = zone.points.reduce((acc, p) => ({ x: acc.x + p.x, y: acc.y + p.y }), { x: 0, y: 0 });
-        const cx = avg.x / zone.points.length;
-        const cy = avg.y / zone.points.length;
-        zoomTo(cx, cy);
-      };
-      const del = document.createElement('span');
-      del.textContent = '×';
-      del.className = 'delete';
-      del.onclick = () => {
-        svg.remove();
-        item.remove();
-        data.zones = data.zones.filter(z => z !== zone);
-        saveData();
-      };
-      item.append(dot, label, del);
-      categoryEls[zone.category]?.appendChild(item);
-    }
-
-    function zoomTo(x, y) {
-      scale = 2;
-      offsetX = window.innerWidth / 2 - x * scale;
-      offsetY = window.innerHeight / 2 - y * scale;
-      updateTransform();
-    }
-
-    loadData();
+    renderAll();
   </script>
 </body>
 </html>
