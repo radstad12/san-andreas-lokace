@@ -23,12 +23,14 @@
     #context-menu { position: absolute; background: #222; color: white; border: 1px solid #555; padding: 5px; display: none; z-index: 100; font-size: 13px; }
     #context-menu div { padding: 4px 8px; cursor: pointer; }
     #context-menu div:hover { background: #444; }
+      .active-category { font-weight: bold; color: #ffd700; }
+    .item:hover { background: rgba(255,255,255,0.1); transition: background 0.2s; }
   </style>
 </head>
 <body>
   <div id="sidebar">
     <img src="logo.png" alt="Archangels MC logo">
-    <h1>Archangels MC</h1>
+    <h1 style="font-size: 26px; font-weight: bold; color: gold; text-shadow: 0 0 10px gold; letter-spacing: 2px;">Archangels MC</h1>
     <div id="controls">
       <input type="text" id="search" placeholder="🔍 Hledat..." oninput="render()">
       <button onclick="setFilter('all')">Zobrazit vše</button>
@@ -72,7 +74,11 @@ function render() {
     const wrap = document.createElement("div"), h2 = document.createElement("button");
     const count = data.filter(i => i.categories?.includes(cat)).length;
     h2.textContent = `${cat} (${count})`;
-    h2.className = "category-header";
+    h2.className = "category-header active-category";
+    h2.style.fontWeight = "bold";
+    h2.style.transition = "background 0.3s";
+    h2.onmouseenter = () => h2.style.background = "#333";
+    h2.onmouseleave = () => h2.style.background = "#222";
     h2.onclick = () => {
       items.style.display = items.style.display === "block" ? "none" : "block";
       filter = cat;
@@ -88,13 +94,13 @@ function render() {
         div.className = "item";
         div.innerHTML = `<div><span class="dot" style="background:${item.color}"></span>${item.name}</div><span class="delete-btn" onclick="deleteItem(${item.id}); event.stopPropagation()">🗑</span>`;
         div.onclick = () => {
-          centerTo(item);
-          scale = 4;
-          const x = item.x || (item.points.reduce((a, b) => a + b.x, 0) / item.points.length);
-          const y = item.y || (item.points.reduce((a, b) => a + b.y, 0) / item.points.length);
+          const marker = map.querySelector(`.marker[title='${item.desc}']`);
+          if (marker) marker.animate([{ transform: 'scale(1.5)' }, { transform: 'scale(1)' }], { duration: 300 });
+          $1scale = 4;
           originX = -x * map.clientWidth + map.clientWidth / (2 * scale);
           originY = -y * map.clientHeight + map.clientHeight / (2 * scale);
           map.style.transform = `scale(${scale}) translate(${originX}px, ${originY}px)`;
+        };
         };
         items.appendChild(div);
       }
