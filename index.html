@@ -17,13 +17,17 @@
       letter-spacing: 2px;
       margin-bottom: 10px;
     }
-    #controls input, #controls button, .category-header {
+    #controls input, #controls button {
       width: 100%; margin-bottom: 5px; padding: 8px;
-      background: red; color: white; border: none;
-      cursor: pointer; text-align: left;
-      font-weight: bold; text-shadow: 0 0 5px white;
+      background: #333; color: white; border: none;
+      text-align: left;
     }
-    #controls input { background: #333; border-radius: 4px; cursor: text; }
+    .category-header {
+      width: 100%; margin-bottom: 5px; padding: 8px;
+      background: #333; color: white; border: none;
+      font-weight: bold; text-shadow: 0 0 5px white;
+      cursor: pointer;
+    }
     .category-items { margin-left: 10px; }
     .item { display: flex; justify-content: space-between; align-items: center; font-size: 14px; margin: 5px 0; cursor: pointer; }
     .dot { width: 10px; height: 10px; border-radius: 50%; margin-right: 8px; display: inline-block; }
@@ -207,7 +211,7 @@
         const item = { id: Date.now(), type, name, desc, color, size, categories: selectedCats };
         if (type === "point") { item.x = coords.x; item.y = coords.y; }
         else { item.points = [...coords]; }
-        if (!planningMode) data.push(item);
+        data.push(item);
         save(); render();
         document.body.removeChild(wrapper);
       };
