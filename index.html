@@ -72,7 +72,7 @@
     <h1>Archangels MC</h1>
     <div id="controls">
       <input type="text" id="search" placeholder="🔍 Hledat..." oninput="render()">
-      <button id="show-all" onclick="setFilter('all')">Zobrazit vše</button>
+      <button id="show-all" onclick="showAllCategories()">Zobrazit vše</button>
       <button onclick="togglePlanningMode()">📝 Plánovat</button>
     </div>
     <div style="height: 20px;"></div>
@@ -96,9 +96,12 @@
 
     function setFilter(type) {
       filter = type;
-      document.querySelectorAll('.category-items').forEach(e => {
-        e.style.display = 'block';
-      });
+      render();
+    }
+
+    function showAllCategories() {
+      document.querySelectorAll('.category-items').forEach(e => e.style.display = 'block');
+      filter = "all";
       render();
     }
 
@@ -126,6 +129,7 @@
         items.style.display = "block";
         header.onclick = () => {
           items.style.display = items.style.display === 'none' ? 'block' : 'none';
+          filter = cat;
           render();
         };
 
@@ -154,7 +158,7 @@
       el.style.background = item.color;
       el.style.width = el.style.height = `${item.size || 6}px`;
       el.title = item.desc;
-      el.onmouseenter = e => showTooltip(e, item.name + ': ' + item.desc);
+      el.onmouseenter = e => showTooltip(e, `${item.name}: ${item.desc}`);
       el.onmouseleave = hideTooltip;
       map.appendChild(el);
     }
@@ -168,7 +172,7 @@
       poly.setAttribute("points", item.points.map(p => `${p.x * map.clientWidth},${p.y * map.clientHeight}`).join(" "));
       poly.setAttribute("fill", item.color + "55");
       poly.setAttribute("stroke", item.color);
-      poly.addEventListener("mouseenter", e => showTooltip(e, item.name + ": " + item.desc));
+      poly.addEventListener("mouseenter", e => showTooltip(e, `${item.name}: ${item.desc}`));
       poly.addEventListener("mouseleave", hideTooltip);
       svg.appendChild(poly);
       map.appendChild(svg);
@@ -186,15 +190,41 @@
     map.addEventListener("wheel", e => {
       e.preventDefault();
       const rect = map.getBoundingClientRect();
-      const mouseX = (e.clientX - rect.left) / scale;
-      const mouseY = (e.clientY - rect.top) / scale;
       const zoomSpeed = 0.0035;
-      scale += e.deltaY * -zoomSpeed;
-      scale = Math.min(Math.max(0.2, scale), 20);
-      originX -= (mouseX * e.deltaY * -zoomSpeed);
-      originY -= (mouseY * e.deltaY * -zoomSpeed);
+      const oldScale = scale;
+
+      if (e.deltaY < 0) {
+        const mouseX = (e.clientX - rect.left - originX * oldScale) / oldScale;
+        const mouseY = (e.clientY - rect.top - originY * oldScale) / oldScale;
+        scale += -e.deltaY * zoomSpeed;
+        scale = Math.min(scale, 20);
+        originX -= mouseX * (scale - oldScale);
+        originY -= mouseY * (scale - oldScale);
+      } else {
+        const centerX = (rect.width / 2 - originX * oldScale) / oldScale;
+        const centerY = (rect.height / 2 - originY * oldScale) / oldScale;
+        scale += -e.deltaY * zoomSpeed;
+        scale = Math.max(scale, 0.2);
+        originX -= centerX * (scale - oldScale);
+        originY -= centerY * (scale - oldScale);
+      }
+
       map.style.transform = `scale(${scale}) translate(${originX}px, ${originY}px)`;
     }, { passive: false });
+
+    map.addEventListener("mousedown", e => {
+      isDragging = true;
+      start = { x: e.clientX, y: e.clientY };
+    });
+
+    window.addEventListener("mouseup", () => isDragging = false);
+    window.addEventListener("mousemove", e => {
+      if (!isDragging) return;
+      originX += (e.clientX - start.x) / scale;
+      originY += (e.clientY - start.y) / scale;
+      start = { x: e.clientX, y: e.clientY };
+      map.style.transform = `scale(${scale}) translate(${originX}px, ${originY}px)`;
+    });
 
     window.onload = () => render();
   </script>
