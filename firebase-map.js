@@ -23,8 +23,6 @@ const dbPush = push;
 
 // ----- MAP LOGIKA ZDE -----
 
-const polygonLayer = document.getElementById("polygon-layer");
-const markerLayer = document.getElementById("marker-layer");
 const map = document.getElementById("map");
 const menu = document.getElementById("menu");
 const tooltip = document.getElementById("tooltip");
@@ -59,8 +57,7 @@ function deleteItem(id) {
 
 function render() {
   menu.innerHTML = "";
-  markerLayer.innerHTML = "";
-  polygonLayer.innerHTML = "";
+  map.querySelectorAll(".marker, .polygon-point, svg.polygon").forEach(el => el.remove());
   const search = document.getElementById("search").value.toLowerCase();
   for (let cat of categories) {
     const header = document.createElement("button");
@@ -78,11 +75,18 @@ function render() {
 
     data.forEach(item => {
       if (!item.categories?.includes(cat)) return;
+      if (!expandedCategories.has(cat)) return;
       const matchSearch = (item.name && item.name.toLowerCase().includes(search)) || (item.desc && item.desc.toLowerCase().includes(search));
-      if (expandedCategories.has(cat) && (search === "" || matchSearch)) {
+      if (search === "" || matchSearch) {
+        if (item.type === 'point') {
+          renderMarker(item);
+        }
+        if (item.type === 'polygon') {
+          renderPolygon(item);
+        }
         const div = document.createElement("div");
         div.className = "item";
-        div.innerHTML = `<div><span class=\"dot\" style=\"background:${item.color}\"></span>${item.name}</div><span class=\"delete-btn\" onclick=\"window.deleteItem(${item.id}); event.stopPropagation()\">🗑</span>`;
+        div.innerHTML = `<div><span class="dot" style="background:${item.color}"></span>${item.name}</div><span class="delete-btn" onclick="window.deleteItem(${item.id}); event.stopPropagation()">🗑</span>`;
         items.appendChild(div);
       }
     });
@@ -90,24 +94,7 @@ function render() {
     menu.appendChild(header);
     menu.appendChild(items);
   }
-
-  data.forEach(item => {
-    if (item.type === 'point') renderMarker(item);
-    if (item.type === 'polygon') renderPolygon(item);
-  });
-});
-
-    menu.appendChild(header);
-    menu.appendChild(items);
-  }
-
-  data.forEach(item => {
-    if (item.type === 'point') renderMarker(item);
-    if (item.type === 'polygon') renderPolygon(item);
-  });
 }
-  }
-
 
 function renderMarker(item) {
   if (typeof item.x !== 'number' || typeof item.y !== 'number') {
@@ -127,26 +114,18 @@ function renderMarker(item) {
     showTooltip(e, text);
   };
   el.onmouseleave = hideTooltip;
-  markerLayer.appendChild(el);
+  map.appendChild(el);
 }
 
 function renderPolygon(item) {
-  if (!item.points || item.points.length < 3) return;
   const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
   svg.classList.add("polygon");
   svg.setAttribute("width", map.clientWidth);
   svg.setAttribute("height", map.clientHeight);
-  svg.style.position = "absolute";
-  svg.style.top = "0";
-  svg.style.left = "0";
-  svg.style.pointerEvents = "auto";
-
   const poly = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
   poly.setAttribute("points", item.points.map(p => `${p.x * map.clientWidth},${p.y * map.clientHeight}`).join(" "));
   poly.setAttribute("fill", item.color + "55");
   poly.setAttribute("stroke", item.color);
-  poly.setAttribute("stroke-width", "1");
-
   poly.onmouseenter = e => {
     const name = item.name?.trim() || "(bez názvu)";
     const desc = item.desc?.trim() || "";
@@ -154,9 +133,8 @@ function renderPolygon(item) {
     showTooltip(e, text);
   };
   poly.onmouseleave = hideTooltip;
-
   svg.appendChild(poly);
-  polygonLayer.appendChild(svg);
+  map.appendChild(svg);
 }
 
 function showTooltip(e, text) {
