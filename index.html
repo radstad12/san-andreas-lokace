@@ -267,6 +267,24 @@
       }
     });
 
+    let scale = 1, originX = 0, originY = 0, isDragging = false, start = { x: 0, y: 0 };
+    map.addEventListener("wheel", e => {
+      e.preventDefault();
+      scale += e.deltaY * -0.001;
+      scale = Math.min(Math.max(0.5, scale), 8);
+      map.style.transform = `scale(${scale}) translate(${originX}px, ${originY}px)`;
+    }, { passive: false });
+
+    map.addEventListener("mousedown", e => { isDragging = true; start = { x: e.clientX, y: e.clientY }; });
+    window.addEventListener("mouseup", () => isDragging = false);
+    window.addEventListener("mousemove", e => {
+      if (!isDragging) return;
+      originX += (e.clientX - start.x) / scale;
+      originY += (e.clientY - start.y) / scale;
+      start = { x: e.clientX, y: e.clientY };
+      map.style.transform = `scale(${scale}) translate(${originX}px, ${originY}px)`;
+    });
+
     window.onload = () => render();
   </script>
 </body>
