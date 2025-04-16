@@ -94,12 +94,16 @@ function render() {
         div.className = "item";
         div.innerHTML = `<div><span class="dot" style="background:${item.color}"></span>${item.name}</div><span class="delete-btn" onclick="deleteItem(${item.id}); event.stopPropagation()">🗑</span>`;
         div.onclick = () => {
-          const marker = map.querySelector(`.marker[title='${item.desc}']`);
+          const x = item.x || (item.points.reduce((a, b) => a + b.x, 0) / item.points.length);
+          const y = item.y || (item.points.reduce((a, b) => a + b.y, 0) / item.points.length);
+          const marker = map.querySelector(`.marker[title="${item.desc}"]`);
           if (marker) marker.animate([{ transform: 'scale(1.5)' }, { transform: 'scale(1)' }], { duration: 300 });
-          $1scale = 4;
+          scale = 4;
           originX = -x * map.clientWidth + map.clientWidth / (2 * scale);
           originY = -y * map.clientHeight + map.clientHeight / (2 * scale);
           map.style.transform = `scale(${scale}) translate(${originX}px, ${originY}px)`;
+        };
+        };
         };
         };
         items.appendChild(div);
