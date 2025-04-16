@@ -74,12 +74,16 @@ function render() {
     items.style.display = expandedCategories.has(cat) ? "block" : "none";
 
     data.forEach(item => {
-      if (!item.categories.includes(cat)) return;
+      if (!item.categories?.includes(cat)) return;
       if (!expandedCategories.has(cat)) return;
       const matchSearch = item.name?.toLowerCase().includes(search) || item.desc?.toLowerCase().includes(search);
         if (matchSearch || search === "") {
-        if (item.type === 'point') renderMarker(item);
-        if (item.type === 'polygon') renderPolygon(item);
+        if (item.type === 'point') {
+          renderMarker(item);
+        }
+        if (item.type === 'polygon') {
+          renderPolygon(item);
+        }
         const div = document.createElement("div");
         div.className = "item";
         div.innerHTML = `<div><span class="dot" style="background:${item.color}"></span>${item.name}</div><span class="delete-btn" onclick="window.deleteItem(${item.id}); event.stopPropagation()">🗑</span>`;
