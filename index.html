@@ -195,6 +195,44 @@
       render();
     }
 
+    function openForm(type, coords) {
+      const wrapper = document.createElement("div");
+      wrapper.id = "form-wrapper";
+      wrapper.innerHTML = `
+        <label>Název:<br><input id='form-name' style='width:100%'></label><br><br>
+        <label>Popis:<br><textarea id='form-desc' style='width:100%'></textarea></label><br><br>
+        <label>Barva:<br><input type='color' id='form-color' value='#00ffff'></label><br><br>
+        <div>
+          <span class='color-sample' style='background:#ff0000' onclick="document.getElementById('form-color').value = '#ff0000'"></span>
+          <span class='color-sample' style='background:#00ff00' onclick="document.getElementById('form-color').value = '#00ff00'"></span>
+          <span class='color-sample' style='background:#0000ff' onclick="document.getElementById('form-color').value = '#0000ff'"></span>
+          <span class='color-sample' style='background:#ffff00' onclick="document.getElementById('form-color').value = '#ffff00'"></span>
+          <span class='color-sample' style='background:#ff00ff' onclick="document.getElementById('form-color').value = '#ff00ff'"></span>
+        </div><br>
+        <label>Velikost:<br><input type='number' id='form-size' value='6' min='2' max='20'></label><br><br>
+        <div><b>Zařadit do kategorií:</b><br>` +
+        categories.map(c => `<label><input type='checkbox' value='${c}'> ${c}</label>`).join("<br>") +
+        `</div><br>
+        <button id='form-ok'>OK</button> <button onclick='document.getElementById("form-wrapper").remove()'>Zrušit</button>`;
+
+      document.body.appendChild(wrapper);
+
+      document.getElementById("form-ok").onclick = () => {
+        const name = document.getElementById("form-name").value;
+        const desc = document.getElementById("form-desc").value;
+        const color = document.getElementById("form-color").value;
+        const size = +document.getElementById("form-size").value;
+        const selectedCats = Array.from(wrapper.querySelectorAll("input[type=checkbox]:checked")).map(i => i.value);
+        if (!name || selectedCats.length === 0) return alert("Zadej název a vyber kategorii.");
+        const item = { id: Date.now(), type, name, desc, color, size, categories: selectedCats };
+        if (type === "point") { item.x = coords.x; item.y = coords.y; }
+        else { item.points = coords; }
+        data.push(item);
+        save(); render();
+        wrapper.remove();
+      };
+    }
+
     map.addEventListener("dblclick", e => {
       if (!planningMode || e.shiftKey) return;
       const r = map.getBoundingClientRect();
