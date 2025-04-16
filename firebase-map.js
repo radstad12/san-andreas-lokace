@@ -57,7 +57,7 @@ function deleteItem(id) {
 
 function render() {
   menu.innerHTML = "";
-  map.querySelectorAll(".marker, .polygon-point, svg.polygon, svg.polygon *").forEach(el => el.remove());
+  map.querySelectorAll(".marker, .polygon-point, svg.polygon").forEach(el => el.remove());
   const search = document.getElementById("search").value.toLowerCase();
   for (let cat of categories) {
     const header = document.createElement("button");
@@ -76,10 +76,6 @@ function render() {
     data.forEach(item => {
       if (!item.categories?.includes(cat)) return;
 
-      // vždy vykresli značky na mapu (kvůli tooltipům)
-      if (item.type === 'point') renderMarker(item);
-      if (item.type === 'polygon') renderPolygon(item);
-
       const matchSearch = (item.name && item.name.toLowerCase().includes(search)) || (item.desc && item.desc.toLowerCase().includes(search));
       if (expandedCategories.has(cat) && (search === "" || matchSearch)) {
         const div = document.createElement("div");
@@ -91,6 +87,13 @@ function render() {
 
     menu.appendChild(header);
     menu.appendChild(items);
+  }
+
+  // vykresli všechny značky na mapu mimo kategorický panel
+  data.forEach(item => {
+    if (item.type === 'point') renderMarker(item);
+    if (item.type === 'polygon') renderPolygon(item);
+  });
   }
 }
 
