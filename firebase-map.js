@@ -100,7 +100,7 @@ function renderMarker(item) {
   el.style.background = item.color;
   el.style.width = el.style.height = `${item.size || 6}px`;
   el.onmouseenter = e => {
-    if (item.name || item.desc) showTooltip(e, `${item.name || ''}${item.desc ? ': ' + item.desc : ''}`);
+    showTooltip(e, `${item.name || ''}${item.desc ? ': ' + item.desc : ''}`);
   };
   el.onmouseleave = hideTooltip;
   map.appendChild(el);
@@ -116,7 +116,7 @@ function renderPolygon(item) {
   poly.setAttribute("fill", item.color + "55");
   poly.setAttribute("stroke", item.color);
   poly.onmouseenter = e => {
-    if (item.name || item.desc) showTooltip(e, `${item.name || ''}${item.desc ? ': ' + item.desc : ''}`);
+    showTooltip(e, `${item.name || ''}${item.desc ? ': ' + item.desc : ''}`);
   };
   poly.onmouseleave = hideTooltip;
   svg.appendChild(poly);
