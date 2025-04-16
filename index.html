@@ -80,7 +80,7 @@
     <h1>Archangels MC</h1>
     <div id="controls">
       <input type="text" id="search" placeholder="🔍 Hledat..." oninput="render()">
-      <button id="show-all" onclick="toggleAllCategories()">Zobrazit / Skrýt vše</button>
+      <button id="toggle-all">Zobrazit / Skrýt vše</button>
       <button onclick="togglePlanningMode()">📝 Plánovat</button>
     </div>
     <div style="height: 20px;"></div>
@@ -100,7 +100,16 @@
       "🚗 Ujíždění autem", "🏍️ Ujíždění na motorce",
       "🏃‍♂️ Útěk pěšky", "📦 Sklady", "🎭 Místa na výslech"
     ];
-    let expanded = true;
+    let expandedCategories = new Set(categories);
+
+    document.getElementById("toggle-all").onclick = () => {
+      if (expandedCategories.size === categories.length) {
+        expandedCategories.clear();
+      } else {
+        expandedCategories = new Set(categories);
+      }
+      render();
+    };
 
     function save() {
       if (!planningMode) localStorage.setItem("mapData", JSON.stringify(data));
@@ -109,11 +118,6 @@
     function togglePlanningMode() {
       planningMode = !planningMode;
       alert(`Plánovací režim: ${planningMode ? 'ZAPNUTÝ' : 'VYPNUTÝ'}`);
-    }
-
-    function toggleAllCategories() {
-      expanded = !expanded;
-      render();
     }
 
     function render() {
@@ -125,20 +129,24 @@
         header.className = "category-header";
         header.textContent = `${cat} (${data.filter(i => i.categories?.includes(cat)).length})`;
         header.onclick = () => {
-          const section = header.nextElementSibling;
-          section.style.display = section.style.display === 'none' ? 'block' : 'none';
+          if (expandedCategories.has(cat)) {
+            expandedCategories.delete(cat);
+          } else {
+            expandedCategories.add(cat);
+          }
           render();
         };
 
         const items = document.createElement("div");
         items.className = "category-items";
-        items.style.display = expanded ? "block" : "none";
+        items.style.display = expandedCategories.has(cat) ? "block" : "none";
 
         data.forEach(item => {
           if (!item.categories.includes(cat)) return;
+          if (!expandedCategories.has(cat)) return;
           if (item.name?.toLowerCase().includes(search)) {
-            item.type === 'point' && renderMarker(item);
-            item.type === 'polygon' && renderPolygon(item);
+            if (item.type === 'point') renderMarker(item);
+            if (item.type === 'polygon') renderPolygon(item);
             const div = document.createElement("div");
             div.className = "item";
             div.innerHTML = `<div><span class="dot" style="background:${item.color}"></span>${item.name}</div><span class="delete-btn" onclick="deleteItem(${item.id}); event.stopPropagation()">🗑</span>`;
