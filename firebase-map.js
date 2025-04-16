@@ -1,0 +1,1 @@
+// Tady bude kompletní skript pro práci s Firebase a mapou
