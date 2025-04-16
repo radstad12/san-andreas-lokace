@@ -167,7 +167,7 @@
       el.style.background = item.color;
       el.style.width = el.style.height = `${item.size || 6}px`;
       el.title = item.desc;
-      el.onmouseenter = e => showTooltip(e, item.desc);
+      el.onmouseenter = e => showTooltip(e, item.name + ": " + item.desc);
       el.onmouseleave = hideTooltip;
       map.appendChild(el);
     }
@@ -181,7 +181,7 @@
       poly.setAttribute("points", item.points.map(p => `${p.x * map.clientWidth},${p.y * map.clientHeight}`).join(" "));
       poly.setAttribute("fill", item.color + "55");
       poly.setAttribute("stroke", item.color);
-      poly.onmouseenter = e => showTooltip(e, item.desc);
+      poly.onmouseenter = e => showTooltip(e, item.name + ": " + item.desc);
       poly.onmouseleave = hideTooltip;
       svg.appendChild(poly);
       map.appendChild(svg);
@@ -224,7 +224,7 @@
 
     map.addEventListener("wheel", e => {
       e.preventDefault();
-      scale += e.deltaY * -0.001;
+      scale += e.deltaY * -0.002; // Zrychlené přiblížení/oddálení
       scale = Math.min(Math.max(0.5, scale), 6);
       map.style.transform = `scale(${scale}) translate(${originX}px, ${originY}px)`;
     }, { passive: false });
@@ -263,7 +263,7 @@
         <div><b>Zařadit do kategorií:</b><br>` +
         ["📍 Lokace", "🗺️ Území", "🚚 Dodávky", "🚗 Ujíždění autem", "🏍️ Ujíždění na motorce", "🏃‍♂️ Útěk pěšky", "📦 Sklady"]
           .map(c => `<label><input type='checkbox' value='${c}'> ${c}</label><br>`).join('') +
-        `<br><button id='form-ok'>OK</button> <button onclick='this.closest("div").remove()'>Zrušit</button>`;
+        `<br><button id='form-ok'>OK</button> <button id='form-cancel'>Zrušit</button>`;
 
       document.body.appendChild(wrapper);
 
@@ -279,6 +279,10 @@
         data.push(item);
         save();
         render();
+        document.body.removeChild(wrapper);
+      };
+
+      document.getElementById("form-cancel").onclick = () => {
         document.body.removeChild(wrapper);
       };
     }
