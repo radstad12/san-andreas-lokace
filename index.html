@@ -111,10 +111,6 @@
       render();
     };
 
-    function save() {
-      if (!planningMode) localStorage.setItem("mapData", JSON.stringify(data));
-    }
-
     function togglePlanningMode() {
       planningMode = !planningMode;
       alert(`Plánovací režim: ${planningMode ? 'ZAPNUTÝ' : 'VYPNUTÝ'}`);
