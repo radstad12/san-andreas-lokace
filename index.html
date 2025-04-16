@@ -66,7 +66,7 @@ function render() {
   menu.innerHTML = "";
   const searchValue = document.getElementById("search")?.value.toLowerCase() || "";
   map.querySelectorAll(".marker, .polygon-point, svg.polygon").forEach(el => el.remove());
-  const cats = { "Lokace": [], "Území": [], "Dodávky": [], "Ujíždění autem": [], "Ujíždění na motorce": [], "Útěk pěšky": [] };
+  const cats = { "Lokace": [], "Území": [], "Dodávky": [], "Ujíždění autem": [], "Ujíždění na motorce": [], "Útěk pěšky": [], "Sklady": [] };
   for (let cat in cats) {
     const wrap = document.createElement("div"), h2 = document.createElement("button");
     const count = data.filter(i => i.categories?.includes(cat)).length;
@@ -168,14 +168,46 @@ function deleteItem(id) {
 function openForm(type, coords) {
   const name = prompt("Název:"); if (!name) return;
   const desc = prompt("Popis:");
-  const color = prompt("Barva (např. #00ffff):", "#00ffff");
-  const size = +prompt("Velikost bodu (např. 4)", "4");
-  const cats = ["Lokace", "Území", "Dodávky", "Ujíždění autem", "Ujíždění na motorce", "Útěk pěšky"];
-  const selectedCats = cats.filter(c => confirm(`Zařadit do „${c}“?`));
-  const item = { id: Date.now(), type, name, desc, color, size, categories: selectedCats };
-  if (type === "point") { item.x = coords.x; item.y = coords.y; } else { item.points = [...coords]; }
-  if (!planningMode) data.push(item);
-  save(); render();
+
+  const colorInput = document.createElement("input");
+  colorInput.type = "color";
+  colorInput.value = "#00ffff";
+  document.body.appendChild(colorInput);
+  colorInput.style.position = "fixed";
+  colorInput.style.left = "-1000px";
+  colorInput.click();
+
+  colorInput.addEventListener("input", () => {
+    const color = colorInput.value;
+    document.body.removeChild(colorInput);
+
+    const size = +prompt("Velikost bodu (např. 4)", "4");
+    const catWrapper = document.createElement("div");
+    catWrapper.style.position = "fixed";
+    catWrapper.style.top = "50%";
+    catWrapper.style.left = "50%";
+    catWrapper.style.transform = "translate(-50%, -50%)";
+    catWrapper.style.background = "#222";
+    catWrapper.style.padding = "20px";
+    catWrapper.style.border = "1px solid #555";
+    catWrapper.style.zIndex = "999";
+
+    const catList = ["Lokace", "Území", "Dodávky", "Ujíždění autem", "Ujíždění na motorce", "Útěk pěšky", "Sklady"];
+    catWrapper.innerHTML = `<b>Vyber kategorie:</b><br>` + catList.map(c => `<label><input type='checkbox' value='${c}' checked> ${c}</label><br>`).join("");
+
+    const btn = document.createElement("button");
+    btn.textContent = "OK";
+    btn.onclick = () => {
+      const selectedCats = Array.from(catWrapper.querySelectorAll("input:checked")).map(i => i.value);
+      const item = { id: Date.now(), type, name, desc, color, size, categories: selectedCats };
+      if (type === "point") { item.x = coords.x; item.y = coords.y; } else { item.points = [...coords]; }
+      if (!planningMode) data.push(item);
+      save(); render();
+      document.body.removeChild(catWrapper);
+    };
+    catWrapper.appendChild(btn);
+    document.body.appendChild(catWrapper);
+  }, { once: true });
 }
 
 map.addEventListener("dblclick", e => {
