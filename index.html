@@ -75,7 +75,7 @@ function render() {
     h2.className = "category-header";
     h2.onclick = () => {
       items.style.display = items.style.display === "block" ? "none" : "block";
-      filter = filter === 'all' ? 'all' : filter;
+      filter = cat;
       render();
     };
     const items = document.createElement("div"); items.className = "category-items";
@@ -90,7 +90,12 @@ function render() {
         div.onclick = () => {
           centerTo(item);
           scale = 4;
+          const x = item.x || (item.points.reduce((a, b) => a + b.x, 0) / item.points.length);
+          const y = item.y || (item.points.reduce((a, b) => a + b.y, 0) / item.points.length);
+          originX = -x * map.clientWidth + map.clientWidth / (2 * scale);
+          originY = -y * map.clientHeight + map.clientHeight / (2 * scale);
           map.style.transform = `scale(${scale}) translate(${originX}px, ${originY}px)`;
+        };
         };
         items.appendChild(div);
       }
