@@ -15,10 +15,11 @@
     .dot { width: 10px; height: 10px; border-radius: 50%; margin-right: 8px; display: inline-block; }
     .delete-btn { color: #888; font-size: 12px; cursor: pointer; }
     #map { position: absolute; left: 280px; top: 0; right: 0; bottom: 0; background: #000 url('mapa.png') no-repeat center center; background-size: contain; cursor: grab; overflow: hidden; }
-    .marker { position: absolute; width: 4px; height: 4px; border-radius: 50%; border: 1px solid white; transform: translate(-50%, -50%); cursor: pointer; }
+    .marker { position: absolute; border-radius: 50%; border: 1px solid white; transform: translate(-50%, -50%); cursor: pointer; }
     .polygon-point { position: absolute; width: 8px; height: 8px; background: cyan; border: 1px solid white; border-radius: 50%; transform: translate(-50%, -50%); }
     svg.polygon { position: absolute; top: 0; left: 0; pointer-events: none; }
-    .tooltip { position: absolute; background: rgba(0,0,0,0.8); color: white; padding: 4px 8px; font-size: 12px; border-radius: 4px; pointer-events: none; z-index: 99; }
+    .tooltip { position: absolute; background: rgba(0,0,0,0.8); color: white; padding: 4px 8px; font-size: 12px; border-radius: 4px; pointer-events: none; z-index: 99; display: none; }
+    input[type=range] { width: 100%; }
   </style>
 </head>
 <body>
@@ -31,15 +32,16 @@
       <button onclick="setFilter('polygon')">Jen území</button>
       <button onclick="togglePlanningMode()">📝 Plánovat</button>
     </div>
-    <div class="category-header">Místa na zmatení PD</div>
     <div id="menu"></div>
   </div>
   <div id="map"></div>
+  <div id="tooltip" class="tooltip"></div>
   <script>
     let data = JSON.parse(localStorage.getItem("mapData") || "[]");
     let planningMode = false;
     let currentPolygon = [];
     let filter = "all";
+    let tooltip = document.getElementById("tooltip");
 
     const map = document.getElementById("map");
     const menu = document.getElementById("menu");
@@ -57,26 +59,24 @@
     function render() {
       menu.innerHTML = "";
       map.querySelectorAll(".marker, .polygon-point, svg.polygon").forEach(el => el.remove());
-      const cats = { "Lokace": [], "Území": [], "Dodávky": [], "Místa na zmatení PD": ["autem", "na motorce", "pěšky"] };
+      const cats = { "Lokace": [], "Území": [], "Dodávky": [], "Ujíždění autem": [], "Ujíždění na motorce": [], "Útěk pěšky": [] };
       for (let cat in cats) {
         const wrap = document.createElement("div"), h2 = document.createElement("button");
-        h2.textContent = cat;
+        const count = data.filter(i => i.categories?.includes(cat)).length;
+        h2.textContent = `${cat} (${count})`;
         h2.className = "category-header";
         h2.onclick = () => items.style.display = items.style.display === "block" ? "none" : "block";
         const items = document.createElement("div"); items.className = "category-items";
-        const subcats = cats[cat].length ? cats[cat] : [null];
-        subcats.forEach(sub => {
-          data.forEach(item => {
-            if ((filter === "all" || filter === item.type) && item.categories?.includes(cat) && (!sub || item.categories.includes(sub))) {
-              item.type === "point" && renderMarker(item);
-              item.type === "polygon" && renderPolygon(item);
-              const div = document.createElement("div");
-              div.className = "item";
-              div.innerHTML = `<div><span class="dot" style="background:${item.color}"></span>${item.name}</div><span class="delete-btn" onclick="deleteItem(${item.id}); event.stopPropagation()">🗑</span>`;
-              div.onclick = () => centerTo(item);
-              items.appendChild(div);
-            }
-          });
+        data.forEach(item => {
+          if ((filter === "all" || filter === item.type) && item.categories?.includes(cat)) {
+            item.type === "point" && renderMarker(item);
+            item.type === "polygon" && renderPolygon(item);
+            const div = document.createElement("div");
+            div.className = "item";
+            div.innerHTML = `<div><span class="dot" style="background:${item.color}"></span>${item.name}</div><span class="delete-btn" onclick="deleteItem(${item.id}); event.stopPropagation()">🗑</span>`;
+            div.onclick = () => centerTo(item);
+            items.appendChild(div);
+          }
         });
         wrap.appendChild(h2); wrap.appendChild(items); menu.appendChild(wrap);
       }
@@ -88,7 +88,9 @@
       el.style.left = `${item.x * 100}%`;
       el.style.top = `${item.y * 100}%`;
       el.style.background = item.color;
-      el.title = item.desc;
+      el.style.width = el.style.height = `${item.size || 4}px`;
+      el.onmouseenter = e => showTooltip(e, item.desc);
+      el.onmouseleave = hideTooltip;
       map.appendChild(el);
     }
 
@@ -101,8 +103,21 @@
       poly.setAttribute("points", item.points.map(p => `${p.x * map.clientWidth},${p.y * map.clientHeight}`).join(" "));
       poly.setAttribute("fill", item.color + "55");
       poly.setAttribute("stroke", item.color);
+      poly.onmouseenter = e => showTooltip(e, item.desc);
+      poly.onmouseleave = hideTooltip;
       svg.appendChild(poly);
       map.appendChild(svg);
+    }
+
+    function showTooltip(e, text) {
+      tooltip.style.display = "block";
+      tooltip.style.left = e.clientX + 10 + "px";
+      tooltip.style.top = e.clientY + 10 + "px";
+      tooltip.textContent = text;
+    }
+
+    function hideTooltip() {
+      tooltip.style.display = "none";
     }
 
     function centerTo(item) {
@@ -119,23 +134,14 @@
     function openForm(type, coords) {
       const name = prompt("Název:"); if (!name) return;
       const desc = prompt("Popis:");
-      const colorInput = document.createElement("input");
-      colorInput.type = "color";
-      colorInput.value = "#00ffff";
-      colorInput.style.position = "fixed";
-      colorInput.style.left = "-9999px";
-      document.body.appendChild(colorInput);
-      colorInput.click();
-      colorInput.addEventListener("input", () => {
-        const color = colorInput.value;
-        const cats = ["Lokace", "Území", "Dodávky", "Místa na zmatení PD", "autem", "na motorce", "pěšky"];
-        const selectedCats = cats.filter(c => confirm(`Zařadit do „${c}“?`));
-        const item = { id: Date.now(), type, name, desc, color, categories: selectedCats };
-        if (type === "point") { item.x = coords.x; item.y = coords.y; } else { item.points = [...coords]; }
-        if (!planningMode) data.push(item);
-        save(); render();
-        document.body.removeChild(colorInput);
-      });
+      const color = prompt("Barva (např. #00ffff):", "#00ffff");
+      const size = +prompt("Velikost bodu (např. 4)", "4");
+      const cats = ["Lokace", "Území", "Dodávky", "Ujíždění autem", "Ujíždění na motorce", "Útěk pěšky"];
+      const selectedCats = cats.filter(c => confirm(`Zařadit do „${c}“?`));
+      const item = { id: Date.now(), type, name, desc, color, size, categories: selectedCats };
+      if (type === "point") { item.x = coords.x; item.y = coords.y; } else { item.points = [...coords]; }
+      if (!planningMode) data.push(item);
+      save(); render();
     }
 
     map.addEventListener("dblclick", e => {
