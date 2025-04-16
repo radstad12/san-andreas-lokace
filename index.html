@@ -32,7 +32,7 @@
       background: #333; color: white; border: none;
       font-weight: 900; font-size: 16px; cursor: pointer;
     }
-    .category-items { margin-left: 10px; display: none; }
+    .category-items { margin-left: 10px; }
     .item {
       display: flex; justify-content: space-between;
       align-items: center; font-size: 14px;
@@ -114,6 +114,10 @@
     function togglePlanningMode() {
       planningMode = !planningMode;
       alert(`Plánovací režim: ${planningMode ? 'ZAPNUTÝ' : 'VYPNUTÝ'}`);
+    }
+
+    function save() {
+      if (!planningMode) localStorage.setItem("mapData", JSON.stringify(data));
     }
 
     function render() {
