@@ -115,9 +115,9 @@
       menu.innerHTML = "";
       map.querySelectorAll(".marker, .polygon-point, svg.polygon").forEach(el => el.remove());
       const cats = [
-        "📍 Lokace", "🗺️ Území", "🚚 Dodávky",
+        "📍 Lokace", "🗺️ Území", "🔫 Předání zbraní",
         "🚗 Ujíždění autem", "🏍️ Ujíždění na motorce",
-        "🏃‍♂️ Útěk pěšky", "📦 Sklady"
+        "🏃‍♂️ Útěk pěšky", "📦 Sklady", "🥷 Místa na výslech"
       ];
       const search = document.getElementById("search").value.toLowerCase();
 
@@ -224,8 +224,13 @@
 
     map.addEventListener("wheel", e => {
       e.preventDefault();
-      scale += e.deltaY * -0.002; // Zrychlené přiblížení/oddálení
+      const rect = map.getBoundingClientRect();
+      const mouseX = (e.clientX - rect.left) / scale;
+      const mouseY = (e.clientY - rect.top) / scale;
+      scale += e.deltaY * -0.002;
       scale = Math.min(Math.max(0.5, scale), 6);
+      originX -= (mouseX * e.deltaY * -0.002);
+      originY -= (mouseY * e.deltaY * -0.002);
       map.style.transform = `scale(${scale}) translate(${originX}px, ${originY}px)`;
     }, { passive: false });
 
@@ -261,7 +266,7 @@
         <label>Barva:<br><input type='color' id='form-color' value='#00ffff'></label><br><br>
         <label>Velikost:<br><input type='number' id='form-size' value='6' min='1' max='20'></label><br><br>
         <div><b>Zařadit do kategorií:</b><br>` +
-        ["📍 Lokace", "🗺️ Území", "🚚 Dodávky", "🚗 Ujíždění autem", "🏍️ Ujíždění na motorce", "🏃‍♂️ Útěk pěšky", "📦 Sklady"]
+        ["📍 Lokace", "🗺️ Území", "🔫 Předání zbraní", "🚗 Ujíždění autem", "🏍️ Ujíždění na motorce", "🏃‍♂️ Útěk pěšky", "📦 Sklady", "🥷 Místa na výslech"]
           .map(c => `<label><input type='checkbox' value='${c}'> ${c}</label><br>`).join('') +
         `<br><button id='form-ok'>OK</button> <button id='form-cancel'>Zrušit</button>`;
 
