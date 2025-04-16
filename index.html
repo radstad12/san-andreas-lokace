@@ -84,11 +84,11 @@
   <script>
     let data = JSON.parse(localStorage.getItem("mapData")) || [];
     let planningMode = false;
-    let currentPolygon = [];
     let filter = "all";
     const tooltip = document.getElementById("tooltip");
     const map = document.getElementById("map");
     const menu = document.getElementById("menu");
+    let currentPolygon = []; // přesunuto sem, aby nebylo deklarováno vícekrát
 
     function save() {
       if (!planningMode) localStorage.setItem("mapData", JSON.stringify(data));
@@ -151,9 +151,9 @@
       el.style.top = `${item.y * 100}%`;
       el.style.background = item.color;
       el.style.width = el.style.height = `${item.size || 6}px`;
-      el.title = `${item.name}: ${item.desc}`;
       el.onmouseenter = e => showTooltip(e, `${item.name}: ${item.desc}`);
       el.onmouseleave = hideTooltip;
+      el.oncontextmenu = e => { e.preventDefault(); openContextMenu(e, item); };
       map.appendChild(el);
     }
 
@@ -169,6 +169,7 @@
       poly.onmouseenter = e => showTooltip(e, `${item.name}: ${item.desc}`);
       poly.onmouseleave = hideTooltip;
       svg.appendChild(poly);
+      svg.oncontextmenu = e => { e.preventDefault(); openContextMenu(e, item); };
       map.appendChild(svg);
     }
 
@@ -179,15 +180,22 @@
       tooltip.textContent = text;
     }
 
-    function hideTooltip() {
-      tooltip.style.display = "none";
+    function hideTooltip() { tooltip.style.display = "none"; }
+
+    function openContextMenu(e, item) {
+      const confirmed = confirm(`Upravit ${item.name}? OK pro úpravu, Zrušit pro smazání.`);
+      if (confirmed) editItem(item); else deleteItem(item.id);
+    }
+
+    function editItem(item) {
+      openForm(item.type, item.type === 'point' ? { x: item.x, y: item.y } : item.points, item);
     }
 
     function showAllCategories() {
       document.querySelectorAll(".category-items").forEach(c => c.style.display = "block");
+      render();
     }
 
-    let currentPolygon = [];
     map.addEventListener("dblclick", e => {
       if (e.shiftKey) return;
       const r = map.getBoundingClientRect();
