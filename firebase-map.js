@@ -97,6 +97,10 @@ function render() {
 }
 
 function renderMarker(item) {
+  if (typeof item.x !== 'number' || typeof item.y !== 'number') {
+    console.warn('Neplatné souřadnice bodu:', item);
+    return;
+  }
   const el = document.createElement("div");
   el.className = "marker";
   el.style.left = `${item.x * 100}%`;
