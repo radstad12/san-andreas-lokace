@@ -76,8 +76,8 @@ function render() {
     data.forEach(item => {
       if (!item.categories?.includes(cat)) return;
       if (!expandedCategories.has(cat)) return;
-      const matchSearch = item.name?.toLowerCase().includes(search) || item.desc?.toLowerCase().includes(search);
-        if (matchSearch || search === "") {
+      const matchSearch = (item.name && item.name.toLowerCase().includes(search)) || (item.desc && item.desc.toLowerCase().includes(search));
+      if (search === "" || matchSearch) {
         if (item.type === 'point') {
           renderMarker(item);
         }
@@ -108,8 +108,10 @@ function renderMarker(item) {
   el.style.background = item.color;
   el.style.width = el.style.height = `${item.size || 6}px`;
   el.onmouseenter = e => {
-    const text = `${item.name || ''}${item.desc ? ': ' + item.desc : ''}`;
-  if (text.trim()) showTooltip(e, text);
+    const name = item.name?.trim() || "(bez názvu)";
+    const desc = item.desc?.trim() || "";
+    const text = desc ? `${name}: ${desc}` : name;
+    showTooltip(e, text);
   };
   el.onmouseleave = hideTooltip;
   map.appendChild(el);
@@ -125,7 +127,10 @@ function renderPolygon(item) {
   poly.setAttribute("fill", item.color + "55");
   poly.setAttribute("stroke", item.color);
   poly.onmouseenter = e => {
-    showTooltip(e, `${item.name || ''}${item.desc ? ': ' + item.desc : ''}`);
+    const name = item.name?.trim() || "(bez názvu)";
+    const desc = item.desc?.trim() || "";
+    const text = desc ? `${name}: ${desc}` : name;
+    showTooltip(e, text);
   };
   poly.onmouseleave = hideTooltip;
   svg.appendChild(poly);
