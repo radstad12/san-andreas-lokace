@@ -1,13 +1,27 @@
 // firebase-map.js
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
 import { getDatabase, ref, onValue, set, remove, push } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-database.js";
 
-const app = window.firebaseApp;
+const firebaseConfig = {
+  apiKey: "AIzaSyDjdiDEHn6LvQvvtpZ79ueE5JbxLf1ASWU",
+  authDomain: "san-andreas-map-ef3a6.firebaseapp.com",
+  databaseURL: "https://san-andreas-map-ef3a6-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "san-andreas-map-ef3a6",
+  storageBucket: "san-andreas-map-ef3a6.appspot.com",
+  messagingSenderId: "966102879269",
+  appId: "1:966102879269:web:56156288290ec8b7c4c3cc",
+  measurementId: "G-GRJKH0EWJQ"
+};
+
+const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 const dbRef = ref;
 const dbOnValue = onValue;
 const dbSet = set;
 const dbRemove = remove;
 const dbPush = push;
+
+// ----- MAP LOGIKA ZDE -----
 
 const map = document.getElementById("map");
 const menu = document.getElementById("menu");
@@ -118,7 +132,11 @@ function hideTooltip() {
 function openForm(type, coords) {
   const wrapper = document.createElement("div");
   wrapper.id = "form-wrapper";
-  wrapper.innerHTML = `<label>Velikost:<br><input type='number' id='form-size' value='6' min='2' max='20'></label><br><br>
+  wrapper.innerHTML = `
+    <label>Název:<br><input id='form-name' style='width:100%'></label><br><br>
+    <label>Popis:<br><textarea id='form-desc' style='width:100%'></textarea></label><br><br>
+    <label>Barva:<br><input type='color' id='form-color' value='#00ffff'></label><br><br>
+    <label>Velikost:<br><input type='number' id='form-size' value='6' min='2' max='20'></label><br><br>
     <div><b>Přednastavené barvy:</b><br>
       <span class='color-sample' style='background:#ff0000' onclick="document.getElementById('form-color').value = '#ff0000'"></span>
       <span class='color-sample' style='background:#00ff00' onclick="document.getElementById('form-color').value = '#00ff00'"></span>
