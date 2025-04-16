@@ -26,6 +26,14 @@
   <div id="sidebar">
     <img src="logo.png" alt="Archangels MC logo">
     <h1>Archangels MC</h1>
+<div id="controls">
+  <input type="text" id="search" placeholder="🔍 Hledat..." oninput="render()">
+  <button onclick="setFilter('all')">Zobrazit vše</button>
+  <button onclick="setFilter('point')">Jen body</button>
+  <button onclick="setFilter('polygon')">Jen území</button>
+  <button onclick="togglePlanningMode()">📝 Plánovat</button>
+</div>
+<div style="height: 20px;"></div>
     
       <div style="height: 20px;"></div>
     </div>
