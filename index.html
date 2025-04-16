@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="cs">
 <head>
-<link rel="icon" type="image/png" href="logo.png">
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Archangels MC - Mapa</title>
@@ -84,7 +83,11 @@
     <div style="height: 20px;"></div>
     <div id="menu"></div>
   </div>
-  <div id="map"></div>
+  <div id="map" style="position: relative;">
+    <div id="polygon-layer" style="position: absolute; inset: 0; z-index: 1;"></div>
+    <div id="marker-layer" style="position: absolute; inset: 0; z-index: 2;"></div>
+    <img src="mapa.png" style="width: 100%; display: block;" />
+  </div>
   <div id="tooltip" class="tooltip"></div>
   <div id="form-container"></div>
 
