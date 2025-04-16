@@ -29,7 +29,7 @@
       background: #333; color: white; border: none;
       font-weight: 900; font-size: 16px; cursor: pointer;
     }
-    .category-items { margin-left: 10px; display: none; }
+    .category-items { margin-left: 10px; display: block; }
     .item {
       display: flex; justify-content: space-between;
       align-items: center; font-size: 14px;
@@ -76,9 +76,9 @@
     <img src="logo.png" alt="Archangels MC logo">
     <h1>Archangels MC</h1>
     <div id="controls">
-      <input type="text" id="search" placeholder="🔍 Hledat..." oninput="render()">
-      <button id="toggle-all">Zobrazit vše</button>
-      <button onclick="togglePlanningMode()">📝 Plánovat</button>
+      <input type="text" id="search" placeholder="🔍 Hledat...">
+      <button id="toggle-all">Zobrazit/Skrýt vše</button>
+      <button id="planning-button">📝 Plánovat</button>
     </div>
     <div style="height: 20px;"></div>
     <div id="menu"></div>
@@ -89,8 +89,8 @@
   <script>
     let data = JSON.parse(localStorage.getItem("mapData")) || [];
     let planningMode = false;
-    let activeFilters = new Set();
     let expandedCategories = new Set();
+    let activeFilters = new Set();
     const tooltip = document.getElementById("tooltip");
     const map = document.getElementById("map");
     const menu = document.getElementById("menu");
@@ -102,15 +102,15 @@
     ];
 
     document.getElementById("toggle-all").onclick = () => {
-      const shouldExpandAll = expandedCategories.size !== categories.length;
-      expandedCategories = new Set(shouldExpandAll ? categories : []);
+      const shouldExpand = expandedCategories.size !== categories.length;
+      expandedCategories = new Set(shouldExpand ? categories : []);
       render();
     };
 
-    function togglePlanningMode() {
+    document.getElementById("planning-button").onclick = () => {
       planningMode = !planningMode;
       alert(`Plánovací režim: ${planningMode ? 'ZAPNUTÝ' : 'VYPNUTÝ'}`);
-    }
+    };
 
     function render() {
       menu.innerHTML = "";
@@ -255,8 +255,7 @@
         if (type === "point") { item.x = coords.x; item.y = coords.y; }
         else { item.points = coords; }
         data.push(item);
-        save(); render();
-        wrapper.remove();
+        save(); render(); wrapper.remove();
       };
     }
 
