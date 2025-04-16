@@ -78,7 +78,6 @@ function render() {
 
     data.forEach(item => {
       if (!item.categories?.includes(cat)) return;
-
       const matchSearch = (item.name && item.name.toLowerCase().includes(search)) || (item.desc && item.desc.toLowerCase().includes(search));
       if (expandedCategories.has(cat) && (search === "" || matchSearch)) {
         const div = document.createElement("div");
@@ -87,6 +86,16 @@ function render() {
         items.appendChild(div);
       }
     });
+
+    menu.appendChild(header);
+    menu.appendChild(items);
+  }
+
+  data.forEach(item => {
+    if (item.type === 'point') renderMarker(item);
+    if (item.type === 'polygon') renderPolygon(item);
+  });
+});
 
     menu.appendChild(header);
     menu.appendChild(items);
