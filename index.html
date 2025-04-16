@@ -44,7 +44,8 @@
   <div id="context-menu"></div>
   <script>
     // Kompletní JS kód vložen sem
-let data = JSON.parse(localStorage.getItem("mapData") || "[]");
+localStorage.removeItem("mapData");
+let data = [];
 let planningMode = false;
 let currentPolygon = [];
 let filter = "all";
