@@ -8,14 +8,22 @@
     html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; font-family: Arial, sans-serif; background: #111; color: #fff; }
     #sidebar { position: fixed; top: 0; left: 0; bottom: 0; width: 280px; background: #1a1a1a; padding: 20px; overflow-y: auto; z-index: 10; border-right: 2px solid #222; }
     #sidebar img { display: block; margin: 0 auto 10px; max-width: 100px; }
-    #sidebar h1 { text-align: center; font-size: 26px; font-weight: bold; color: red; text-shadow: 0 0 10px red; letter-spacing: 2px; margin-bottom: 10px; }
+    #sidebar h1 {
+      text-align: center;
+      font-size: 26px;
+      font-weight: bold;
+      color: red;
+      text-shadow: 0 0 10px red;
+      letter-spacing: 2px;
+      margin-bottom: 10px;
+    }
     #controls input, #controls button, .category-header {
       width: 100%; margin-bottom: 5px; padding: 8px;
-      background: #222; color: white; border: none;
+      background: red; color: white; border: none;
       cursor: pointer; text-align: left;
+      font-weight: bold; text-shadow: 0 0 5px white;
     }
     #controls input { background: #333; border-radius: 4px; cursor: text; }
-    .category-header { background: white; color: black; font-weight: bold; text-shadow: 0 0 5px white; }
     .category-items { margin-left: 10px; }
     .item { display: flex; justify-content: space-between; align-items: center; font-size: 14px; margin: 5px 0; cursor: pointer; }
     .dot { width: 10px; height: 10px; border-radius: 50%; margin-right: 8px; display: inline-block; }
@@ -48,7 +56,6 @@
     let planningMode = false;
     let currentPolygon = [];
     let filter = "all";
-    let scale = 1, originX = 0, originY = 0, isDragging = false, start = { x: 0, y: 0 };
     const tooltip = document.getElementById("tooltip");
     const map = document.getElementById("map");
     const menu = document.getElementById("menu");
@@ -70,16 +77,23 @@
     function render() {
       menu.innerHTML = "";
       map.querySelectorAll(".marker, .polygon-point, svg.polygon").forEach(el => el.remove());
-      const cats = { "Lokace": [], "Území": [], "Dodávky": [], "Ujíždění autem": [], "Ujíždění na motorce": [], "Útěk pěšky": [], "Sklady": [] };
+      const cats = {
+        "📍 Lokace": [], "🗺️ Území": [], "🚚 Dodávky": [],
+        "🚗 Ujíždění autem": [], "🏍️ Ujíždění na motorce": [],
+        "🏃 Útěk pěšky": [], "📦 Sklady": []
+      };
       for (let cat in cats) {
-        const wrap = document.createElement("div"), h2 = document.createElement("button");
-        const count = data.filter(i => i.categories?.includes(cat)).length;
+        const cleanCat = cat.replace(/^[^\w\s]/, '').trim();
+        const wrap = document.createElement("div");
+        const h2 = document.createElement("button");
+        const count = data.filter(i => i.categories?.includes(cleanCat)).length;
         h2.textContent = `${cat} (${count})`;
         h2.className = "category-header";
-        h2.onclick = () => { filter = cat; render(); };
-        const items = document.createElement("div"); items.className = "category-items";
+        h2.onclick = () => { filter = cleanCat; render(); };
+        const items = document.createElement("div");
+        items.className = "category-items";
         data.forEach(item => {
-          if ((filter === "all" || item.categories?.includes(filter)) && item.categories?.includes(cat)) {
+          if ((filter === "all" || item.categories?.includes(filter)) && item.categories?.includes(cleanCat)) {
             item.type === "point" && renderMarker(item);
             item.type === "polygon" && renderPolygon(item);
             const div = document.createElement("div");
@@ -88,7 +102,9 @@
             items.appendChild(div);
           }
         });
-        wrap.appendChild(h2); wrap.appendChild(items); menu.appendChild(wrap);
+        wrap.appendChild(h2);
+        wrap.appendChild(items);
+        menu.appendChild(wrap);
       }
     }
 
@@ -163,16 +179,21 @@
       wrapper.style.padding = "20px";
       wrapper.style.border = "1px solid #555";
       wrapper.style.zIndex = "999";
-
+      wrapper.style.color = "white";
       wrapper.innerHTML = `
         <label>Název:<br><input id='form-name' style='width:100%'></label><br><br>
         <label>Popis:<br><textarea id='form-desc' style='width:100%'></textarea></label><br><br>
-        <label>Barva:<br><input type='color' id='form-color' value='#00ffff'></label><br><br>
+        <label>Barva:<br>
+          <input type='color' id='form-color' value='#00ffff'>
+          <div style='margin-top:5px;'>
+            ${['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff'].map(c => `<span style='cursor:pointer;display:inline-block;width:20px;height:20px;background:${c};border:1px solid #555;margin-right:5px;' onclick="document.getElementById('form-color').value = '${c}'"></span>`).join('')}
+          </div>
+        </label><br><br>
         <label>Velikost:<br><input type='number' id='form-size' value='6' min='1' max='20'></label><br><br>
         <div><b>Zařadit do kategorií:</b><br>` +
         ["Lokace", "Území", "Dodávky", "Ujíždění autem", "Ujíždění na motorce", "Útěk pěšky", "Sklady"]
-        .map(c => `<label><input type='checkbox' value='${c}' checked> ${c}</label><br>`).join("") +
-        `<br><button id='form-ok'>OK</button><button onclick='this.parentElement.parentElement.remove()'>Zrušit</button>`;
+        .map(c => `<label><input type='checkbox' value='${c}'> ${c}</label><br>`).join("") +
+        `<br><button id='form-ok'>OK</button> <button onclick='this.closest("div").remove()'>Zrušit</button>`;
 
       document.body.appendChild(wrapper);
 
@@ -191,23 +212,6 @@
         document.body.removeChild(wrapper);
       };
     }
-
-    map.addEventListener("wheel", e => {
-      e.preventDefault();
-      scale += e.deltaY * -0.001;
-      scale = Math.min(Math.max(0.5, scale), 6);
-      map.style.transform = `scale(${scale}) translate(${originX}px, ${originY}px)`;
-    }, { passive: false });
-
-    map.addEventListener("mousedown", e => { isDragging = true; start = { x: e.clientX, y: e.clientY }; });
-    window.addEventListener("mouseup", () => isDragging = false);
-    window.addEventListener("mousemove", e => {
-      if (!isDragging) return;
-      originX += (e.clientX - start.x) / scale;
-      originY += (e.clientY - start.y) / scale;
-      start = { x: e.clientX, y: e.clientY };
-      map.style.transform = `scale(${scale}) translate(${originX}px, ${originY}px)`;
-    });
 
     window.onload = () => render();
   </script>
