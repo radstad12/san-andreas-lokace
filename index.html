@@ -133,7 +133,10 @@
         const count = data.filter(i => i.categories?.includes(cleanCat)).length;
         h2.textContent = `${cat} (${count})`;
         h2.className = "category-header";
-        h2.onclick = () => { filter = cleanCat; render(); };
+        h2.onclick = () => {
+          filter = cleanCat;
+          render();
+        };
         const items = document.createElement("div");
         items.className = "category-items";
         data.forEach(item => {
@@ -247,12 +250,13 @@
         const color = document.getElementById("form-color").value;
         const size = +document.getElementById("form-size").value;
         const selectedCats = Array.from(wrapper.querySelectorAll("input[type=checkbox]:checked")).map(i => i.value);
-        if (!name) return alert("Zadej název.");
+        if (!name || selectedCats.length === 0) return alert("Vyplň název a vyber alespoň jednu kategorii.");
         const item = { id: Date.now(), type, name, desc, color, size, categories: selectedCats };
         if (type === "point") { item.x = coords.x; item.y = coords.y; }
         else { item.points = [...coords]; }
         data.push(item);
         save();
+        filter = "all";
         render();
         document.body.removeChild(wrapper);
       };
