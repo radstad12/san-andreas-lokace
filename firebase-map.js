@@ -57,7 +57,7 @@ function deleteItem(id) {
 
 function render() {
   menu.innerHTML = "";
-  map.querySelectorAll(".marker, .polygon-point, svg.polygon").forEach(el => el.remove());
+  map.querySelectorAll(".marker, .polygon-point, svg.polygon, svg.polygon *").forEach(el => el.remove());
   const search = document.getElementById("search").value.toLowerCase();
   for (let cat of categories) {
     const header = document.createElement("button");
@@ -116,14 +116,22 @@ function renderMarker(item) {
 }
 
 function renderPolygon(item) {
+  if (!item.points || item.points.length < 3) return;
   const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
   svg.classList.add("polygon");
   svg.setAttribute("width", map.clientWidth);
   svg.setAttribute("height", map.clientHeight);
+  svg.style.position = "absolute";
+  svg.style.top = "0";
+  svg.style.left = "0";
+  svg.style.pointerEvents = "auto";
+
   const poly = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
   poly.setAttribute("points", item.points.map(p => `${p.x * map.clientWidth},${p.y * map.clientHeight}`).join(" "));
   poly.setAttribute("fill", item.color + "55");
   poly.setAttribute("stroke", item.color);
+  poly.setAttribute("stroke-width", "1");
+
   poly.onmouseenter = e => {
     const name = item.name?.trim() || "(bez názvu)";
     const desc = item.desc?.trim() || "";
@@ -131,6 +139,7 @@ function renderPolygon(item) {
     showTooltip(e, text);
   };
   poly.onmouseleave = hideTooltip;
+
   svg.appendChild(poly);
   map.appendChild(svg);
 }
