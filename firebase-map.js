@@ -83,10 +83,20 @@ function render() {
       if (expandedCategories.has(cat) && (search === "" || matchSearch)) {
         const div = document.createElement("div");
         div.className = "item";
-        div.innerHTML = `<div><span class="dot" style="background:${item.color}"></span>${item.name}</div><span class="delete-btn" onclick="window.deleteItem(${item.id}); event.stopPropagation()">🗑</span>`;
+        div.innerHTML = `<div><span class=\"dot\" style=\"background:${item.color}\"></span>${item.name}</div><span class=\"delete-btn\" onclick=\"window.deleteItem(${item.id}); event.stopPropagation()\">🗑</span>`;
         items.appendChild(div);
       }
     });
+
+    menu.appendChild(header);
+    menu.appendChild(items);
+  }
+
+  data.forEach(item => {
+    if (item.type === 'point') renderMarker(item);
+    if (item.type === 'polygon') renderPolygon(item);
+  });
+}
   }
 
 
