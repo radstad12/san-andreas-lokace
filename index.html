@@ -6,46 +6,57 @@
   <title>Archangels MC - Mapa</title>
   <style>
     html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; font-family: Arial, sans-serif; background: #111; color: #fff; }
-    #sidebar { position: fixed; top: 0; left: 0; bottom: 0; width: 280px; background: #1a1a1a; padding: 20px; overflow-y: auto; z-index: 10; border-right: 2px solid #222; }
+    #sidebar {
+      position: fixed; top: 0; left: 0; bottom: 0; width: 280px;
+      background: #1a1a1a; padding: 20px; overflow-y: auto;
+      z-index: 10; border-right: 2px solid #222;
+    }
     #sidebar img { display: block; margin: 0 auto 10px; max-width: 100px; }
     #sidebar h1 {
-      text-align: center;
-      font-size: 26px;
-      font-weight: bold;
-      color: red;
-      text-shadow: 0 0 10px red;
-      letter-spacing: 2px;
+      text-align: center; font-size: 26px;
+      font-weight: bold; color: red;
+      text-shadow: 0 0 10px red; letter-spacing: 2px;
       margin-bottom: 10px;
     }
     #controls input, #controls button {
       width: 100%; margin-bottom: 5px; padding: 8px;
-      background: #333; color: white; border: none;
-      text-align: left;
+      background: #333; color: white; border: none; text-align: left;
     }
-    #search { box-sizing: border-box; width: 100%; }
     .category-header {
       width: 100%; margin-bottom: 5px; padding: 8px;
       background: #333; color: white; border: none;
-      font-weight: 900;
-      font-size: 16px;
-      cursor: pointer;
+      font-weight: 900; font-size: 16px; cursor: pointer;
     }
     .category-items { margin-left: 10px; }
-    .item { display: flex; justify-content: space-between; align-items: center; font-size: 14px; margin: 5px 0; cursor: pointer; }
+    .item {
+      display: flex; justify-content: space-between;
+      align-items: center; font-size: 14px;
+      margin: 5px 0; cursor: pointer;
+    }
     .dot { width: 10px; height: 10px; border-radius: 50%; margin-right: 8px; display: inline-block; }
     .delete-btn { color: #888; font-size: 12px; cursor: pointer; }
     #map {
       position: absolute; left: 280px; top: 0; right: 0; bottom: 0;
       background: #000 url('mapa.png') no-repeat center center;
-      background-size: contain;
-      cursor: grab;
-      overflow: hidden;
-      transform-origin: 0 0;
+      background-size: contain; cursor: grab;
+      overflow: hidden; transform-origin: 0 0;
     }
-    .marker { position: absolute; border-radius: 50%; border: 1px solid white; transform: translate(-50%, -50%); cursor: pointer; }
-    .polygon-point { position: absolute; width: 8px; height: 8px; background: cyan; border: 1px solid white; border-radius: 50%; transform: translate(-50%, -50%); }
+    .marker {
+      position: absolute; border-radius: 50%;
+      border: 1px solid white; transform: translate(-50%, -50%);
+      cursor: pointer;
+    }
+    .polygon-point {
+      position: absolute; width: 8px; height: 8px;
+      background: cyan; border: 1px solid white;
+      border-radius: 50%; transform: translate(-50%, -50%);
+    }
     svg.polygon { position: absolute; top: 0; left: 0; pointer-events: none; }
-    .tooltip { position: absolute; background: rgba(0,0,0,0.8); color: white; padding: 4px 8px; font-size: 12px; border-radius: 4px; pointer-events: none; z-index: 99; display: none; }
+    .tooltip {
+      position: absolute; background: rgba(0,0,0,0.8); color: white;
+      padding: 4px 8px; font-size: 12px; border-radius: 4px;
+      pointer-events: none; z-index: 99; display: none;
+    }
   </style>
 </head>
 <body>
@@ -87,6 +98,42 @@
       data = data.filter(i => i.id !== id);
       save();
       render();
+    }
+
+    function render() {
+      menu.innerHTML = "";
+      map.querySelectorAll(".marker, .polygon-point, svg.polygon").forEach(el => el.remove());
+      const cats = [
+        "📍 Lokace", "🗺️ Území", "🚚 Dodávky",
+        "🚗 Ujíždění autem", "🏍️ Ujíždění na motorce",
+        "🏃‍♂️ Útěk pěšky", "📦 Sklady"
+      ];
+      const search = document.getElementById("search").value.toLowerCase();
+
+      for (let cat of cats) {
+        const header = document.createElement("button");
+        header.className = "category-header";
+        header.textContent = `${cat} (${data.filter(i => i.categories?.includes(cat)).length})`;
+        header.onclick = () => { filter = cat; render(); };
+
+        const items = document.createElement("div");
+        items.className = "category-items";
+
+        data.forEach(item => {
+          if ((filter === 'all' || item.categories.includes(filter)) && item.categories.includes(cat)) {
+            if (!item.name?.toLowerCase().includes(search)) return;
+            item.type === 'point' && renderMarker(item);
+            item.type === 'polygon' && renderPolygon(item);
+            const div = document.createElement("div");
+            div.className = "item";
+            div.innerHTML = `<div><span class="dot" style="background:${item.color}"></span>${item.name}</div><span class="delete-btn" onclick="deleteItem(${item.id}); event.stopPropagation()">🗑</span>`;
+            items.appendChild(div);
+          }
+        });
+
+        menu.appendChild(header);
+        menu.appendChild(items);
+      }
     }
 
     function renderMarker(item) {
