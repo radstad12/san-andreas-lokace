@@ -97,6 +97,17 @@ function render() {
     if (item.type === 'point') renderMarker(item);
     if (item.type === 'polygon') renderPolygon(item);
   });
+});
+
+    menu.appendChild(header);
+    menu.appendChild(items);
+  }
+
+  // vykresli všechny značky na mapu mimo kategorický panel
+  data.forEach(item => {
+    if (item.type === 'point') renderMarker(item);
+    if (item.type === 'polygon') renderPolygon(item);
+  });
   }
 }
 
