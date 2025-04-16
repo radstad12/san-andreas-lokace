@@ -25,14 +25,22 @@
     .category-header {
       width: 100%; margin-bottom: 5px; padding: 8px;
       background: #333; color: white; border: none;
-      font-weight: bold; text-shadow: 0 0 5px white;
+      font-weight: 900;
+      font-size: 16px;
       cursor: pointer;
     }
     .category-items { margin-left: 10px; }
     .item { display: flex; justify-content: space-between; align-items: center; font-size: 14px; margin: 5px 0; cursor: pointer; }
     .dot { width: 10px; height: 10px; border-radius: 50%; margin-right: 8px; display: inline-block; }
     .delete-btn { color: #888; font-size: 12px; cursor: pointer; }
-    #map { position: absolute; left: 280px; top: 0; right: 0; bottom: 0; background: #000 url('mapa.png') no-repeat center center; background-size: contain; cursor: grab; overflow: hidden; }
+    #map {
+      position: absolute; left: 280px; top: 0; right: 0; bottom: 0;
+      background: #000 url('mapa.png') no-repeat center center;
+      background-size: contain;
+      cursor: grab;
+      overflow: hidden;
+      transform-origin: 0 0;
+    }
     .marker { position: absolute; border-radius: 50%; border: 1px solid white; transform: translate(-50%, -50%); cursor: pointer; }
     .polygon-point { position: absolute; width: 8px; height: 8px; background: cyan; border: 1px solid white; border-radius: 50%; transform: translate(-50%, -50%); }
     svg.polygon { position: absolute; top: 0; left: 0; pointer-events: none; }
@@ -63,6 +71,38 @@
     const tooltip = document.getElementById("tooltip");
     const map = document.getElementById("map");
     const menu = document.getElementById("menu");
+
+    let scale = 1;
+    let originX = 0;
+    let originY = 0;
+    let isDragging = false;
+    let start = { x: 0, y: 0 };
+
+    map.addEventListener("wheel", e => {
+      e.preventDefault();
+      const delta = e.deltaY > 0 ? -0.1 : 0.1;
+      scale = Math.min(Math.max(0.5, scale + delta), 10);
+      updateMapTransform();
+    }, { passive: false });
+
+    map.addEventListener("mousedown", e => {
+      isDragging = true;
+      start = { x: e.clientX, y: e.clientY };
+    });
+
+    window.addEventListener("mouseup", () => isDragging = false);
+
+    window.addEventListener("mousemove", e => {
+      if (!isDragging) return;
+      originX += (e.clientX - start.x) / scale;
+      originY += (e.clientY - start.y) / scale;
+      start = { x: e.clientX, y: e.clientY };
+      updateMapTransform();
+    });
+
+    function updateMapTransform() {
+      map.style.transform = `scale(${scale}) translate(${originX}px, ${originY}px)`;
+    }
 
     function save() {
       if (!planningMode) localStorage.setItem("mapData", JSON.stringify(data));
