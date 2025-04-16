@@ -32,7 +32,7 @@
       background: #333; color: white; border: none;
       font-weight: 900; font-size: 16px; cursor: pointer;
     }
-    .category-items { margin-left: 10px; }
+    .category-items { margin-left: 10px; display: none; }
     .item {
       display: flex; justify-content: space-between;
       align-items: center; font-size: 14px;
@@ -47,9 +47,8 @@
       overflow: hidden; transform-origin: 0 0;
     }
     .marker {
-      position: absolute; border-radius: 50%;
-      border: 1px solid white; transform: translate(-50%, -50%);
-      cursor: pointer;
+      position: absolute; border-radius: 50%; border: 1px solid white;
+      transform: translate(-50%, -50%); cursor: pointer;
     }
     .polygon-point {
       position: absolute; width: 8px; height: 8px;
@@ -65,6 +64,14 @@
       pointer-events: none; z-index: 99; display: none;
       white-space: nowrap;
     }
+    .color-sample {
+      display: inline-block; width: 20px; height: 20px; margin: 2px;
+      border: 1px solid #555; cursor: pointer;
+    }
+    #form-wrapper {
+      position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+      background: #222; padding: 20px; border: 1px solid #555; z-index: 999; color: white;
+    }
   </style>
 </head>
 <body>
@@ -73,7 +80,7 @@
     <h1>Archangels MC</h1>
     <div id="controls">
       <input type="text" id="search" placeholder="🔍 Hledat..." oninput="render()">
-      <button id="show-all" onclick="showAllCategories()">Zobrazit vše</button>
+      <button id="show-all" onclick="toggleAllCategories()">Zobrazit / Skrýt vše</button>
       <button onclick="togglePlanningMode()">📝 Plánovat</button>
     </div>
     <div style="height: 20px;"></div>
@@ -84,26 +91,35 @@
   <script>
     let data = JSON.parse(localStorage.getItem("mapData")) || [];
     let planningMode = false;
-    let filter = "all";
+    let currentPolygon = [];
     const tooltip = document.getElementById("tooltip");
     const map = document.getElementById("map");
     const menu = document.getElementById("menu");
-    let currentPolygon = []; // přesunuto sem, aby nebylo deklarováno vícekrát
+    const categories = [
+      "📍 Lokace", "🗺️ Území", "🔫 Předání zbraní",
+      "🚗 Ujíždění autem", "🏍️ Ujíždění na motorce",
+      "🏃‍♂️ Útěk pěšky", "📦 Sklady", "🎭 Místa na výslech"
+    ];
+    let expanded = true;
 
     function save() {
       if (!planningMode) localStorage.setItem("mapData", JSON.stringify(data));
+    }
+
+    function togglePlanningMode() {
+      planningMode = !planningMode;
+      alert(`Plánovací režim: ${planningMode ? 'ZAPNUTÝ' : 'VYPNUTÝ'}`);
+    }
+
+    function toggleAllCategories() {
+      expanded = !expanded;
+      render();
     }
 
     function render() {
       menu.innerHTML = "";
       map.querySelectorAll(".marker, .polygon-point, svg.polygon").forEach(el => el.remove());
       const search = document.getElementById("search").value.toLowerCase();
-      const categories = [
-        "📍 Lokace", "🗺️ Území", "🔫 Předání zbraní",
-        "🚗 Ujíždění autem", "🏍️ Ujíždění na motorce",
-        "🏃‍♂️ Útěk pěšky", "📦 Sklady", "🎭 Místa na výslech"
-      ];
-
       for (let cat of categories) {
         const header = document.createElement("button");
         header.className = "category-header";
@@ -116,11 +132,11 @@
 
         const items = document.createElement("div");
         items.className = "category-items";
-        items.style.display = "block";
+        items.style.display = expanded ? "block" : "none";
 
         data.forEach(item => {
-          const inSearch = item.name?.toLowerCase().includes(search);
-          if (item.categories.includes(cat) && (!search || inSearch)) {
+          if (!item.categories.includes(cat)) return;
+          if (item.name?.toLowerCase().includes(search)) {
             item.type === 'point' && renderMarker(item);
             item.type === 'polygon' && renderPolygon(item);
             const div = document.createElement("div");
@@ -129,19 +145,10 @@
             items.appendChild(div);
           }
         });
+
         menu.appendChild(header);
         menu.appendChild(items);
       }
-    }
-
-    function togglePlanningMode() {
-      planningMode = !planningMode;
-      alert(`Plánovací režim: ${planningMode ? 'ZAPNUTÝ' : 'VYPNUTÝ'}`);
-    }
-
-    function deleteItem(id) {
-      data = data.filter(i => i.id !== id);
-      save(); render();
     }
 
     function renderMarker(item) {
@@ -153,7 +160,6 @@
       el.style.width = el.style.height = `${item.size || 6}px`;
       el.onmouseenter = e => showTooltip(e, `${item.name}: ${item.desc}`);
       el.onmouseleave = hideTooltip;
-      el.oncontextmenu = e => { e.preventDefault(); openContextMenu(e, item); };
       map.appendChild(el);
     }
 
@@ -169,7 +175,6 @@
       poly.onmouseenter = e => showTooltip(e, `${item.name}: ${item.desc}`);
       poly.onmouseleave = hideTooltip;
       svg.appendChild(poly);
-      svg.oncontextmenu = e => { e.preventDefault(); openContextMenu(e, item); };
       map.appendChild(svg);
     }
 
@@ -180,24 +185,18 @@
       tooltip.textContent = text;
     }
 
-    function hideTooltip() { tooltip.style.display = "none"; }
-
-    function openContextMenu(e, item) {
-      const confirmed = confirm(`Upravit ${item.name}? OK pro úpravu, Zrušit pro smazání.`);
-      if (confirmed) editItem(item); else deleteItem(item.id);
+    function hideTooltip() {
+      tooltip.style.display = "none";
     }
 
-    function editItem(item) {
-      openForm(item.type, item.type === 'point' ? { x: item.x, y: item.y } : item.points, item);
-    }
-
-    function showAllCategories() {
-      document.querySelectorAll(".category-items").forEach(c => c.style.display = "block");
+    function deleteItem(id) {
+      data = data.filter(i => i.id !== id);
+      save();
       render();
     }
 
     map.addEventListener("dblclick", e => {
-      if (e.shiftKey) return;
+      if (!planningMode || e.shiftKey) return;
       const r = map.getBoundingClientRect();
       const x = (e.clientX - r.left) / r.width;
       const y = (e.clientY - r.top) / r.height;
@@ -205,7 +204,7 @@
     });
 
     map.addEventListener("click", e => {
-      if (!e.shiftKey) return;
+      if (!planningMode || !e.shiftKey) return;
       const r = map.getBoundingClientRect();
       const x = (e.clientX - r.left) / r.width;
       const y = (e.clientY - r.top) / r.height;
@@ -220,24 +219,6 @@
         currentPolygon = [];
         document.querySelectorAll(".polygon-point").forEach(el => el.remove());
       }
-    });
-
-    let scale = 1, originX = 0, originY = 0, isDragging = false, start = { x: 0, y: 0 };
-    map.addEventListener("wheel", e => {
-      e.preventDefault();
-      scale += e.deltaY * -0.001;
-      scale = Math.min(Math.max(0.5, scale), 8);
-      map.style.transform = `scale(${scale}) translate(${originX}px, ${originY}px)`;
-    }, { passive: false });
-
-    map.addEventListener("mousedown", e => { isDragging = true; start = { x: e.clientX, y: e.clientY }; });
-    window.addEventListener("mouseup", () => isDragging = false);
-    window.addEventListener("mousemove", e => {
-      if (!isDragging) return;
-      originX += (e.clientX - start.x) / scale;
-      originY += (e.clientY - start.y) / scale;
-      start = { x: e.clientX, y: e.clientY };
-      map.style.transform = `scale(${scale}) translate(${originX}px, ${originY}px)`;
     });
 
     window.onload = () => render();
