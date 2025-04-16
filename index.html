@@ -19,9 +19,10 @@
       margin-bottom: 10px;
     }
     #controls input, #controls button {
-      width: 100%; margin-bottom: 5px; padding: 8px;
-      background: #333; color: white; border: none; text-align: left;
-    }
+  width: 100%; margin-bottom: 5px; padding: 8px;
+  background: #333; color: white; border: none; text-align: left;
+  transition: background 0.2s, cursor 0.2s;
+}
     .category-header {
       width: 100%; margin-bottom: 5px; padding: 8px;
       background: #333; color: white; border: none;
@@ -65,9 +66,8 @@
     <h1>Archangels MC</h1>
     <div id="controls">
       <input type="text" id="search" placeholder="🔍 Hledat..." oninput="render()">
-      <button onclick="setFilter('all')">Zobrazit vše</button>
-      <button onclick="setFilter('point')">Jen body</button>
-      <button onclick="setFilter('polygon')">Jen území</button>
+      <button onclick="setFilter('all')" style="cursor: pointer;">Zobrazit vše</button>
+      
       <button onclick="togglePlanningMode()">📝 Plánovat</button>
     </div>
     <div style="height: 20px;"></div>
