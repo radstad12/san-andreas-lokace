@@ -24,7 +24,7 @@
 </head>
 <body>
   <div id="sidebar">
-    <img src="https://media.discordapp.net/attachments/1317483184429989994/1320522537100378202/image.png?format=webp&quality=lossless">
+    <img src="logo.png" alt="Archangels MC logo">
     <h1>Archangels MC</h1>
     <div id="controls">
       <button onclick="setFilter('all')">Zobrazit vše</button>
@@ -36,139 +36,139 @@
   </div>
   <div id="map"></div>
   <script>
-    // Kompletní JavaScript – odlehčená verze z plného script.js kvůli místu
-    let data = JSON.parse(localStorage.getItem("mapData") || "[]");
-    let planningMode = false;
-    let currentPolygon = [];
-    let filter = "all";
+// Kompletní JS kód
+let data = JSON.parse(localStorage.getItem("mapData") || "[]");
+let planningMode = false;
+let currentPolygon = [];
+let filter = "all";
 
-    const map = document.getElementById("map");
-    const menu = document.getElementById("menu");
+const map = document.getElementById("map");
+const menu = document.getElementById("menu");
 
-    function save() {
-      if (!planningMode) localStorage.setItem("mapData", JSON.stringify(data));
-    }
+function save() {
+  if (!planningMode) localStorage.setItem("mapData", JSON.stringify(data));
+}
 
-    function setFilter(type) { filter = type; render(); }
-    function togglePlanningMode() {
-      planningMode = !planningMode;
-      alert(\`Plánovací režim: \${planningMode ? 'ZAPNUTÝ' : 'VYPNUTÝ'}\`);
-    }
+function setFilter(type) { filter = type; render(); }
+function togglePlanningMode() {
+  planningMode = !planningMode;
+  alert(`Plánovací režim: ${planningMode ? 'ZAPNUTÝ' : 'VYPNUTÝ'}`);
+}
 
-    function render() {
-      menu.innerHTML = "";
-      map.querySelectorAll(".marker, .polygon-point, svg.polygon").forEach(el => el.remove());
-      const cats = { "Lokace": [], "Území": [], "Dodávky": [], "Místa na ujíždění PD": ["autem", "na motorce", "pěšky"] };
-      for (let cat in cats) {
-        const wrap = document.createElement("div"), h2 = document.createElement("h2");
-        h2.textContent = cat;
-        h2.onclick = () => items.style.display = items.style.display === "block" ? "none" : "block";
-        const items = document.createElement("div"); items.className = "category-items";
-        const subcats = cats[cat].length ? cats[cat] : [null];
-        subcats.forEach(sub => {
-          data.forEach(item => {
-            if ((filter === "all" || filter === item.type) && item.categories?.includes(cat) && (!sub || item.categories.includes(sub))) {
-              item.type === "point" && renderMarker(item);
-              item.type === "polygon" && renderPolygon(item);
-              const div = document.createElement("div");
-              div.className = "item";
-              div.innerHTML = \`<div><span class="dot" style="background:\${item.color}"></span>\${item.name}</div><span class="delete-btn" onclick="deleteItem(\${item.id}); event.stopPropagation()">🗑</span>\`;
-              div.onclick = () => centerTo(item);
-              items.appendChild(div);
-            }
-          });
-        });
-        wrap.appendChild(h2); wrap.appendChild(items); menu.appendChild(wrap);
-      }
-    }
-
-    function renderMarker(item) {
-      const el = document.createElement("div");
-      el.className = "marker";
-      el.style.left = \`\${item.x * 100}%\`;
-      el.style.top = \`\${item.y * 100}%\`;
-      el.style.background = item.color;
-      el.title = item.desc;
-      map.appendChild(el);
-    }
-
-    function renderPolygon(item) {
-      const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-      svg.classList.add("polygon");
-      svg.setAttribute("width", map.clientWidth);
-      svg.setAttribute("height", map.clientHeight);
-      const poly = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
-      poly.setAttribute("points", item.points.map(p => \`\${p.x * map.clientWidth},\${p.y * map.clientHeight}\`).join(" "));
-      poly.setAttribute("fill", item.color + "55");
-      poly.setAttribute("stroke", item.color);
-      svg.appendChild(poly);
-      map.appendChild(svg);
-    }
-
-    function centerTo(item) {
-      const x = item.type === "point" ? item.x : item.points.reduce((a, b) => a + b.x, 0) / item.points.length;
-      const y = item.type === "point" ? item.y : item.points.reduce((a, b) => a + b.y, 0) / item.points.length;
-      map.scrollTo({ left: x * map.scrollWidth - map.clientWidth / 2, top: y * map.scrollHeight - map.clientHeight / 2, behavior: "smooth" });
-    }
-
-    function deleteItem(id) {
-      data = data.filter(i => i.id !== id);
-      save(); render();
-    }
-
-    function openForm(type, coords) {
-      const name = prompt("Název:"); if (!name) return;
-      const desc = prompt("Popis:");
-      const color = prompt("Barva:", "#00ffff");
-      const cats = ["Lokace", "Území", "Dodávky", "Místa na ujíždění PD", "autem", "na motorce", "pěšky"];
-      const selectedCats = cats.filter(c => confirm(\`Zařadit do „\${c}“?\`));
-      const item = { id: Date.now(), type, name, desc, color, categories: selectedCats };
-      if (type === "point") { item.x = coords.x; item.y = coords.y; } else { item.points = [...coords]; }
-      if (!planningMode) data.push(item);
-      save(); render();
-    }
-
-    map.addEventListener("dblclick", e => {
-      if (e.shiftKey) return;
-      const r = map.getBoundingClientRect(), x = (e.clientX - r.left) / r.width, y = (e.clientY - r.top) / r.height;
-      openForm("point", { x, y });
+function render() {
+  menu.innerHTML = "";
+  map.querySelectorAll(".marker, .polygon-point, svg.polygon").forEach(el => el.remove());
+  const cats = { "Lokace": [], "Území": [], "Dodávky": [], "Místa na ujíždění PD": ["autem", "na motorce", "pěšky"] };
+  for (let cat in cats) {
+    const wrap = document.createElement("div"), h2 = document.createElement("h2");
+    h2.textContent = cat;
+    h2.onclick = () => items.style.display = items.style.display === "block" ? "none" : "block";
+    const items = document.createElement("div"); items.className = "category-items";
+    const subcats = cats[cat].length ? cats[cat] : [null];
+    subcats.forEach(sub => {
+      data.forEach(item => {
+        if ((filter === "all" || filter === item.type) && item.categories?.includes(cat) && (!sub || item.categories.includes(sub))) {
+          item.type === "point" && renderMarker(item);
+          item.type === "polygon" && renderPolygon(item);
+          const div = document.createElement("div");
+          div.className = "item";
+          div.innerHTML = `<div><span class="dot" style="background:${item.color}"></span>${item.name}</div><span class="delete-btn" onclick="deleteItem(${item.id}); event.stopPropagation()">🗑</span>`;
+          div.onclick = () => centerTo(item);
+          items.appendChild(div);
+        }
+      });
     });
+    wrap.appendChild(h2); wrap.appendChild(items); menu.appendChild(wrap);
+  }
+}
 
-    map.addEventListener("click", e => {
-      if (!e.shiftKey) return;
-      const r = map.getBoundingClientRect(), x = (e.clientX - r.left) / r.width, y = (e.clientY - r.top) / r.height;
-      currentPolygon.push({ x, y });
-      const point = document.createElement("div");
-      point.className = "polygon-point";
-      point.style.left = \`\${x * 100}%\`;
-      point.style.top = \`\${y * 100}%\`;
-      map.appendChild(point);
-      if (currentPolygon.length > 2 && confirm("Uzavřít území?")) {
-        openForm("polygon", currentPolygon);
-        currentPolygon = [];
-        document.querySelectorAll(".polygon-point").forEach(el => el.remove());
-      }
-    });
+function renderMarker(item) {
+  const el = document.createElement("div");
+  el.className = "marker";
+  el.style.left = `${item.x * 100}%`;
+  el.style.top = `${item.y * 100}%`;
+  el.style.background = item.color;
+  el.title = item.desc;
+  map.appendChild(el);
+}
 
-    let scale = 1, originX = 0, originY = 0, isDragging = false, start = { x: 0, y: 0 };
-    map.addEventListener("wheel", e => {
-      e.preventDefault();
-      scale += e.deltaY * -0.001;
-      scale = Math.min(Math.max(0.5, scale), 6);
-      map.style.transform = \`scale(\${scale}) translate(\${originX}px, \${originY}px)\`;
-    }, { passive: false });
+function renderPolygon(item) {
+  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  svg.classList.add("polygon");
+  svg.setAttribute("width", map.clientWidth);
+  svg.setAttribute("height", map.clientHeight);
+  const poly = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
+  poly.setAttribute("points", item.points.map(p => `${p.x * map.clientWidth},${p.y * map.clientHeight}`).join(" "));
+  poly.setAttribute("fill", item.color + "55");
+  poly.setAttribute("stroke", item.color);
+  svg.appendChild(poly);
+  map.appendChild(svg);
+}
 
-    map.addEventListener("mousedown", e => { isDragging = true; start = { x: e.clientX, y: e.clientY }; });
-    window.addEventListener("mouseup", () => isDragging = false);
-    window.addEventListener("mousemove", e => {
-      if (!isDragging) return;
-      originX += (e.clientX - start.x) / scale;
-      originY += (e.clientY - start.y) / scale;
-      start = { x: e.clientX, y: e.clientY };
-      map.style.transform = \`scale(\${scale}) translate(\${originX}px, \${originY}px)\`;
-    });
+function centerTo(item) {
+  const x = item.type === "point" ? item.x : item.points.reduce((a, b) => a + b.x, 0) / item.points.length;
+  const y = item.type === "point" ? item.y : item.points.reduce((a, b) => a + b.y, 0) / item.points.length;
+  map.scrollTo({ left: x * map.scrollWidth - map.clientWidth / 2, top: y * map.scrollHeight - map.clientHeight / 2, behavior: "smooth" });
+}
 
-    window.onload = () => render();
-  </script>
+function deleteItem(id) {
+  data = data.filter(i => i.id !== id);
+  save(); render();
+}
+
+function openForm(type, coords) {
+  const name = prompt("Název:"); if (!name) return;
+  const desc = prompt("Popis:");
+  const color = prompt("Barva:", "#00ffff");
+  const cats = ["Lokace", "Území", "Dodávky", "Místa na ujíždění PD", "autem", "na motorce", "pěšky"];
+  const selectedCats = cats.filter(c => confirm(`Zařadit do „${c}“?`));
+  const item = { id: Date.now(), type, name, desc, color, categories: selectedCats };
+  if (type === "point") { item.x = coords.x; item.y = coords.y; } else { item.points = [...coords]; }
+  if (!planningMode) data.push(item);
+  save(); render();
+}
+
+map.addEventListener("dblclick", e => {
+  if (e.shiftKey) return;
+  const r = map.getBoundingClientRect(), x = (e.clientX - r.left) / r.width, y = (e.clientY - r.top) / r.height;
+  openForm("point", { x, y });
+});
+
+map.addEventListener("click", e => {
+  if (!e.shiftKey) return;
+  const r = map.getBoundingClientRect(), x = (e.clientX - r.left) / r.width, y = (e.clientY - r.top) / r.height;
+  currentPolygon.push({ x, y });
+  const point = document.createElement("div");
+  point.className = "polygon-point";
+  point.style.left = `${x * 100}%`;
+  point.style.top = `${y * 100}%`;
+  map.appendChild(point);
+  if (currentPolygon.length > 2 && confirm("Uzavřít území?")) {
+    openForm("polygon", currentPolygon);
+    currentPolygon = [];
+    document.querySelectorAll(".polygon-point").forEach(el => el.remove());
+  }
+});
+
+let scale = 1, originX = 0, originY = 0, isDragging = false, start = { x: 0, y: 0 };
+map.addEventListener("wheel", e => {
+  e.preventDefault();
+  scale += e.deltaY * -0.001;
+  scale = Math.min(Math.max(0.5, scale), 6);
+  map.style.transform = `scale(${scale}) translate(${originX}px, ${originY}px)`;
+}, { passive: false });
+
+map.addEventListener("mousedown", e => { isDragging = true; start = { x: e.clientX, y: e.clientY }; });
+window.addEventListener("mouseup", () => isDragging = false);
+window.addEventListener("mousemove", e => {
+  if (!isDragging) return;
+  originX += (e.clientX - start.x) / scale;
+  originY += (e.clientY - start.y) / scale;
+  start = { x: e.clientX, y: e.clientY };
+  map.style.transform = `scale(${scale}) translate(${originX}px, ${originY}px)`;
+});
+
+window.onload = () => render();
+</script>
 </body>
 </html>
