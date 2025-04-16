@@ -57,7 +57,7 @@
       border-radius: 50%; transform: translate(-50%, -50%);
     }
     svg.polygon {
-      position: absolute; top: 0; left: 0; pointer-events: none;
+      position: absolute; top: 0; left: 0; pointer-events: auto;
     }
     .tooltip {
       position: absolute; background: rgba(0,0,0,0.8); color: white;
@@ -157,9 +157,13 @@
       el.style.top = `${item.y * 100}%`;
       el.style.background = item.color;
       el.style.width = el.style.height = `${item.size || 6}px`;
-      el.title = item.desc;
-      el.onmouseenter = e => showTooltip(e, `${item.name}: ${item.desc}`);
-      el.onmouseleave = hideTooltip;
+      el.addEventListener("mouseenter", e => showTooltip(e, `${item.name}`));
+      el.addEventListener("mouseleave", hideTooltip);
+      el.addEventListener("click", () => alert(item.desc));
+      el.addEventListener("contextmenu", e => {
+        e.preventDefault();
+        if (confirm("Smazat nebo upravit tento bod?")) deleteItem(item.id);
+      });
       map.appendChild(el);
     }
 
@@ -172,8 +176,13 @@
       poly.setAttribute("points", item.points.map(p => `${p.x * map.clientWidth},${p.y * map.clientHeight}`).join(" "));
       poly.setAttribute("fill", item.color + "55");
       poly.setAttribute("stroke", item.color);
-      poly.addEventListener("mouseenter", e => showTooltip(e, `${item.name}: ${item.desc}`));
+      poly.addEventListener("mouseenter", e => showTooltip(e, `${item.name}`));
       poly.addEventListener("mouseleave", hideTooltip);
+      poly.addEventListener("click", () => alert(item.desc));
+      poly.addEventListener("contextmenu", e => {
+        e.preventDefault();
+        if (confirm("Smazat nebo upravit toto území?")) deleteItem(item.id);
+      });
       svg.appendChild(poly);
       map.appendChild(svg);
     }
@@ -187,27 +196,56 @@
 
     function hideTooltip() { tooltip.style.display = "none"; }
 
+    map.addEventListener("dblclick", e => {
+      if (e.shiftKey) return;
+      const r = map.getBoundingClientRect();
+      const x = (e.clientX - r.left) / r.width;
+      const y = (e.clientY - r.top) / r.height;
+      const name = prompt("Název bodu:");
+      const desc = prompt("Popis:");
+      const color = prompt("Barva (např. #ff0000):", "#00ffff");
+      const size = parseInt(prompt("Velikost (např. 6):", "6"), 10);
+      const categories = prompt("Kategorie oddělené čárkou:", "📍 Lokace").split(',').map(s => s.trim());
+      const point = { id: Date.now(), type: "point", x, y, name, desc, color, size, categories };
+      data.push(point);
+      save(); render();
+    });
+
+    map.addEventListener("click", e => {
+      if (!e.shiftKey) return;
+      const r = map.getBoundingClientRect();
+      const x = (e.clientX - r.left) / r.width;
+      const y = (e.clientY - r.top) / r.height;
+      currentPolygon.push({ x, y });
+      const dot = document.createElement("div");
+      dot.className = "polygon-point";
+      dot.style.left = `${x * 100}%`;
+      dot.style.top = `${y * 100}%`;
+      map.appendChild(dot);
+      if (currentPolygon.length > 2 && confirm("Uzavřít území?")) {
+        const name = prompt("Název území:");
+        const desc = prompt("Popis:");
+        const color = prompt("Barva (např. #00ff00):", "#00ff00");
+        const categories = prompt("Kategorie oddělené čárkou:", "🗺️ Území").split(',').map(s => s.trim());
+        data.push({ id: Date.now(), type: "polygon", points: [...currentPolygon], name, desc, color, categories });
+        currentPolygon = [];
+        document.querySelectorAll(".polygon-point").forEach(el => el.remove());
+        save(); render();
+      }
+    });
+
     map.addEventListener("wheel", e => {
       e.preventDefault();
       const rect = map.getBoundingClientRect();
       const zoomSpeed = 0.0035;
       const oldScale = scale;
 
-      if (e.deltaY < 0) {
-        const mouseX = (e.clientX - rect.left - originX * oldScale) / oldScale;
-        const mouseY = (e.clientY - rect.top - originY * oldScale) / oldScale;
-        scale += -e.deltaY * zoomSpeed;
-        scale = Math.min(scale, 20);
-        originX -= mouseX * (scale - oldScale);
-        originY -= mouseY * (scale - oldScale);
-      } else {
-        const centerX = (rect.width / 2 - originX * oldScale) / oldScale;
-        const centerY = (rect.height / 2 - originY * oldScale) / oldScale;
-        scale += -e.deltaY * zoomSpeed;
-        scale = Math.max(scale, 0.2);
-        originX -= centerX * (scale - oldScale);
-        originY -= centerY * (scale - oldScale);
-      }
+      const mouseX = (e.clientX - rect.left - originX * oldScale) / oldScale;
+      const mouseY = (e.clientY - rect.top - originY * oldScale) / oldScale;
+      scale += -e.deltaY * zoomSpeed;
+      scale = Math.max(0.2, Math.min(scale, 10));
+      originX -= mouseX * (scale - oldScale);
+      originY -= mouseY * (scale - oldScale);
 
       map.style.transform = `scale(${scale}) translate(${originX}px, ${originY}px)`;
     }, { passive: false });
