@@ -85,7 +85,7 @@
 let data = JSON.parse(localStorage.getItem("mapData")) || [];
 let planningMode = false;
 let currentPolygon = [];
-let filter = "all";
+let filters = new Set();
 const tooltip = document.getElementById("tooltip");
 const map = document.getElementById("map");
 const menu = document.getElementById("menu");
@@ -94,15 +94,9 @@ function save() {
   if (!planningMode) localStorage.setItem("mapData", JSON.stringify(data));
 }
 
-function setFilter(type) { filter = type; render(); }
-function togglePlanningMode() {
-  planningMode = !planningMode;
-  alert(`Plánovací režim: ${planningMode ? 'ZAPNUTÝ' : 'VYPNUTÝ'}`);
-}
-
 function showAllCategories() {
   document.querySelectorAll(".category-items").forEach(div => div.style.display = "block");
-  filter = "all";
+  filters.clear();
   render();
 }
 
@@ -129,7 +123,7 @@ function render() {
     header.onclick = () => {
       const section = header.nextElementSibling;
       section.style.display = section.style.display === 'none' ? 'block' : 'none';
-      filter = cat;
+      if (filters.has(cat)) filters.delete(cat); else filters.add(cat);
       render();
     };
 
@@ -139,7 +133,7 @@ function render() {
 
     data.forEach(item => {
       const inSearch = item.name?.toLowerCase().includes(search);
-      if (item.categories.includes(cat) && (filter === 'all' || item.categories.includes(filter)) && (!search || inSearch)) {
+      if (item.categories.includes(cat) && (filters.size === 0 || [...filters].some(f => item.categories.includes(f))) && (!search || inSearch)) {
         item.type === 'point' && renderMarker(item);
         item.type === 'polygon' && renderPolygon(item);
         const div = document.createElement("div");
@@ -161,13 +155,12 @@ function renderMarker(item) {
   el.style.top = `${item.y * 100}%`;
   el.style.background = item.color;
   el.style.width = el.style.height = `${item.size || 6}px`;
-  el.title = item.name;
   el.onmouseenter = e => showTooltip(e, item);
   el.onmouseleave = hideTooltip;
   el.oncontextmenu = e => {
     e.preventDefault();
     if (confirm("Smazat tento bod?")) deleteItem(item.id);
-  }
+  };
   map.appendChild(el);
 }
 
@@ -199,43 +192,6 @@ function showTooltip(e, item) {
 function hideTooltip() {
   tooltip.style.display = "none";
   tooltip.textContent = "";
-}
-
-function openForm(type, coords) {
-  const wrapper = document.createElement("div");
-  wrapper.style.position = "fixed";
-  wrapper.style.top = "50%";
-  wrapper.style.left = "50%";
-  wrapper.style.transform = "translate(-50%, -50%)";
-  wrapper.style.background = "#222";
-  wrapper.style.padding = "20px";
-  wrapper.style.border = "1px solid #555";
-  wrapper.style.zIndex = "999";
-  wrapper.style.color = "white";
-  wrapper.innerHTML = `
-    <label>Název:<br><input id='form-name' style='width:100%'></label><br><br>
-    <label>Popis:<br><textarea id='form-desc' style='width:100%'></textarea></label><br><br>
-    <label>Barva:<br><input type='color' id='form-color' value='#00ffff'></label><br><br>
-    <label>Velikost:<br><input type='number' id='form-size' value='6' min='2' max='20'></label><br><br>
-    <div><b>Zařadit do kategorií:</b><br>` +
-    ["📍 Lokace", "🗺️ Území", "🔫 Předání zbraní", "🚗 Ujíždění autem", "🏍️ Ujíždění na motorce", "🏃‍♂️ Útěk pěšky", "📦 Sklady", "🎭 Místa na výslech"]
-    .map(c => `<label><input type='checkbox' value='${c}'> ${c}</label><br>`).join('') +
-    `<br><button id='form-ok'>OK</button> <button id='form-cancel'>Zrušit</button>`;
-
-  document.body.appendChild(wrapper);
-  document.getElementById("form-cancel").onclick = () => wrapper.remove();
-  document.getElementById("form-ok").onclick = () => {
-    const name = document.getElementById("form-name").value;
-    const desc = document.getElementById("form-desc").value;
-    const color = document.getElementById("form-color").value;
-    const size = +document.getElementById("form-size").value;
-    const selectedCats = Array.from(wrapper.querySelectorAll("input[type=checkbox]:checked")).map(i => i.value);
-    if (!name || selectedCats.length === 0) return alert("Vyplň název a vyber aspoň jednu kategorii.");
-    const item = { id: Date.now(), type, name, desc, color, size, categories: selectedCats };
-    if (type === "point") { item.x = coords.x; item.y = coords.y; } else { item.points = [...coords]; }
-    data.push(item);
-    save(); render(); wrapper.remove();
-  }
 }
 
 map.addEventListener("dblclick", e => {
@@ -286,6 +242,6 @@ window.addEventListener("mousemove", e => {
 });
 
 window.onload = () => render();
-</script>
+  </script>
 </body>
 </html>
