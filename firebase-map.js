@@ -1,7 +1,7 @@
 // firebase-map.js
 import { getDatabase, ref, onValue, set, remove, push } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-database.js";
 
-const app = window.firebaseApp || {};
+const app = window.firebaseApp;
 const db = getDatabase(app);
 const dbRef = ref;
 const dbOnValue = onValue;
