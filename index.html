@@ -43,7 +43,7 @@
   <div id="tooltip" class="tooltip"></div>
   <div id="context-menu"></div>
   <script>
-    // Kompletní JS kód vložen sem
+    // Kompletní JavaScript kód
 localStorage.removeItem("mapData");
 let data = [];
 let planningMode = false;
@@ -80,7 +80,7 @@ function render() {
     };
     const items = document.createElement("div"); items.className = "category-items";
     data.forEach(item => {
-      if ((filter === "all" || filter === item.type) && item.categories?.includes(cat)) {
+      if ((filter === "all" || item.categories?.includes(filter)) && item.categories?.includes(cat)) {
         if (!item.name || !item.name.toLowerCase().includes(searchValue)) return;
         item.type === "point" && renderMarker(item);
         item.type === "polygon" && renderPolygon(item);
@@ -95,7 +95,6 @@ function render() {
           originX = -x * map.clientWidth + map.clientWidth / (2 * scale);
           originY = -y * map.clientHeight + map.clientHeight / (2 * scale);
           map.style.transform = `scale(${scale}) translate(${originX}px, ${originY}px)`;
-        }
         };
         items.appendChild(div);
       }
@@ -190,15 +189,15 @@ function openForm(type, coords) {
     <label>Název:<br><input id='form-name' style='width:100%'></label><br><br>
     <label>Popis:<br><textarea id='form-desc' style='width:100%'></textarea></label><br><br>
     <label>Barva:<br>
-  <input type='color' id='form-color' value='#00ffff'>
-  <div style='margin-top:5px;'>
-    <span style='cursor:pointer;display:inline-block;width:20px;height:20px;background:#ff0000;border:1px solid #555;margin-right:5px;' onclick="document.getElementById('form-color').value = '#ff0000'"></span>
-    <span style='cursor:pointer;display:inline-block;width:20px;height:20px;background:#00ff00;border:1px solid #555;margin-right:5px;' onclick="document.getElementById('form-color').value = '#00ff00'"></span>
-    <span style='cursor:pointer;display:inline-block;width:20px;height:20px;background:#0000ff;border:1px solid #555;margin-right:5px;' onclick="document.getElementById('form-color').value = '#0000ff'"></span>
-    <span style='cursor:pointer;display:inline-block;width:20px;height:20px;background:#ffff00;border:1px solid #555;margin-right:5px;' onclick="document.getElementById('form-color').value = '#ffff00'"></span>
-    <span style='cursor:pointer;display:inline-block;width:20px;height:20px;background:#ff00ff;border:1px solid #555;margin-right:5px;' onclick="document.getElementById('form-color').value = '#ff00ff'"></span>
-  </div>
-</label><br><br>
+      <input type='color' id='form-color' value='#00ffff'>
+      <div style='margin-top:5px;'>
+        <span style='cursor:pointer;display:inline-block;width:20px;height:20px;background:#ff0000;border:1px solid #555;margin-right:5px;' onclick="document.getElementById('form-color').value = '#ff0000'"></span>
+        <span style='cursor:pointer;display:inline-block;width:20px;height:20px;background:#00ff00;border:1px solid #555;margin-right:5px;' onclick="document.getElementById('form-color').value = '#00ff00'"></span>
+        <span style='cursor:pointer;display:inline-block;width:20px;height:20px;background:#0000ff;border:1px solid #555;margin-right:5px;' onclick="document.getElementById('form-color').value = '#0000ff'"></span>
+        <span style='cursor:pointer;display:inline-block;width:20px;height:20px;background:#ffff00;border:1px solid #555;margin-right:5px;' onclick="document.getElementById('form-color').value = '#ffff00'"></span>
+        <span style='cursor:pointer;display:inline-block;width:20px;height:20px;background:#ff00ff;border:1px solid #555;margin-right:5px;' onclick="document.getElementById('form-color').value = '#ff00ff'"></span>
+      </div>
+    </label><br><br>
     <label>Velikost:<br><input type='number' id='form-size' value='4' min='1' max='20'></label><br><br>
     <div><b>Zařadit do kategorií:</b><br>` +
     ["Lokace", "Území", "Dodávky", "Ujíždění autem", "Ujíždění na motorce", "Útěk pěšky", "Sklady"]
@@ -221,7 +220,6 @@ function openForm(type, coords) {
     save(); render();
     document.body.removeChild(wrapper);
   };
-  // odstraněn starý color picker blok
 }
 
 map.addEventListener("dblclick", e => {
