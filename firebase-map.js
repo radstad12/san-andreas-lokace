@@ -24,6 +24,8 @@ const dbPush = push;
 // ----- MAP LOGIKA ZDE -----
 
 const map = document.getElementById("map");
+const markerLayer = document.getElementById("marker-layer");
+const polygonLayer = document.getElementById("polygon-layer");
 const menu = document.getElementById("menu");
 const tooltip = document.getElementById("tooltip");
 const categories = [
@@ -114,7 +116,7 @@ function renderMarker(item) {
     showTooltip(e, text);
   };
   el.onmouseleave = hideTooltip;
-  map.appendChild(el);
+  markerLayer.appendChild(el);
 }
 
 function renderPolygon(item) {
@@ -134,7 +136,7 @@ function renderPolygon(item) {
   };
   poly.onmouseleave = hideTooltip;
   svg.appendChild(poly);
-  map.appendChild(svg);
+  polygonLayer.appendChild(svg);
 }
 
 function showTooltip(e, text) {
