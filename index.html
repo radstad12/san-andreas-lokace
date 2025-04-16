@@ -8,49 +8,29 @@
     html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; font-family: Arial, sans-serif; background: #111; color: #fff; }
     #sidebar { position: fixed; top: 0; left: 0; bottom: 0; width: 280px; background: #1a1a1a; padding: 20px; overflow-y: auto; z-index: 10; border-right: 2px solid #222; }
     #sidebar img { display: block; margin: 0 auto 10px; max-width: 100px; }
-    #sidebar h1 {
-      text-align: center;
-      font-size: 26px;
-      font-weight: bold;
-      color: red;
-      text-shadow: 0 0 10px red;
-      letter-spacing: 2px;
-      margin-bottom: 10px;
-    }
-    #controls input, #controls button {
-      width: 100%; margin-bottom: 5px; padding: 8px;
-      background: #333; color: white; border: none;
-      text-align: left;
-    }
-    .category-header {
-      width: 100%; margin-bottom: 5px; padding: 8px;
-      background: #333; color: white; border: none;
-      font-weight: 900;
-      font-size: 16px;
-      cursor: pointer;
-    }
+    #sidebar h1 { text-align: center; font-size: 20px; color: #ff5050; margin-bottom: 10px; }
+    #controls input, #controls button, .category-header { width: 100%; margin-bottom: 5px; padding: 8px; background: #222; color: white; border: none; cursor: pointer; text-align: left; }
+    #controls input { background: #333; border-radius: 4px; cursor: text; }
     .category-items { margin-left: 10px; }
     .item { display: flex; justify-content: space-between; align-items: center; font-size: 14px; margin: 5px 0; cursor: pointer; }
     .dot { width: 10px; height: 10px; border-radius: 50%; margin-right: 8px; display: inline-block; }
     .delete-btn { color: #888; font-size: 12px; cursor: pointer; }
-    #map {
-      position: absolute; left: 280px; top: 0; right: 0; bottom: 0;
-      background: #000 url('mapa.png') no-repeat center center;
-      background-size: contain;
-      cursor: grab;
-      overflow: hidden;
-      transform-origin: 0 0;
-    }
+    #map { position: absolute; left: 280px; top: 0; right: 0; bottom: 0; background: #000 url('mapa.png') no-repeat center center; background-size: contain; cursor: grab; overflow: hidden; }
     .marker { position: absolute; border-radius: 50%; border: 1px solid white; transform: translate(-50%, -50%); cursor: pointer; }
     .polygon-point { position: absolute; width: 8px; height: 8px; background: cyan; border: 1px solid white; border-radius: 50%; transform: translate(-50%, -50%); }
     svg.polygon { position: absolute; top: 0; left: 0; pointer-events: none; }
     .tooltip { position: absolute; background: rgba(0,0,0,0.8); color: white; padding: 4px 8px; font-size: 12px; border-radius: 4px; pointer-events: none; z-index: 99; display: none; }
+    #context-menu { position: absolute; background: #222; color: white; border: 1px solid #555; padding: 5px; display: none; z-index: 100; font-size: 13px; }
+    #context-menu div { padding: 4px 8px; cursor: pointer; }
+    #context-menu div:hover { background: #444; }
+      .active-category { font-weight: bold; color: #ffd700; }
+    .item:hover { background: rgba(255,255,255,0.1); transition: background 0.2s; }
   </style>
 </head>
 <body>
   <div id="sidebar">
     <img src="logo.png" alt="Archangels MC logo">
-    <h1>Archangels MC</h1>
+    <h1 style="font-size: 26px; font-weight: bold; color: gold; text-shadow: 0 0 10px gold; letter-spacing: 2px;">Archangels MC</h1>
     <div id="controls">
       <input type="text" id="search" placeholder="🔍 Hledat..." oninput="render()">
       <button onclick="setFilter('all')">Zobrazit vše</button>
@@ -63,171 +43,236 @@
   </div>
   <div id="map"></div>
   <div id="tooltip" class="tooltip"></div>
+  <div id="context-menu"></div>
   <script>
-    let data = JSON.parse(localStorage.getItem("mapData")) || [];
-    let planningMode = false;
-    let currentPolygon = [];
-    let filter = "all";
-    const tooltip = document.getElementById("tooltip");
-    const map = document.getElementById("map");
-    const menu = document.getElementById("menu");
+    // Kompletní JavaScript kód
+localStorage.removeItem("mapData");
+let data = [];
+let planningMode = false;
+let currentPolygon = [];
+let filter = "all";
+let tooltip = document.getElementById("tooltip");
+const map = document.getElementById("map");
+const menu = document.getElementById("menu");
 
-    function save() { localStorage.setItem("mapData", JSON.stringify(data)); }
+function save() {
+  if (!planningMode) localStorage.setItem("mapData", JSON.stringify(data));
+}
 
-    function setFilter(type) { filter = type; render(); }
-    function togglePlanningMode() { planningMode = !planningMode; alert(`Plánovací režim: ${planningMode ? 'ZAPNUTÝ' : 'VYPNUTÝ'}`); }
+function setFilter(type) { filter = type; render(); }
+function togglePlanningMode() {
+  planningMode = !planningMode;
+  alert(Plánovací režim: ${planningMode ? 'ZAPNUTÝ' : 'VYPNUTÝ'});
+}
 
-    function render() {
-      menu.innerHTML = "";
-      map.querySelectorAll(".marker, .polygon-point, svg.polygon").forEach(el => el.remove());
-      const cats = {
-        "📍 Lokace": [], "🗺️ Území": [], "🚚 Dodávky": [],
-        "🚗 Ujíždění autem": [], "🏍️ Ujíždění na motorce": [],
-        "🏃 Útěk pěšky": [], "📦 Sklady": []
-      };
-      const searchValue = document.getElementById("search")?.value.toLowerCase() || "";
-      for (let cat in cats) {
-        const cleanCat = cat.replace(/^[^\w\s]/, '').trim();
-        const wrap = document.createElement("div");
-        const h2 = document.createElement("button");
-        const count = data.filter(i => i.categories?.includes(cleanCat)).length;
-        h2.textContent = `${cat} (${count})`;
-        h2.className = "category-header";
-        h2.onclick = () => { setFilter(cleanCat); };
-
-        const items = document.createElement("div");
-        items.className = "category-items";
-
-        data.forEach(item => {
-          const matchesFilter = filter === "all" || item.type === filter || item.categories?.includes(filter);
-          if (matchesFilter && item.categories?.includes(cleanCat)) {
-            if (item.name?.toLowerCase().includes(searchValue)) {
-              item.type === "point" && renderMarker(item);
-              item.type === "polygon" && renderPolygon(item);
-              const div = document.createElement("div");
-              div.className = "item";
-              div.innerHTML = `<div><span class='dot' style='background:${item.color}'></span>${item.name}</div>`;
-              items.appendChild(div);
-            }
-          }
-        });
-
-        wrap.appendChild(h2);
-        wrap.appendChild(items);
-        menu.appendChild(wrap);
-      }
-    }
-
-    function renderMarker(item) {
-      const el = document.createElement("div");
-      el.className = "marker";
-      el.style.left = `${item.x * 100}%`;
-      el.style.top = `${item.y * 100}%`;
-      el.style.background = item.color;
-      el.style.width = el.style.height = `${item.size || 6}px`;
-      el.title = item.desc;
-      el.onmouseenter = e => showTooltip(e, item.desc);
-      el.onmouseleave = hideTooltip;
-      map.appendChild(el);
-    }
-
-    function renderPolygon(item) {
-      const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-      svg.classList.add("polygon");
-      svg.setAttribute("width", map.clientWidth);
-      svg.setAttribute("height", map.clientHeight);
-      const poly = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
-      poly.setAttribute("points", item.points.map(p => `${p.x * map.clientWidth},${p.y * map.clientHeight}`).join(" "));
-      poly.setAttribute("fill", item.color + "55");
-      poly.setAttribute("stroke", item.color);
-      poly.onmouseenter = e => showTooltip(e, item.desc);
-      poly.onmouseleave = hideTooltip;
-      svg.appendChild(poly);
-      map.appendChild(svg);
-    }
-
-    function showTooltip(e, text) {
-      tooltip.style.display = "block";
-      tooltip.style.left = e.clientX + 10 + "px";
-      tooltip.style.top = e.clientY + 10 + "px";
-      tooltip.textContent = text;
-    }
-
-    function hideTooltip() {
-      tooltip.style.display = "none";
-    }
-
-    map.addEventListener("dblclick", e => {
-      if (e.shiftKey) return;
-      const r = map.getBoundingClientRect();
-      const x = (e.clientX - r.left) / r.width;
-      const y = (e.clientY - r.top) / r.height;
-      openForm("point", { x, y });
-    });
-
-    map.addEventListener("click", e => {
-      if (!e.shiftKey) return;
-      const r = map.getBoundingClientRect();
-      const x = (e.clientX - r.left) / r.width;
-      const y = (e.clientY - r.top) / r.height;
-      currentPolygon.push({ x, y });
-      const point = document.createElement("div");
-      point.className = "polygon-point";
-      point.style.left = `${x * 100}%`;
-      point.style.top = `${y * 100}%`;
-      map.appendChild(point);
-      if (currentPolygon.length > 2 && confirm("Uzavřít území?")) {
-        openForm("polygon", currentPolygon);
-        currentPolygon = [];
-        document.querySelectorAll(".polygon-point").forEach(el => el.remove());
+function render() {
+  menu.innerHTML = "";
+  const searchValue = document.getElementById("search")?.value.toLowerCase() || "";
+  map.querySelectorAll(".marker, .polygon-point, svg.polygon").forEach(el => el.remove());
+  const cats = { "Lokace": [], "Území": [], "Dodávky": [], "Ujíždění autem": [], "Ujíždění na motorce": [], "Útěk pěšky": [], "Sklady": [] };
+  for (let cat in cats) {
+    const wrap = document.createElement("div"), h2 = document.createElement("button");
+    const count = data.filter(i => i.categories?.includes(cat)).length;
+    h2.textContent = ${cat} (${count});
+    h2.className = "category-header active-category";
+    h2.style.fontWeight = "bold";
+    h2.style.transition = "background 0.3s";
+    h2.onmouseenter = () => h2.style.background = "#333";
+    h2.onmouseleave = () => h2.style.background = "#222";
+    h2.onclick = () => {
+      items.style.display = items.style.display === "block" ? "none" : "block";
+      filter = cat;
+      render();
+    };
+    const items = document.createElement("div"); items.className = "category-items";
+    data.forEach(item => {
+      if ((filter === "all" || item.categories?.includes(filter)) && item.categories?.includes(cat)) {
+        if (!item.name || !item.name.toLowerCase().includes(searchValue)) return;
+        item.type === "point" && renderMarker(item);
+        item.type === "polygon" && renderPolygon(item);
+        const div = document.createElement("div");
+        div.className = "item";
+        div.innerHTML = <div><span class="dot" style="background:${item.color}"></span>${item.name}</div><span class="delete-btn" onclick="deleteItem(${item.id}); event.stopPropagation()">🗑</span>;
+        div.onclick = () => {
+          const x = item.x || (item.points.reduce((a, b) => a + b.x, 0) / item.points.length);
+          const y = item.y || (item.points.reduce((a, b) => a + b.y, 0) / item.points.length);
+          const marker = map.querySelector(.marker[title="${item.desc}"]);
+          if (marker) marker.animate([{ transform: 'scale(1.5)' }, { transform: 'scale(1)' }], { duration: 300 });
+          scale = 4;
+          originX = -x * map.clientWidth + map.clientWidth / (2 * scale);
+          originY = -y * map.clientHeight + map.clientHeight / (2 * scale);
+          map.style.transform = scale(${scale}) translate(${originX}px, ${originY}px);
+        };
+        };
+        };
+        };
+        items.appendChild(div);
       }
     });
+    wrap.appendChild(h2); wrap.appendChild(items); menu.appendChild(wrap);
+  }
+}
 
-    function openForm(type, coords) {
-      const wrapper = document.createElement("div");
-      wrapper.style.position = "fixed";
-      wrapper.style.top = "50%";
-      wrapper.style.left = "50%";
-      wrapper.style.transform = "translate(-50%, -50%)";
-      wrapper.style.background = "#222";
-      wrapper.style.padding = "20px";
-      wrapper.style.border = "1px solid #555";
-      wrapper.style.zIndex = "999";
-      wrapper.style.color = "white";
-      wrapper.innerHTML = `
-        <label>Název:<br><input id='form-name' style='width:100%'></label><br><br>
-        <label>Popis:<br><textarea id='form-desc' style='width:100%'></textarea></label><br><br>
-        <label>Barva:<br>
-          <input type='color' id='form-color' value='#00ffff'>
-          <div style='margin-top:5px;'>
-            ${['#ff0000','#00ff00','#0000ff','#ffff00','#ff00ff'].map(c => `<span style='cursor:pointer;display:inline-block;width:20px;height:20px;background:${c};border:1px solid #555;margin-right:5px;' onclick="document.getElementById('form-color').value = '${c}'"></span>`).join('')}
-          </div>
-        </label><br><br>
-        <label>Velikost:<br><input type='number' id='form-size' value='6' min='1' max='20'></label><br><br>
-        <div><b>Zařadit do kategorií:</b><br>` +
-        ["Lokace", "Území", "Dodávky", "Ujíždění autem", "Ujíždění na motorce", "Útěk pěšky", "Sklady"].map(c => `<label><input type='checkbox' value='${c}'> ${c}</label><br>`).join('') +
-        `<br><button id='form-ok'>OK</button> <button onclick='this.closest("div").remove()'>Zrušit</button>`;
+function renderMarker(item) {
+  const el = document.createElement("div");
+  el.className = "marker";
+  el.style.left = ${item.x * 100}%;
+  el.style.top = ${item.y * 100}%;
+  el.style.background = item.color;
+  el.style.width = el.style.height = ${item.size || 4}px;
+  el.title = item.desc;
+  el.addEventListener("contextmenu", e => openContextMenu(e, item));
+  el.onmouseenter = e => showTooltip(e, item.desc);
+  el.onmouseleave = hideTooltip;
+  map.appendChild(el);
+}
 
-      document.body.appendChild(wrapper);
+function renderPolygon(item) {
+  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  svg.classList.add("polygon");
+  svg.setAttribute("width", map.clientWidth);
+  svg.setAttribute("height", map.clientHeight);
+  const poly = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
+  poly.setAttribute("points", item.points.map(p => ${p.x * map.clientWidth},${p.y * map.clientHeight}).join(" "));
+  poly.setAttribute("fill", item.color + "55");
+  poly.setAttribute("stroke", item.color);
+  poly.onmouseenter = e => showTooltip(e, item.desc);
+  poly.onmouseleave = hideTooltip;
+  poly.addEventListener("contextmenu", e => openContextMenu(e, item));
+  svg.appendChild(poly);
+  map.appendChild(svg);
+}
 
-      document.getElementById("form-ok").onclick = () => {
-        const name = document.getElementById("form-name").value;
-        const desc = document.getElementById("form-desc").value;
-        const color = document.getElementById("form-color").value;
-        const size = +document.getElementById("form-size").value;
-        const selectedCats = Array.from(wrapper.querySelectorAll("input[type=checkbox]:checked")).map(i => i.value);
-        if (!name || selectedCats.length === 0) return alert("Vyplň název a vyber aspoň jednu kategorii.");
-        const item = { id: Date.now(), type, name, desc, color, size, categories: selectedCats };
-        if (type === "point") { item.x = coords.x; item.y = coords.y; } else { item.points = [...coords]; }
-        data.push(item);
-        save();
-        filter = "all";
-        render();
-        document.body.removeChild(wrapper);
-      };
-    }
+function showTooltip(e, text) {
+  tooltip.style.display = "block";
+  tooltip.style.left = e.clientX + 10 + "px";
+  tooltip.style.top = e.clientY + 10 + "px";
+  tooltip.textContent = text;
+}
+function hideTooltip() { tooltip.style.display = "none"; }
 
-    window.onload = () => render();
+function openContextMenu(e, item) {
+  e.preventDefault();
+  const menu = document.getElementById("context-menu");
+  menu.innerHTML = 
+    <div onclick="deleteItem(${item.id})">🗑 Smazat</div>
+    <div onclick="editItem(${item.id})">✏️ Upravit</div>;
+  menu.style.left = ${e.clientX}px;
+  menu.style.top = ${e.clientY}px;
+  menu.style.display = "block";
+  window.addEventListener("click", () => menu.style.display = "none", { once: true });
+}
+
+function editItem(id) {
+  const item = data.find(i => i.id === id);
+  if (!item) return;
+  item.name = prompt("Název:", item.name);
+  item.desc = prompt("Popis:", item.desc);
+  item.color = prompt("Barva:", item.color);
+  item.size = +prompt("Velikost: (např. 4)", item.size);
+  save(); render();
+}
+
+function centerTo(item) {
+  const x = item.type === "point" ? item.x : item.points.reduce((a, b) => a + b.x, 0) / item.points.length;
+  const y = item.type === "point" ? item.y : item.points.reduce((a, b) => a + b.y, 0) / item.points.length;
+  map.scrollTo({ left: x * map.scrollWidth - map.clientWidth / 2, top: y * map.scrollHeight - map.clientHeight / 2, behavior: "smooth" });
+}
+
+function deleteItem(id) {
+  data = data.filter(i => i.id !== id);
+  save(); render();
+}
+
+function openForm(type, coords) {
+  const wrapper = document.createElement("div");
+  wrapper.style.position = "fixed";
+  wrapper.style.top = "50%";
+  wrapper.style.left = "50%";
+  wrapper.style.transform = "translate(-50%, -50%)";
+  wrapper.style.background = "#222";
+  wrapper.style.padding = "20px";
+  wrapper.style.border = "1px solid #555";
+  wrapper.style.zIndex = "999";
+
+  wrapper.innerHTML = 
+    <label>Název:<br><input id='form-name' style='width:100%'></label><br><br>
+    <label>Popis:<br><textarea id='form-desc' style='width:100%'></textarea></label><br><br>
+    <label>Barva:<br>
+      <input type='color' id='form-color' value='#00ffff'>
+      <div style='margin-top:5px;'>
+        <span style='cursor:pointer;display:inline-block;width:20px;height:20px;background:#ff0000;border:1px solid #555;margin-right:5px;' onclick="document.getElementById('form-color').value = '#ff0000'"></span>
+        <span style='cursor:pointer;display:inline-block;width:20px;height:20px;background:#00ff00;border:1px solid #555;margin-right:5px;' onclick="document.getElementById('form-color').value = '#00ff00'"></span>
+        <span style='cursor:pointer;display:inline-block;width:20px;height:20px;background:#0000ff;border:1px solid #555;margin-right:5px;' onclick="document.getElementById('form-color').value = '#0000ff'"></span>
+        <span style='cursor:pointer;display:inline-block;width:20px;height:20px;background:#ffff00;border:1px solid #555;margin-right:5px;' onclick="document.getElementById('form-color').value = '#ffff00'"></span>
+        <span style='cursor:pointer;display:inline-block;width:20px;height:20px;background:#ff00ff;border:1px solid #555;margin-right:5px;' onclick="document.getElementById('form-color').value = '#ff00ff'"></span>
+      </div>
+    </label><br><br>
+    <label>Velikost:<br><input type='number' id='form-size' value='4' min='1' max='20'></label><br><br>
+    <div><b>Zařadit do kategorií:</b><br> +
+    ["Lokace", "Území", "Dodávky", "Ujíždění autem", "Ujíždění na motorce", "Útěk pěšky", "Sklady"]
+      .map(c => <label><input type='checkbox' value='${c}' checked> ${c}</label><br>).join("") +
+    </div><br><button id='form-ok'>OK</button>;
+
+  document.body.appendChild(wrapper);
+
+  document.getElementById("form-ok").onclick = () => {
+    const name = document.getElementById("form-name").value;
+    const desc = document.getElementById("form-desc").value;
+    const color = document.getElementById("form-color").value;
+    const size = +document.getElementById("form-size").value;
+    const selectedCats = Array.from(wrapper.querySelectorAll("input[type=checkbox]:checked")).map(i => i.value);
+
+    if (!name) return alert("Zadej název.");
+    const item = { id: Date.now(), type, name, desc, color, size, categories: selectedCats };
+    if (type === "point") { item.x = coords.x; item.y = coords.y; } else { item.points = [...coords]; }
+    if (!planningMode) data.push(item);
+    save(); render();
+    document.body.removeChild(wrapper);
+  };
+}
+
+map.addEventListener("dblclick", e => {
+  if (e.shiftKey) return;
+  const r = map.getBoundingClientRect(), x = (e.clientX - r.left) / r.width, y = (e.clientY - r.top) / r.height;
+  openForm("point", { x, y });
+});
+
+map.addEventListener("click", e => {
+  if (!e.shiftKey) return;
+  const r = map.getBoundingClientRect(), x = (e.clientX - r.left) / r.width, y = (e.clientY - r.top) / r.height;
+  currentPolygon.push({ x, y });
+  const point = document.createElement("div");
+  point.className = "polygon-point";
+  point.style.left = ${x * 100}%;
+  point.style.top = ${y * 100}%;
+  map.appendChild(point);
+  if (currentPolygon.length > 2 && confirm("Uzavřít území?")) {
+    openForm("polygon", currentPolygon);
+    currentPolygon = [];
+    document.querySelectorAll(".polygon-point").forEach(el => el.remove());
+  }
+});
+
+let scale = 1, originX = 0, originY = 0, isDragging = false, start = { x: 0, y: 0 };
+map.addEventListener("wheel", e => {
+  e.preventDefault();
+  scale += e.deltaY * -0.001;
+  scale = Math.min(Math.max(0.5, scale), 6);
+  map.style.transform = scale(${scale}) translate(${originX}px, ${originY}px);
+}, { passive: false });
+
+map.addEventListener("mousedown", e => { isDragging = true; start = { x: e.clientX, y: e.clientY }; });
+window.addEventListener("mouseup", () => isDragging = false);
+window.addEventListener("mousemove", e => {
+  if (!isDragging) return;
+  originX += (e.clientX - start.x) / scale;
+  originY += (e.clientY - start.y) / scale;
+  start = { x: e.clientX, y: e.clientY };
+  map.style.transform = scale(${scale}) translate(${originX}px, ${originY}px);
+});
+
+window.onload = () => render();
   </script>
 </body>
 </html>
