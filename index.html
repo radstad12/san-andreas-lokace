@@ -72,51 +72,10 @@
     const map = document.getElementById("map");
     const menu = document.getElementById("menu");
 
-    let scale = 1;
-    let originX = 0;
-    let originY = 0;
-    let isDragging = false;
-    let start = { x: 0, y: 0 };
+    function save() { localStorage.setItem("mapData", JSON.stringify(data)); }
 
-    map.addEventListener("wheel", e => {
-      e.preventDefault();
-      const delta = e.deltaY > 0 ? -0.1 : 0.1;
-      scale = Math.min(Math.max(0.5, scale + delta), 10);
-      updateMapTransform();
-    }, { passive: false });
-
-    map.addEventListener("mousedown", e => {
-      isDragging = true;
-      start = { x: e.clientX, y: e.clientY };
-    });
-
-    window.addEventListener("mouseup", () => isDragging = false);
-
-    window.addEventListener("mousemove", e => {
-      if (!isDragging) return;
-      originX += (e.clientX - start.x) / scale;
-      originY += (e.clientY - start.y) / scale;
-      start = { x: e.clientX, y: e.clientY };
-      updateMapTransform();
-    });
-
-    function updateMapTransform() {
-      map.style.transform = `scale(${scale}) translate(${originX}px, ${originY}px)`;
-    }
-
-    function save() {
-      localStorage.setItem("mapData", JSON.stringify(data));
-    }
-
-    function setFilter(type) {
-      filter = type;
-      render();
-    }
-
-    function togglePlanningMode() {
-      planningMode = !planningMode;
-      alert(`Plánovací režim: ${planningMode ? 'ZAPNUTÝ' : 'VYPNUTÝ'}`);
-    }
+    function setFilter(type) { filter = type; render(); }
+    function togglePlanningMode() { planningMode = !planningMode; alert(`Plánovací režim: ${planningMode ? 'ZAPNUTÝ' : 'VYPNUTÝ'}`); }
 
     function render() {
       menu.innerHTML = "";
@@ -126,6 +85,7 @@
         "🚗 Ujíždění autem": [], "🏍️ Ujíždění na motorce": [],
         "🏃 Útěk pěšky": [], "📦 Sklady": []
       };
+      const searchValue = document.getElementById("search")?.value.toLowerCase() || "";
       for (let cat in cats) {
         const cleanCat = cat.replace(/^[^\w\s]/, '').trim();
         const wrap = document.createElement("div");
@@ -133,22 +93,25 @@
         const count = data.filter(i => i.categories?.includes(cleanCat)).length;
         h2.textContent = `${cat} (${count})`;
         h2.className = "category-header";
-        h2.onclick = () => {
-          filter = cleanCat;
-          render();
-        };
+        h2.onclick = () => { setFilter(cleanCat); };
+
         const items = document.createElement("div");
         items.className = "category-items";
+
         data.forEach(item => {
-          if ((filter === "all" || item.categories?.includes(filter)) && item.categories?.includes(cleanCat)) {
-            item.type === "point" && renderMarker(item);
-            item.type === "polygon" && renderPolygon(item);
-            const div = document.createElement("div");
-            div.className = "item";
-            div.innerHTML = `<div><span class="dot" style="background:${item.color}"></span>${item.name}</div>`;
-            items.appendChild(div);
+          const matchesFilter = filter === "all" || item.type === filter || item.categories?.includes(filter);
+          if (matchesFilter && item.categories?.includes(cleanCat)) {
+            if (item.name?.toLowerCase().includes(searchValue)) {
+              item.type === "point" && renderMarker(item);
+              item.type === "polygon" && renderPolygon(item);
+              const div = document.createElement("div");
+              div.className = "item";
+              div.innerHTML = `<div><span class='dot' style='background:${item.color}'></span>${item.name}</div>`;
+              items.appendChild(div);
+            }
           }
         });
+
         wrap.appendChild(h2);
         wrap.appendChild(items);
         menu.appendChild(wrap);
@@ -196,13 +159,17 @@
 
     map.addEventListener("dblclick", e => {
       if (e.shiftKey) return;
-      const r = map.getBoundingClientRect(), x = (e.clientX - r.left) / r.width, y = (e.clientY - r.top) / r.height;
+      const r = map.getBoundingClientRect();
+      const x = (e.clientX - r.left) / r.width;
+      const y = (e.clientY - r.top) / r.height;
       openForm("point", { x, y });
     });
 
     map.addEventListener("click", e => {
       if (!e.shiftKey) return;
-      const r = map.getBoundingClientRect(), x = (e.clientX - r.left) / r.width, y = (e.clientY - r.top) / r.height;
+      const r = map.getBoundingClientRect();
+      const x = (e.clientX - r.left) / r.width;
+      const y = (e.clientY - r.top) / r.height;
       currentPolygon.push({ x, y });
       const point = document.createElement("div");
       point.className = "polygon-point";
@@ -233,13 +200,12 @@
         <label>Barva:<br>
           <input type='color' id='form-color' value='#00ffff'>
           <div style='margin-top:5px;'>
-            ${['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff'].map(c => `<span style='cursor:pointer;display:inline-block;width:20px;height:20px;background:${c};border:1px solid #555;margin-right:5px;' onclick="document.getElementById('form-color').value = '${c}'"></span>`).join('')}
+            ${['#ff0000','#00ff00','#0000ff','#ffff00','#ff00ff'].map(c => `<span style='cursor:pointer;display:inline-block;width:20px;height:20px;background:${c};border:1px solid #555;margin-right:5px;' onclick="document.getElementById('form-color').value = '${c}'"></span>`).join('')}
           </div>
         </label><br><br>
         <label>Velikost:<br><input type='number' id='form-size' value='6' min='1' max='20'></label><br><br>
         <div><b>Zařadit do kategorií:</b><br>` +
-        ["Lokace", "Území", "Dodávky", "Ujíždění autem", "Ujíždění na motorce", "Útěk pěšky", "Sklady"]
-        .map(c => `<label><input type='checkbox' value='${c}'> ${c}</label><br>`).join("") +
+        ["Lokace", "Území", "Dodávky", "Ujíždění autem", "Ujíždění na motorce", "Útěk pěšky", "Sklady"].map(c => `<label><input type='checkbox' value='${c}'> ${c}</label><br>`).join('') +
         `<br><button id='form-ok'>OK</button> <button onclick='this.closest("div").remove()'>Zrušit</button>`;
 
       document.body.appendChild(wrapper);
@@ -250,10 +216,9 @@
         const color = document.getElementById("form-color").value;
         const size = +document.getElementById("form-size").value;
         const selectedCats = Array.from(wrapper.querySelectorAll("input[type=checkbox]:checked")).map(i => i.value);
-        if (!name || selectedCats.length === 0) return alert("Vyplň název a vyber alespoň jednu kategorii.");
+        if (!name || selectedCats.length === 0) return alert("Vyplň název a vyber aspoň jednu kategorii.");
         const item = { id: Date.now(), type, name, desc, color, size, categories: selectedCats };
-        if (type === "point") { item.x = coords.x; item.y = coords.y; }
-        else { item.points = [...coords]; }
+        if (type === "point") { item.x = coords.x; item.y = coords.y; } else { item.points = [...coords]; }
         data.push(item);
         save();
         filter = "all";
