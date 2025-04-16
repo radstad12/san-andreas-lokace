@@ -40,7 +40,7 @@ let scale = 1, originX = 0, originY = 0, isDragging = false, start = { x: 0, y: 
 
 function loadData() {
   dbOnValue(dbRef(db, 'mapData'), (snapshot) => {
-    data = snapshot.val() ? Object.values(snapshot.val()) : [];
+    data = snapshot.val() ? Object.values(snapshot.val()).filter(i => !i._temp) : [];
     render();
   });
 }
@@ -98,7 +98,9 @@ function renderMarker(item) {
   el.style.top = `${item.y * 100}%`;
   el.style.background = item.color;
   el.style.width = el.style.height = `${item.size || 6}px`;
-  el.onmouseenter = e => showTooltip(e, `${item.name}: ${item.desc}`);
+  el.onmouseenter = e => {
+    if (item.name || item.desc) showTooltip(e, `${item.name || ''}${item.desc ? ': ' + item.desc : ''}`);
+  };
   el.onmouseleave = hideTooltip;
   map.appendChild(el);
 }
@@ -112,7 +114,9 @@ function renderPolygon(item) {
   poly.setAttribute("points", item.points.map(p => `${p.x * map.clientWidth},${p.y * map.clientHeight}`).join(" "));
   poly.setAttribute("fill", item.color + "55");
   poly.setAttribute("stroke", item.color);
-  poly.onmouseenter = e => showTooltip(e, `${item.name}: ${item.desc}`);
+  poly.onmouseenter = e => {
+    if (item.name || item.desc) showTooltip(e, `${item.name || ''}${item.desc ? ': ' + item.desc : ''}`);
+  };
   poly.onmouseleave = hideTooltip;
   svg.appendChild(poly);
   map.appendChild(svg);
@@ -162,7 +166,13 @@ function openForm(type, coords) {
     const item = { id: Date.now(), type, name, desc, color, size, categories: selectedCats };
     if (type === "point") { item.x = coords.x; item.y = coords.y; }
     else { item.points = coords; }
-    if (!planningMode) saveItem(item);
+    if (!planningMode) {
+      saveItem(item);
+    } else {
+      item._temp = true;
+      data.push(item);
+      render();
+    }
     wrapper.remove();
   };
 }
