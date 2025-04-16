@@ -82,6 +82,7 @@
     const tooltip = document.getElementById("tooltip");
     const map = document.getElementById("map");
     const menu = document.getElementById("menu");
+    const categoryVisibility = {};
 
     function save() {
       if (!planningMode) localStorage.setItem("mapData", JSON.stringify(data));
@@ -110,16 +111,28 @@
       const search = document.getElementById("search").value.toLowerCase();
 
       for (let cat of cats) {
+        if (!(cat in categoryVisibility)) categoryVisibility[cat] = true;
+
         const header = document.createElement("button");
         header.className = "category-header";
         header.textContent = `${cat} (${data.filter(i => i.categories?.includes(cat)).length})`;
         const items = document.createElement("div");
         items.className = "category-items";
-        items.style.display = "block";
+        items.style.display = categoryVisibility[cat] ? "block" : "none";
+
+        header.onclick = () => {
+          categoryVisibility[cat] = !categoryVisibility[cat];
+          render();
+        };
 
         data.forEach(item => {
           const inSearch = item.name?.toLowerCase().includes(search);
-          if (item.categories.includes(cat) && (filter === 'all' || item.categories.includes(filter)) && (!search || inSearch)) {
+          if (
+            item.categories.includes(cat) &&
+            (filter === 'all' || item.categories.includes(filter)) &&
+            (!search || inSearch) &&
+            categoryVisibility[cat]
+          ) {
             item.type === 'point' && renderMarker(item);
             item.type === 'polygon' && renderPolygon(item);
             const div = document.createElement("div");
@@ -171,18 +184,6 @@
 
     function hideTooltip() { tooltip.style.display = "none"; }
 
-    function openForm(type, coords) {
-      const wrapper = document.createElement("div");
-      wrapper.style.position = "fixed";
-      wrapper.style.top = "50%";
-      wrapper.style.left = "50%";
-      wrapper.style.transform = "translate(-50%, -50%)";
-      wrapper.style.background = "#222";
-      wrapper.style.padding = "20px";
-      wrapper.style.border = "1px solid #555";
-      wrapper.style.zIndex = "999";
-      wrapper.style.color = "white";
-      wrapper.innerHTML = `
         <label>Název:<br><input id='form-name' style='width:100%'></label><br><br>
         <label>Popis:<br><textarea id='form-desc' style='width:100%'></textarea></label><br><br>
         <label>Barva:<br><input type='color' id='form-color' value='#00ffff'></label><br><br>
