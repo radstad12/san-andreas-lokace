@@ -129,7 +129,6 @@
         items.style.display = "block";
         header.onclick = () => {
           items.style.display = items.style.display === 'none' ? 'block' : 'none';
-          filter = cat;
           render();
         };
 
@@ -157,12 +156,13 @@
       el.style.top = `${item.y * 100}%`;
       el.style.background = item.color;
       el.style.width = el.style.height = `${item.size || 6}px`;
+      el.title = item.name;
       el.addEventListener("mouseenter", e => showTooltip(e, `${item.name}`));
       el.addEventListener("mouseleave", hideTooltip);
       el.addEventListener("click", () => alert(item.desc));
       el.addEventListener("contextmenu", e => {
         e.preventDefault();
-        if (confirm("Smazat nebo upravit tento bod?")) deleteItem(item.id);
+        if (confirm("Smazat tento bod?")) deleteItem(item.id);
       });
       map.appendChild(el);
     }
@@ -176,12 +176,13 @@
       poly.setAttribute("points", item.points.map(p => `${p.x * map.clientWidth},${p.y * map.clientHeight}`).join(" "));
       poly.setAttribute("fill", item.color + "55");
       poly.setAttribute("stroke", item.color);
+      poly.setAttribute("title", item.name);
       poly.addEventListener("mouseenter", e => showTooltip(e, `${item.name}`));
       poly.addEventListener("mouseleave", hideTooltip);
       poly.addEventListener("click", () => alert(item.desc));
       poly.addEventListener("contextmenu", e => {
         e.preventDefault();
-        if (confirm("Smazat nebo upravit toto území?")) deleteItem(item.id);
+        if (confirm("Smazat toto území?")) deleteItem(item.id);
       });
       svg.appendChild(poly);
       map.appendChild(svg);
@@ -236,17 +237,9 @@
 
     map.addEventListener("wheel", e => {
       e.preventDefault();
-      const rect = map.getBoundingClientRect();
-      const zoomSpeed = 0.0035;
-      const oldScale = scale;
-
-      const mouseX = (e.clientX - rect.left - originX * oldScale) / oldScale;
-      const mouseY = (e.clientY - rect.top - originY * oldScale) / oldScale;
+      const zoomSpeed = 0.0015;
       scale += -e.deltaY * zoomSpeed;
-      scale = Math.max(0.2, Math.min(scale, 10));
-      originX -= mouseX * (scale - oldScale);
-      originY -= mouseY * (scale - oldScale);
-
+      scale = Math.max(0.2, Math.min(scale, 8));
       map.style.transform = `scale(${scale}) translate(${originX}px, ${originY}px)`;
     }, { passive: false });
 
