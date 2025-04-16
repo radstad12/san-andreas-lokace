@@ -101,38 +101,48 @@
     }
 
     function render() {
-      menu.innerHTML = "";
-      map.querySelectorAll(".marker, .polygon-point, svg.polygon").forEach(el => el.remove());
-      const cats = [
-        "📍 Lokace", "🗺️ Území", "🚚 Dodávky",
-        "🚗 Ujíždění autem", "🏍️ Ujíždění na motorce",
-        "🏃‍♂️ Útěk pěšky", "📦 Sklady"
-      ];
-      const search = document.getElementById("search").value.toLowerCase();
+  menu.innerHTML = "";
+  map.querySelectorAll(".marker, .polygon-point, svg.polygon").forEach(el => el.remove());
+  const cats = [
+    "📍 Lokace", "🗺️ Území", "🚚 Dodávky",
+    "🚗 Ujíždění autem", "🏍️ Ujíždění na motorce",
+    "🏃‍♂️ Útěk pěšky", "📦 Sklady"
+  ];
+  const search = document.getElementById("search").value.toLowerCase();
 
-      for (let cat of cats) {
-        const header = document.createElement("button");
-        header.className = "category-header";
-        header.textContent = `${cat} (${data.filter(i => i.categories?.includes(cat)).length})`;
-        header.onclick = () => { filter = cat; render(); };
+  for (let cat of cats) {
+    const header = document.createElement("button");
+    header.className = "category-header";
+    header.textContent = `${cat} (${data.filter(i => i.categories?.includes(cat)).length})`;
+    header.onclick = () => {
+      const section = header.nextElementSibling;
+      section.style.display = section.style.display === 'none' ? 'block' : 'none';
+      render();
+    };
 
-        const items = document.createElement("div");
-        items.className = "category-items";
+    const items = document.createElement("div");
+    items.className = "category-items";
+    items.style.display = "block";
 
-        data.forEach(item => {
-          if ((filter === 'all' || item.categories.includes(filter)) && item.categories.includes(cat)) {
-            if (!item.name?.toLowerCase().includes(search)) return;
-            item.type === 'point' && renderMarker(item);
-            item.type === 'polygon' && renderPolygon(item);
-            const div = document.createElement("div");
-            div.className = "item";
-            div.innerHTML = `<div><span class="dot" style="background:${item.color}"></span>${item.name}</div><span class="delete-btn" onclick="deleteItem(${item.id}); event.stopPropagation()">🗑</span>`;
-            items.appendChild(div);
-          }
-        });
+    let match = false;
+    data.forEach(item => {
+      const inSearch = item.name?.toLowerCase().includes(search);
+      if (item.categories.includes(cat) && (filter === 'all' || item.categories.includes(filter)) && (!search || inSearch)) {
+        match = true;
+        item.type === 'point' && renderMarker(item);
+        item.type === 'polygon' && renderPolygon(item);
+        const div = document.createElement("div");
+        div.className = "item";
+        div.innerHTML = `<div><span class="dot" style="background:${item.color}"></span>${item.name}</div><span class="delete-btn" onclick="deleteItem(${item.id}); event.stopPropagation()">🗑</span>`;
+        items.appendChild(div);
+      }
+    });
 
-        menu.appendChild(header);
-        menu.appendChild(items);
+    if (search && match) items.style.display = 'block';
+    menu.appendChild(header);
+    menu.appendChild(items);
+  }
+}
       }
     }
 
@@ -260,3 +270,4 @@
   </script>
 </body>
 </html>
+
