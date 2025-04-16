@@ -80,7 +80,7 @@
     <h1>Archangels MC</h1>
     <div id="controls">
       <input type="text" id="search" placeholder="🔍 Hledat..." oninput="render()">
-      <button id="toggle-all">Zobrazit / Skrýt vše</button>
+      <button id="show-all" onclick="toggleAllCategories()">Zobrazit / Skrýt vše</button>
       <button onclick="togglePlanningMode()">📝 Plánovat</button>
     </div>
     <div style="height: 20px;"></div>
@@ -102,14 +102,14 @@
     ];
     let expandedCategories = new Set(categories);
 
-    document.getElementById("toggle-all").onclick = () => {
+    function toggleAllCategories() {
       if (expandedCategories.size === categories.length) {
         expandedCategories.clear();
       } else {
         expandedCategories = new Set(categories);
       }
       render();
-    };
+    }
 
     function togglePlanningMode() {
       planningMode = !planningMode;
@@ -117,7 +117,7 @@
     }
 
     function save() {
-      if (!planningMode) localStorage.setItem("mapData", JSON.stringify(data));
+      localStorage.setItem("mapData", JSON.stringify(data));
     }
 
     function render() {
@@ -129,11 +129,8 @@
         header.className = "category-header";
         header.textContent = `${cat} (${data.filter(i => i.categories?.includes(cat)).length})`;
         header.onclick = () => {
-          if (expandedCategories.has(cat)) {
-            expandedCategories.delete(cat);
-          } else {
-            expandedCategories.add(cat);
-          }
+          if (expandedCategories.has(cat)) expandedCategories.delete(cat);
+          else expandedCategories.add(cat);
           render();
         };
 
@@ -193,14 +190,11 @@
       tooltip.textContent = text;
     }
 
-    function hideTooltip() {
-      tooltip.style.display = "none";
-    }
+    function hideTooltip() { tooltip.style.display = "none"; }
 
     function deleteItem(id) {
       data = data.filter(i => i.id !== id);
-      save();
-      render();
+      save(); render();
     }
 
     function openForm(type, coords) {
@@ -236,13 +230,14 @@
         if (type === "point") { item.x = coords.x; item.y = coords.y; }
         else { item.points = coords; }
         data.push(item);
-        save(); render();
+        if (!planningMode) save();
+        render();
         wrapper.remove();
       };
     }
 
     map.addEventListener("dblclick", e => {
-      if (!planningMode || e.shiftKey) return;
+      if (e.shiftKey) return;
       const r = map.getBoundingClientRect();
       const x = (e.clientX - r.left) / r.width;
       const y = (e.clientY - r.top) / r.height;
@@ -250,7 +245,7 @@
     });
 
     map.addEventListener("click", e => {
-      if (!planningMode || !e.shiftKey) return;
+      if (!e.shiftKey) return;
       const r = map.getBoundingClientRect();
       const x = (e.clientX - r.left) / r.width;
       const y = (e.clientY - r.top) / r.height;
