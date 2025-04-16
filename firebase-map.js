@@ -1,12 +1,13 @@
 // firebase-map.js
 import { getDatabase, ref, onValue, set, remove, push } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-database.js";
 
-const db = window.firebaseDB;
-const dbRef = window.firebaseRef;
-const dbOnValue = window.firebaseOnValue;
-const dbSet = window.firebaseSet;
-const dbRemove = window.firebaseRemove;
-const dbPush = window.firebasePush;
+const app = window.firebaseApp || {};
+const db = getDatabase(app);
+const dbRef = ref;
+const dbOnValue = onValue;
+const dbSet = set;
+const dbRemove = remove;
+const dbPush = push;
 
 const map = document.getElementById("map");
 const menu = document.getElementById("menu");
@@ -21,6 +22,7 @@ let data = [];
 let expandedCategories = new Set(categories);
 let planningMode = false;
 let currentPolygon = [];
+let scale = 1, originX = 0, originY = 0, isDragging = false, start = { x: 0, y: 0 };
 
 function loadData() {
   dbOnValue(dbRef(db, 'mapData'), (snapshot) => {
@@ -116,11 +118,15 @@ function hideTooltip() {
 function openForm(type, coords) {
   const wrapper = document.createElement("div");
   wrapper.id = "form-wrapper";
-  wrapper.innerHTML = `
-    <label>Název:<br><input id='form-name' style='width:100%'></label><br><br>
-    <label>Popis:<br><textarea id='form-desc' style='width:100%'></textarea></label><br><br>
-    <label>Barva:<br><input type='color' id='form-color' value='#00ffff'></label><br><br>
-    <label>Velikost:<br><input type='number' id='form-size' value='6' min='2' max='20'></label><br><br>
+  wrapper.innerHTML = `<label>Velikost:<br><input type='number' id='form-size' value='6' min='2' max='20'></label><br><br>
+    <div><b>Přednastavené barvy:</b><br>
+      <span class='color-sample' style='background:#ff0000' onclick="document.getElementById('form-color').value = '#ff0000'"></span>
+      <span class='color-sample' style='background:#00ff00' onclick="document.getElementById('form-color').value = '#00ff00'"></span>
+      <span class='color-sample' style='background:#0000ff' onclick="document.getElementById('form-color').value = '#0000ff'"></span>
+      <span class='color-sample' style='background:#ffff00' onclick="document.getElementById('form-color').value = '#ffff00'"></span>
+      <span class='color-sample' style='background:#ff00ff' onclick="document.getElementById('form-color').value = '#ff00ff'"></span>
+      <span class='color-sample' style='background:#00ffff' onclick="document.getElementById('form-color').value = '#00ffff'"></span>
+    </div><br>
     <div><b>Zařadit do kategorií:</b><br>` +
     categories.map(c => `<label><input type='checkbox' value='${c}'> ${c}</label>`).join("<br>") +
     `</div><br>
@@ -143,7 +149,6 @@ function openForm(type, coords) {
   };
 }
 
-// Eventy mapy
 map.addEventListener("dblclick", e => {
   if (e.shiftKey) return;
   const r = map.getBoundingClientRect();
@@ -170,6 +175,28 @@ map.addEventListener("click", e => {
   }
 });
 
+map.addEventListener("wheel", e => {
+  e.preventDefault();
+  scale += e.deltaY * -0.001;
+  scale = Math.min(Math.max(0.5, scale), 8);
+  map.style.transform = `scale(${scale}) translate(${originX}px, ${originY}px)`;
+}, { passive: false });
+
+map.addEventListener("mousedown", e => {
+  isDragging = true;
+  start = { x: e.clientX, y: e.clientY };
+});
+
+window.addEventListener("mouseup", () => isDragging = false);
+
+window.addEventListener("mousemove", e => {
+  if (!isDragging) return;
+  originX += (e.clientX - start.x) / scale;
+  originY += (e.clientY - start.y) / scale;
+  start = { x: e.clientX, y: e.clientY };
+  map.style.transform = `scale(${scale}) translate(${originX}px, ${originY}px)`;
+});
+
 window.onload = () => {
   document.getElementById("planning-toggle").onclick = () => {
     planningMode = !planningMode;
@@ -181,8 +208,6 @@ window.onload = () => {
     render();
   };
   document.getElementById("search").oninput = () => render();
-
   window.deleteItem = deleteItem;
-
   loadData();
 };
