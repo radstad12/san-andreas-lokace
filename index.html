@@ -19,10 +19,10 @@
       margin-bottom: 10px;
     }
     #controls input, #controls button {
-  width: 100%; margin-bottom: 5px; padding: 8px;
-  background: #333; color: white; border: none; text-align: left;
-  transition: background 0.2s, cursor 0.2s;
-}
+      width: 100%; margin-bottom: 5px; padding: 8px;
+      background: #333; color: white; border: none; text-align: left;
+      transition: background 0.2s, cursor 0.2s;
+    }
     .category-header {
       width: 100%; margin-bottom: 5px; padding: 8px;
       background: #333; color: white; border: none;
@@ -67,7 +67,6 @@
     <div id="controls">
       <input type="text" id="search" placeholder="🔍 Hledat..." oninput="render()">
       <button onclick="setFilter('all')" style="cursor: pointer;">Zobrazit vše</button>
-      
       <button onclick="togglePlanningMode()">📝 Plánovat</button>
     </div>
     <div style="height: 20px;"></div>
@@ -101,48 +100,37 @@
     }
 
     function render() {
-  menu.innerHTML = "";
-  map.querySelectorAll(".marker, .polygon-point, svg.polygon").forEach(el => el.remove());
-  const cats = [
-    "📍 Lokace", "🗺️ Území", "🚚 Dodávky",
-    "🚗 Ujíždění autem", "🏍️ Ujíždění na motorce",
-    "🏃‍♂️ Útěk pěšky", "📦 Sklady"
-  ];
-  const search = document.getElementById("search").value.toLowerCase();
+      menu.innerHTML = "";
+      map.querySelectorAll(".marker, .polygon-point, svg.polygon").forEach(el => el.remove());
+      const cats = [
+        "📍 Lokace", "🗺️ Území", "🚚 Dodávky",
+        "🚗 Ujíždění autem", "🏍️ Ujíždění na motorce",
+        "🏃‍♂️ Útěk pěšky", "📦 Sklady"
+      ];
+      const search = document.getElementById("search").value.toLowerCase();
 
-  for (let cat of cats) {
-    const header = document.createElement("button");
-    header.className = "category-header";
-    header.textContent = `${cat} (${data.filter(i => i.categories?.includes(cat)).length})`;
-    header.onclick = () => {
-      const section = header.nextElementSibling;
-      section.style.display = section.style.display === 'none' ? 'block' : 'none';
-      render();
-    };
+      for (let cat of cats) {
+        const header = document.createElement("button");
+        header.className = "category-header";
+        header.textContent = `${cat} (${data.filter(i => i.categories?.includes(cat)).length})`;
+        const items = document.createElement("div");
+        items.className = "category-items";
+        items.style.display = "block";
 
-    const items = document.createElement("div");
-    items.className = "category-items";
-    items.style.display = "block";
+        data.forEach(item => {
+          const inSearch = item.name?.toLowerCase().includes(search);
+          if (item.categories.includes(cat) && (filter === 'all' || item.categories.includes(filter)) && (!search || inSearch)) {
+            item.type === 'point' && renderMarker(item);
+            item.type === 'polygon' && renderPolygon(item);
+            const div = document.createElement("div");
+            div.className = "item";
+            div.innerHTML = `<div><span class="dot" style="background:${item.color}"></span>${item.name}</div><span class="delete-btn" onclick="deleteItem(${item.id}); event.stopPropagation()">🗑</span>`;
+            items.appendChild(div);
+          }
+        });
 
-    let match = false;
-    data.forEach(item => {
-      const inSearch = item.name?.toLowerCase().includes(search);
-      if (item.categories.includes(cat) && (filter === 'all' || item.categories.includes(filter)) && (!search || inSearch)) {
-        match = true;
-        item.type === 'point' && renderMarker(item);
-        item.type === 'polygon' && renderPolygon(item);
-        const div = document.createElement("div");
-        div.className = "item";
-        div.innerHTML = `<div><span class="dot" style="background:${item.color}"></span>${item.name}</div><span class="delete-btn" onclick="deleteItem(${item.id}); event.stopPropagation()">🗑</span>`;
-        items.appendChild(div);
-      }
-    });
-
-    if (search && match) items.style.display = 'block';
-    menu.appendChild(header);
-    menu.appendChild(items);
-  }
-}
+        menu.appendChild(header);
+        menu.appendChild(items);
       }
     }
 
@@ -270,4 +258,3 @@
   </script>
 </body>
 </html>
-
