@@ -23,6 +23,8 @@ const dbPush = push;
 
 // ----- MAP LOGIKA ZDE -----
 
+const polygonLayer = document.getElementById("polygon-layer");
+const markerLayer = document.getElementById("marker-layer");
 const map = document.getElementById("map");
 const menu = document.getElementById("menu");
 const tooltip = document.getElementById("tooltip");
@@ -57,7 +59,8 @@ function deleteItem(id) {
 
 function render() {
   menu.innerHTML = "";
-  map.querySelectorAll(".marker, .polygon-point, svg.polygon").forEach(el => el.remove());
+  markerLayer.innerHTML = "";
+  polygonLayer.innerHTML = "";
   const search = document.getElementById("search").value.toLowerCase();
   for (let cat of categories) {
     const header = document.createElement("button");
@@ -115,7 +118,7 @@ function renderMarker(item) {
     showTooltip(e, text);
   };
   el.onmouseleave = hideTooltip;
-  map.appendChild(el);
+  markerLayer.appendChild(el);
 }
 
 function renderPolygon(item) {
@@ -144,7 +147,7 @@ function renderPolygon(item) {
   poly.onmouseleave = hideTooltip;
 
   svg.appendChild(poly);
-  map.appendChild(svg);
+  polygonLayer.appendChild(svg);
 }
 
 function showTooltip(e, text) {
