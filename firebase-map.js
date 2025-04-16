@@ -76,7 +76,8 @@ function render() {
     data.forEach(item => {
       if (!item.categories.includes(cat)) return;
       if (!expandedCategories.has(cat)) return;
-      if (item.name?.toLowerCase().includes(search) || item.desc?.toLowerCase().includes(search)) {
+      const matchSearch = item.name?.toLowerCase().includes(search) || item.desc?.toLowerCase().includes(search);
+        if (matchSearch || search === "") {
         if (item.type === 'point') renderMarker(item);
         if (item.type === 'polygon') renderPolygon(item);
         const div = document.createElement("div");
