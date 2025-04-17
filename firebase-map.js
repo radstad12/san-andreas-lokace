@@ -235,6 +235,30 @@ function renderPolygon(item) {
   };
   poly.onmouseleave = hideTooltip;
   svg.appendChild(poly);
+  // ikona do středu polygonu
+  if (item.points?.length) {
+    const bbox = poly.getBBox();
+    const centerX = bbox.x + bbox.width / 2;
+    const centerY = bbox.y + bbox.height / 2;
+    const icon = document.createElement("div");
+    icon.className = "polygon-icon";
+    icon.textContent = getCategoryIcons(item.categories || item.category);
+    icon.style.position = "absolute";
+    icon.style.left = centerX + "px";
+    icon.style.top = centerY + "px";
+    icon.style.transform = "translate(-50%, -50%)";
+    icon.style.pointerEvents = "none";
+    icon.style.fontSize = "14px";
+    icon.style.lineHeight = "1";
+    icon.style.zIndex = "1000";
+    icon.style.textAlign = "center";
+    icon.style.display = "flex";
+    icon.style.alignItems = "center";
+    icon.style.justifyContent = "center";
+    icon.id = "polygon-icon-" + item.id;
+    map.appendChild(icon);
+  }
+
   map.appendChild(svg);
   // ikona do středu polygonu
   if (item.points?.length) {
@@ -480,6 +504,18 @@ style.innerHTML += `
   transform: translate(-50%, -50%);
   pointer-events: none;
   line-height: 1;
+}
+`;
+  style.innerHTML += `
+.polygon-icon {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  line-height: 1;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 `;
   document.head.appendChild(style);
