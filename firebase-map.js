@@ -540,5 +540,51 @@ window.deleteItem = id => {
   if (confirm(confirmText)) deleteItem(id);
 };
 
+
+// ======= MiniMapa =======
+const minimap = document.createElement("div");
+minimap.id = "minimap";
+minimap.style.position = "absolute";
+minimap.style.top = "10px";
+minimap.style.right = "10px";
+minimap.style.width = "160px";
+minimap.style.height = "100px";
+minimap.style.border = "2px solid white";
+minimap.style.background = "#000";
+minimap.style.zIndex = "9999";
+minimap.style.opacity = "0.6";
+minimap.style.pointerEvents = "none";
+document.body.appendChild(minimap);
+
+// ======= Drag & Drop pro body =======
+map.addEventListener("mousedown", e => {
+  if (!e.target.classList.contains("marker")) return;
+  const marker = e.target;
+  const id = marker.id.split("marker-")[1];
+  const r = map.getBoundingClientRect();
+
+  const move = e2 => {
+    const x = (e2.clientX - r.left) / r.width;
+    const y = (e2.clientY - r.top) / r.height;
+    marker.style.left = x * 100 + "%";
+    marker.style.top = y * 100 + "%";
+
+    const index = data.findIndex(i => i.id == id);
+    if (index !== -1) {
+      data[index].x = x;
+      data[index].y = y;
+      saveItem(data[index]);
+    }
+  };
+
+  const up = () => {
+    window.removeEventListener("mousemove", move);
+    window.removeEventListener("mouseup", up);
+  };
+
+  window.addEventListener("mousemove", move);
+  window.addEventListener("mouseup", up);
+});
+
   loadData();
 };
