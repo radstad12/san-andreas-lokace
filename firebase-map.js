@@ -289,6 +289,11 @@ map.addEventListener("click", e => {
 
 // Wheel zoom s limitem pouze pro přiblížení (ne oddálení pod scale 1)
 map.addEventListener("wheel", e => {
+    const rect = map.getBoundingClientRect();
+    const offsetX = e.clientX - rect.left;
+    const offsetY = e.clientY - rect.top;
+    const prevScale = scale;
+
   e.preventDefault();
   const delta = e.deltaY * -0.001;
   const newScale = scale + delta;
