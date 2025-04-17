@@ -323,3 +323,45 @@ document.head.appendChild(style);
   window.deleteItem = deleteItem;
   loadData();
 };
+
+function zoomToItem(item) {
+    console.log("Zooming to item:", item);
+
+    // Vyhledání odpovídajícího markeru podle ID
+    const marker = document.getElementById('marker-' + item.id);
+    console.log("Found marker:", marker);
+
+    if (!marker) return;
+
+    const map = document.getElementById("map");
+    const rect = map.getBoundingClientRect();
+    const markerRect = marker.getBoundingClientRect();
+
+    const centerX = markerRect.left + markerRect.width / 2 - rect.left;
+    const centerY = markerRect.top + markerRect.height / 2 - rect.top;
+
+    const mapImage = document.getElementById("map-image");
+
+    // Posun mapy tak, aby marker byl uprostřed
+    const offsetX = rect.width / 2 - centerX;
+    const offsetY = rect.height / 2 - centerY;
+
+    const currentTransform = map.style.transform.match(/scale\(([^)]+)\) translate\(([^,]+)px, ([^)]+)px\)/);
+    const scale = parseFloat(currentTransform?.[1] || 1);
+
+    // Nastavíme přiblížení na 4x
+    map.style.transform = `scale(4) translate(${offsetX / 4}px, ${offsetY / 4}px)`;
+}
+
+// Napojení na kliknutí v levém menu
+document.addEventListener("DOMContentLoaded", () => {
+    document.querySelectorAll(".item").forEach(el => {
+        el.addEventListener("click", () => {
+            const id = el.getAttribute("data-id");
+            const name = el.querySelector(".name")?.textContent?.trim();
+
+            const item = { id, name }; // Předáme jen ID a jméno
+            zoomToItem(item);
+        });
+    });
+});
