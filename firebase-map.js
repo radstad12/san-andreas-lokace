@@ -460,7 +460,7 @@ style.innerHTML += `
 `;
   style.innerHTML += `
 .marker-icon {
-  font-size: 10px;
+  font-size: 6px;
   pointer-events: none;
   transform: translate(-50%, -50%);
   position: absolute;
