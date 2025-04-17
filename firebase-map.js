@@ -53,6 +53,10 @@ function saveItem(item) {
 
 function deleteItem(id) {
   dbRemove(dbRef(db, `mapData/${id}`));
+  const marker = document.getElementById(`marker-${id}`);
+  if (marker) marker.remove();
+  const label = document.getElementById(`marker-label-${id}`);
+  if (label) label.remove();
 }
 
 function render() {
