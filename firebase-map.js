@@ -56,7 +56,8 @@ function deleteItem(id) {
   const marker = document.getElementById(`marker-${id}`);
   if (marker) marker.remove();
   const label = document.getElementById(`marker-label-${id}`);
-  if (label) label.remove();
+    if (polygonLabel) polygonLabel.remove();
+  if (markerLabel) markerLabel.remove();
 }
 
 function render() {
@@ -102,8 +103,8 @@ function render() {
               label.id = "polygon-label-" + item.id;
               label.innerText = item.name + (item.desc ? ": " + item.desc : "");
               label.style.position = "absolute";
-              label.style.left = poly.getBoundingClientRect().x + map.offsetLeft + "px";
-              label.style.top = poly.getBoundingClientRect().y + map.offsetTop + "px";
+              label.style.left = rect.left + window.scrollX + rect.width / 2 + "px";
+              label.style.top = rect.top + window.scrollY - 30 + "px";
               label.style.transform = "translateX(-50%)";
               map.appendChild(label);
             }
@@ -137,14 +138,16 @@ function render() {
             const poly = map.querySelector(`polygon[data-id='${item.id}']`);
             if (poly) poly.classList.remove("highlight-polygon");
             const label = document.getElementById("polygon-label-" + item.id);
-            if (label) label.remove();
+              if (polygonLabel) polygonLabel.remove();
+  if (markerLabel) markerLabel.remove();
           }
 
           const marker = document.getElementById(`marker-${item.id}`);
           if (marker) {
             marker.classList.remove("highlight-marker");
             const label = document.getElementById("marker-label-" + item.id);
-            if (label) label.remove();
+              if (polygonLabel) polygonLabel.remove();
+  if (markerLabel) markerLabel.remove();
           }
         };
         div.innerHTML = `<div><span class="dot" style="background:${item.color}"></span>${item.name}</div><span class="delete-btn" onclick="window.deleteItem(${item.id}); event.stopPropagation()">🗑</span>`;
