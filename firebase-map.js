@@ -86,15 +86,6 @@ function render() {
         }
         const div = document.createElement("div");
         div.className = "item";
-    div.onclick = () => {
-      const centerX = item.x * map.offsetWidth;
-      const centerY = item.y * map.offsetHeight;
-      originX = (map.offsetWidth / 2 - centerX) / 4;
-      originY = (map.offsetHeight / 2 - centerY) / 4;
-      scale = 4;
-      map.style.transform = `scale(${scale}) translate(${originX}px, ${originY}px)`;
-    };
-    };
         div.innerHTML = `<div><span class="dot" style="background:${item.color}"></span>${item.name}</div><span class="delete-btn" onclick="window.deleteItem(${item.id}); event.stopPropagation()">🗑</span>`;
         items.appendChild(div);
       }
@@ -106,13 +97,12 @@ function render() {
 }
 
 function renderMarker(item) {
-  if (typeof item.x !== 'number' || typeof item.y !== 'number') {
+  if (typeof item.x !== 'number' || typeof item.y !== 'number') {)
     console.warn('Neplatné souřadnice bodu:', item);
     return;
   }
   const el = document.createElement("div");
   el.className = "marker";
-  el.id = `marker-${item.id}`;
   el.style.left = `${item.x * 100}%`;
   el.style.top = `${item.y * 100}%`;
   el.style.background = item.color;
