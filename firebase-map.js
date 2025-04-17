@@ -174,6 +174,7 @@ function render() {
 
 
 
+
 function renderMarker(item) {
   if (typeof item.x !== 'number' || typeof item.y !== 'number') return;
   const el = document.createElement("div");
@@ -185,7 +186,7 @@ function renderMarker(item) {
   const size = item.size || 6;
   el.style.width = el.style.height = size + "px";
 
-  // Přidání vystředěné ikony
+  // Přidání dokonale vystředěné ikony
   const icon = document.createElement("div");
   icon.className = "marker-icon";
   icon.textContent = getCategoryIcons(item.categories || item.category);
@@ -194,11 +195,12 @@ function renderMarker(item) {
   icon.style.left = "50%";
   icon.style.transform = "translate(-50%, -50%)";
   icon.style.pointerEvents = "none";
-  icon.style.width = icon.style.height = `${size * 0.7}px`;
-  icon.style.fontSize = `${size * 0.7}px`;
+  icon.style.fontSize = `${size * 0.65}px`;
   icon.style.lineHeight = "1";
-  icon.style.textAlign = "center";
-  icon.style.zIndex = "1000";
+  icon.style.width = icon.style.height = `${size * 0.65}px`;
+  icon.style.display = "flex";
+  icon.style.alignItems = "center";
+  icon.style.justifyContent = "center";
   el.appendChild(icon);
 
   el.onmouseenter = e => {
@@ -210,6 +212,7 @@ function renderMarker(item) {
   el.onmouseleave = hideTooltip;
   map.appendChild(el);
 }
+
 
 
 
