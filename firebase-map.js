@@ -86,6 +86,24 @@ function render() {
         }
         const div = document.createElement("div");
         div.className = "item";
+        div.onmouseenter = () => {
+          scale = 1;
+          originX = 0;
+          originY = 0;
+          map.style.transform = `scale(${scale}) translate(${originX}px, ${originY}px)`;
+          const marker = document.querySelector(`#marker-${item.id}`);
+          if (marker) {
+            marker.classList.add("pulsing");
+            marker.style.transform = "scale(3)";
+          }
+        };
+        div.onmouseleave = () => {
+          const marker = document.querySelector(`#marker-${item.id}`);
+          if (marker) {
+            marker.classList.remove("pulsing");
+            marker.style.transform = "";
+          }
+        };
         div.innerHTML = `<div><span class="dot" style="background:${item.color}"></span>${item.name}</div><span class="delete-btn" onclick="window.deleteItem(${item.id}); event.stopPropagation()">🗑</span>`;
         items.appendChild(div);
       }
@@ -97,7 +115,7 @@ function render() {
 }
 
 function renderMarker(item) {
-  if (typeof item.x !== 'number' || typeof item.y !== 'number') {)
+  if (typeof item.x !== 'number' || typeof item.y !== 'number') {
     console.warn('Neplatné souřadnice bodu:', item);
     return;
   }
@@ -275,6 +293,15 @@ window.addEventListener("keyup", e => { keysPressed[e.key.toLowerCase()] = false
 window.onload = () => {
 const style = document.createElement("style");
 style.innerHTML = `
+@keyframes pulse {
+    0% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.3); opacity: 0.6; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  .marker.pulsing {
+    animation: pulse 1s infinite;
+    z-index: 1000;
+  }
   /* 1. Vyrovnaná šířka input a tlačítka */
   #search, #show-all {
     width: calc(100% - 20px);
