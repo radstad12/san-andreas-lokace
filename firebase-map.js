@@ -92,6 +92,23 @@ function render() {
         div.className = "item";
         div.dataset.id = item.id;
         div.onmouseenter = () => {
+          if (item.type === 'polygon') {
+            const poly = map.querySelector(`polygon[data-id='${item.id}']`);
+            if (poly) {
+              poly.classList.add("highlight-polygon");
+              const rect = poly.getBoundingClientRect();
+              const label = document.createElement("div");
+              label.className = "marker-label polygon-label";
+              label.id = "polygon-label-" + item.id;
+              label.innerText = item.name + (item.desc ? ": " + item.desc : "");
+              label.style.position = "absolute";
+              label.style.left = rect.left + window.scrollX + rect.width / 2 + "px";
+              label.style.top = rect.top + window.scrollY - 30 + "px";
+              label.style.transform = "translateX(-50%)";
+              map.appendChild(label);
+            }
+          }
+
           const marker = document.getElementById(`marker-${item.id}`);
           if (marker) {
             marker.classList.add("highlight-marker");
@@ -116,6 +133,13 @@ function render() {
           }
         };
         div.onmouseleave = () => {
+          if (item.type === 'polygon') {
+            const poly = map.querySelector(`polygon[data-id='${item.id}']`);
+            if (poly) poly.classList.remove("highlight-polygon");
+            const label = document.getElementById("polygon-label-" + item.id);
+            if (label) label.remove();
+          }
+
           const marker = document.getElementById(`marker-${item.id}`);
           if (marker) {
             marker.classList.remove("highlight-marker");
@@ -164,6 +188,7 @@ function renderPolygon(item) {
   poly.setAttribute("points", item.points.map(p => `${p.x * map.clientWidth},${p.y * map.clientHeight}`).join(" "));
   poly.setAttribute("fill", item.color + "55");
   poly.setAttribute("stroke", item.color);
+  poly.setAttribute("data-id", item.id);
   poly.onmouseenter = e => {
     const name = item.name?.trim() || "(bez názvu)";
     const desc = item.desc?.trim() || "";
