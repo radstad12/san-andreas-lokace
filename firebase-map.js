@@ -56,7 +56,6 @@ function deleteItem(id) {
 }
 
 function render() {
-  console.log("[DEBUG] Spouštím render s daty:", data);
   menu.innerHTML = "";
   map.querySelectorAll(".marker, .polygon-point, svg.polygon").forEach(el => el.remove());
   const search = document.getElementById("search").value.toLowerCase();
@@ -77,7 +76,7 @@ function render() {
     data.forEach(item => {
       if (!item.categories?.includes(cat)) return;
       if (!expandedCategories.has(cat)) return;
-      const matchSearch = ((item.name || "").toLowerCase().includes(search) || (item.desc || "").toLowerCase().includes(search));
+      const matchSearch = (item.name && item.name.toLowerCase().includes(search)) || (item.desc && item.desc.toLowerCase().includes(search));
       if (search === "" || matchSearch) {
         if (item.type === 'point') {
           renderMarker(item);
@@ -87,19 +86,6 @@ function render() {
         }
         const div = document.createElement("div");
         div.className = "item";
-        div.dataset.id = item.id;
-        div.onmouseenter = () => {
-          const marker = document.getElementById(`marker-${item.id}`);
-          if (marker) {
-            marker.classList.add("highlight-marker");
-          }
-        };
-        div.onmouseleave = () => {
-          const marker = document.getElementById(`marker-${item.id}`);
-          if (marker) {
-            marker.classList.remove("highlight-marker");
-          }
-        };
         div.innerHTML = `<div><span class="dot" style="background:${item.color}"></span>${item.name}</div><span class="delete-btn" onclick="window.deleteItem(${item.id}); event.stopPropagation()">🗑</span>`;
         items.appendChild(div);
       }
@@ -111,13 +97,12 @@ function render() {
 }
 
 function renderMarker(item) {
-  if (typeof item.x !== 'number' || typeof item.y !== 'number') {
+  if (typeof item.x !== 'number' || typeof item.y !== 'number') {)
     console.warn('Neplatné souřadnice bodu:', item);
     return;
   }
   const el = document.createElement("div");
   el.className = "marker";
-  el.id = `marker-${item.id}`;
   el.style.left = `${item.x * 100}%`;
   el.style.top = `${item.y * 100}%`;
   el.style.background = item.color;
@@ -290,16 +275,6 @@ window.addEventListener("keyup", e => { keysPressed[e.key.toLowerCase()] = false
 window.onload = () => {
 const style = document.createElement("style");
 style.innerHTML = `
-@keyframes pulse {
-  0% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(1.3); opacity: 0.7; }
-  100% { transform: scale(1); opacity: 1; }
-}
-.highlight-marker {
-  transform: scale(5) !important;
-  animation: pulse 1s infinite;
-  z-index: 1000;
-}
   /* 1. Vyrovnaná šířka input a tlačítka */
   #search, #show-all {
     width: calc(100% - 20px);
