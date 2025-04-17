@@ -364,7 +364,20 @@ style.innerHTML += `
   transition: background-color 0.2s ease;
 }
 `;
+
+style.innerHTML += `
+.category-box {
+  background-color: rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+  padding: 8px;
+  transition: background-color 0.2s ease;
+}
+.category-box:hover {
+  background-color: rgba(255, 255, 255, 0.12);
+}
+`;
 document.head.appendChild(style);
+
 
 
   document.getElementById("planning-toggle").onclick = () => {
