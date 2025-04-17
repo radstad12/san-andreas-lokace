@@ -86,6 +86,7 @@ function render() {
         }
         const div = document.createElement("div");
         div.className = "item";
+        div.onclick = () => zoomToItem(item);
         div.innerHTML = `<div><span class="dot" style="background:${item.color}"></span>${item.name}</div><span class="delete-btn" onclick="window.deleteItem(${item.id}); event.stopPropagation()">🗑</span>`;
         items.appendChild(div);
       }
@@ -272,6 +273,19 @@ window.addEventListener("keyup", e => { keysPressed[e.key.toLowerCase()] = false
 
 
 
+function zoomToItem(item) {
+  if (!item || typeof item.x !== 'number' || typeof item.y !== 'number') return;
+  const mapImage = document.getElementById("map-image");
+  const rect = map.getBoundingClientRect();
+  const centerX = item.x * rect.width;
+  const centerY = item.y * rect.height;
+  const viewportWidth = rect.width;
+  const viewportHeight = rect.height;
+  scale = 4;
+  originX = -(centerX - viewportWidth / 2) / scale;
+  originY = -(centerY - viewportHeight / 2) / scale;
+  map.style.transform = `scale(${scale}) translate(${originX}px, ${originY}px)`;
+}
 window.onload = () => {
 const style = document.createElement("style");
 style.innerHTML = `
