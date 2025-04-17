@@ -283,15 +283,15 @@ style.innerHTML = `
 
   /* 2. Hover efekt pro kategorie i zobrazit vše */
   button.category-header,
-  #show-all {
-    background: #1a1a1a;
-    color: white;
-    border: none;
-    padding: 8px;
-    margin-top: 4px;
-    cursor: pointer;
-    width: 100%;
-    text-align: left;
+  background: #1a1a1a;
+  color: white;
+  border: none;
+  padding: 8px;
+  margin-top: 4px;
+  cursor: pointer;
+  width: 100%;
+  text-align: center;
+  transition: background 0.2s, transform 0.2s;
     transition: background 0.2s, transform 0.2s;
   }
   button.category-header:hover,
