@@ -86,8 +86,6 @@ function render() {
         }
         const div = document.createElement("div");
         div.className = "item";
-        div.dataset.id = item.id;
-        div.onclick = () => zoomToItem(item.id);
         div.innerHTML = `<div><span class="dot" style="background:${item.color}"></span>${item.name}</div><span class="delete-btn" onclick="window.deleteItem(${item.id}); event.stopPropagation()">🗑</span>`;
         items.appendChild(div);
       }
@@ -274,38 +272,6 @@ window.addEventListener("keyup", e => { keysPressed[e.key.toLowerCase()] = false
 
 
 
-function zoomToItem(id) {
-  const item = data.find(i => i.id == id);
-  if (!item) return;
-  let x = 0.5, y = 0.5;
-  if (item.type === "point") {
-    x = item.x;
-    y = item.y;
-  } else if (item.type === "polygon" && item.points?.length) {
-    const sum = item.points.reduce((acc, p) => ({ x: acc.x + p.x, y: acc.y + p.y }), { x: 0, y: 0 });
-    x = sum.x / item.points.length;
-    y = sum.y / item.points.length;
-  }
-
-  const mapImage = document.getElementById("map-image");
-  const imgWidth = mapImage.naturalWidth;
-  const imgHeight = mapImage.naturalHeight;
-  const viewWidth = map.clientWidth;
-  const viewHeight = map.clientHeight;
-
-  const centerX = x * imgWidth;
-  const centerY = y * imgHeight;
-
-  originX = -(centerX - viewWidth / 2) / 4;
-  originY = -(centerY - viewHeight / 2) / 4;
-  scale = 4;
-  map.style.transform = `scale(${scale}) translate(${originX}px, ${originY}px)`;
-}
-  originX = (0.5 - x) * map.clientWidth / 100;
-  originY = (0.5 - y) * map.clientHeight / 100;
-  scale = 4;
-  map.style.transform = `scale(${scale}) translate(${originX}px, ${originY}px)`;
-}
 window.onload = () => {
 const style = document.createElement("style");
 style.innerHTML = `
