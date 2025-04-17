@@ -86,22 +86,17 @@ function render() {
         }
         const div = document.createElement("div");
         div.className = "item";
+        div.dataset.id = item.id;
         div.onmouseenter = () => {
-          scale = 1;
-          originX = 0;
-          originY = 0;
-          map.style.transform = `scale(${scale}) translate(${originX}px, ${originY}px)`;
-          const marker = document.querySelector(`#marker-${item.id}`);
+          const marker = document.getElementById(`marker-${item.id}`);
           if (marker) {
-            marker.classList.add("pulsing");
-            marker.style.transform = "scale(5)";
+            marker.classList.add("highlight-marker");
           }
         };
         div.onmouseleave = () => {
-          const marker = document.querySelector(`#marker-${item.id}`);
+          const marker = document.getElementById(`marker-${item.id}`);
           if (marker) {
-            marker.classList.remove("pulsing");
-            marker.style.transform = "";
+            marker.classList.remove("highlight-marker");
           }
         };
         div.innerHTML = `<div><span class="dot" style="background:${item.color}"></span>${item.name}</div><span class="delete-btn" onclick="window.deleteItem(${item.id}); event.stopPropagation()">🗑</span>`;
@@ -121,6 +116,7 @@ function renderMarker(item) {
   }
   const el = document.createElement("div");
   el.className = "marker";
+  el.id = `marker-${item.id}`;
   el.style.left = `${item.x * 100}%`;
   el.style.top = `${item.y * 100}%`;
   el.style.background = item.color;
@@ -294,14 +290,15 @@ window.onload = () => {
 const style = document.createElement("style");
 style.innerHTML = `
 @keyframes pulse {
-    0% { transform: scale(1); opacity: 1; }
-    50% { transform: scale(1.3); opacity: 0.6; }
-    100% { transform: scale(1); opacity: 1; }
-  }
-  .marker.pulsing {
-    animation: pulse 1s infinite;
-    z-index: 1000;
-  }
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.3); opacity: 0.7; }
+  100% { transform: scale(1); opacity: 1; }
+}
+.highlight-marker {
+  transform: scale(5) !important;
+  animation: pulse 1s infinite;
+  z-index: 1000;
+}
   /* 1. Vyrovnaná šířka input a tlačítka */
   #search, #show-all {
     width: calc(100% - 20px);
@@ -350,44 +347,3 @@ document.head.appendChild(style);
   window.deleteItem = deleteItem;
   loadData();
 };
-
-// Přidání CSS animace pro zvýraznění markeru
-const style = document.createElement('style');
-style.textContent = `
-@keyframes pulse {
-  0% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(1.2); opacity: 0.8; }
-  100% { transform: scale(1); opacity: 1; }
-}
-.highlight-marker {
-  transform: scale(5);
-  animation: pulse 1s infinite;
-  z-index: 1000;
-}
-`;
-document.head.appendChild(style);
-
-// Funkce pro zvýraznění markeru při najetí na položku v menu
-function setupMarkerHoverEffect() {
-  document.querySelectorAll(".item").forEach(itemEl => {
-    itemEl.addEventListener("mouseenter", () => {
-      const itemId = itemEl.getAttribute("data-id");
-      const marker = document.getElementById("marker-" + itemId);
-      if (marker) {
-        marker.classList.add("highlight-marker");
-      }
-    });
-    itemEl.addEventListener("mouseleave", () => {
-      const itemId = itemEl.getAttribute("data-id");
-      const marker = document.getElementById("marker-" + itemId);
-      if (marker) {
-        marker.classList.remove("highlight-marker");
-      }
-    });
-  });
-}
-
-// Spustíme po načtení obsahu
-window.addEventListener("load", () => {
-  setupMarkerHoverEffect();
-});
