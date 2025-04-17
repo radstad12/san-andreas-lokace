@@ -86,7 +86,6 @@ function render() {
         }
         const div = document.createElement("div");
         div.className = "item";
-        div.onclick = () => zoomToItem(item);
         div.innerHTML = `<div><span class="dot" style="background:${item.color}"></span>${item.name}</div><span class="delete-btn" onclick="window.deleteItem(${item.id}); event.stopPropagation()">🗑</span>`;
         items.appendChild(div);
       }
@@ -216,6 +215,9 @@ map.addEventListener("click", e => {
   const y = (e.clientY - r.top) / r.height;
   currentPolygon.push({ x, y });
   const point = document.createElement("div");
+        point.id = `marker-${item.id}`;
+        point.title = item.id;
+        console.log("Created marker with id:", point.id);
   point.className = "polygon-point";
   point.style.left = `${x * 100}%`;
   point.style.top = `${y * 100}%`;
@@ -273,26 +275,6 @@ window.addEventListener("keyup", e => { keysPressed[e.key.toLowerCase()] = false
 
 
 
-function zoomToItem(item) {
-  if (!item || !item.id) return;
-  const marker = document.getElementById(`marker-${item.id}`);
-  if (!marker) return;
-
-  const markerRect = marker.getBoundingClientRect();
-  const mapRect = map.getBoundingClientRect();
-
-  const centerX = markerRect.left + markerRect.width / 2 - mapRect.left;
-  const centerY = markerRect.top + markerRect.height / 2 - mapRect.top;
-
-  const viewportWidth = mapRect.width;
-  const viewportHeight = mapRect.height;
-
-  scale = 4;
-  originX = -(centerX - viewportWidth / 2) / scale;
-  originY = -(centerY - viewportHeight / 2) / scale;
-
-  map.style.transform = `scale(${scale}) translate(${originX}px, ${originY}px)`;
-}
 window.onload = () => {
 const style = document.createElement("style");
 style.innerHTML = `
