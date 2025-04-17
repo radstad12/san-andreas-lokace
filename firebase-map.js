@@ -86,23 +86,20 @@ function render() {
         }
         const div = document.createElement("div");
         div.className = "item";
-        div.setAttribute("data-id", item.id);
-div.onclick = () => {
-          const marker = document.getElementById(`marker-${item.id}`);
-          if (!marker) return;
-
-          const map = document.getElementById("map");
-          const rect = map.getBoundingClientRect();
-          const markerRect = marker.getBoundingClientRect();
-
-          const centerX = markerRect.left + markerRect.width / 2 - rect.left;
-          const centerY = markerRect.top + markerRect.height / 2 - rect.top;
-
-          const offsetX = rect.width / 2 - centerX;
-          const offsetY = rect.height / 2 - centerY;
-
-          map.style.transform = `scale(4) translate(${offsetX / 4}px, ${offsetY / 4}px)`;
-        };
+    div.onclick = () => {
+      const marker = document.getElementById(`marker-${item.id}`);
+      if (!marker) return;
+      const mapRect = map.getBoundingClientRect();
+      const markerRect = marker.getBoundingClientRect();
+      const centerX = markerRect.left + markerRect.width / 2;
+      const centerY = markerRect.top + markerRect.height / 2;
+      const offsetX = (mapRect.width / 2 - (centerX - mapRect.left)) / scale;
+      const offsetY = (mapRect.height / 2 - (centerY - mapRect.top)) / scale;
+      originX += offsetX;
+      originY += offsetY;
+      scale = 4;
+      map.style.transform = `scale(${scale}) translate(${originX}px, ${originY}px)`;
+    };
         div.innerHTML = `<div><span class="dot" style="background:${item.color}"></span>${item.name}</div><span class="delete-btn" onclick="window.deleteItem(${item.id}); event.stopPropagation()">🗑</span>`;
         items.appendChild(div);
       }
@@ -120,7 +117,7 @@ function renderMarker(item) {
   }
   const el = document.createElement("div");
   el.className = "marker";
-    el.id = `marker-${item.id}`;
+  el.id = `marker-${item.id}`;
   el.style.left = `${item.x * 100}%`;
   el.style.top = `${item.y * 100}%`;
   el.style.background = item.color;
@@ -341,45 +338,3 @@ document.head.appendChild(style);
   window.deleteItem = deleteItem;
   loadData();
 };
-
-function zoomToItem(item) {
-    console.log("Zooming to item:", item);
-
-    // Vyhledání odpovídajícího markeru podle ID
-    const marker = document.getElementById('marker-' + item.id);
-    console.log("Found marker:", marker);
-
-    if (!marker) return;
-
-    const map = document.getElementById("map");
-    const rect = map.getBoundingClientRect();
-    const markerRect = marker.getBoundingClientRect();
-
-    const centerX = markerRect.left + markerRect.width / 2 - rect.left;
-    const centerY = markerRect.top + markerRect.height / 2 - rect.top;
-
-    const mapImage = document.getElementById("map-image");
-
-    // Posun mapy tak, aby marker byl uprostřed
-    const offsetX = rect.width / 2 - centerX;
-    const offsetY = rect.height / 2 - centerY;
-
-    const currentTransform = map.style.transform.match(/scale\(([^)]+)\) translate\(([^,]+)px, ([^)]+)px\)/);
-    const scale = parseFloat(currentTransform?.[1] || 1);
-
-    // Nastavíme přiblížení na 4x
-    map.style.transform = `scale(4) translate(${offsetX / 4}px, ${offsetY / 4}px)`;
-}
-
-// Napojení na kliknutí v levém menu
-document.addEventListener("DOMContentLoaded", () => {
-    document.querySelectorAll(".item").forEach(el => {
-        el.addEventListener("click", () => {
-            const id = el.getAttribute("data-id");
-            const name = el.querySelector(".name")?.textContent?.trim();
-
-            const item = { id, name }; // Předáme jen ID a jméno
-            zoomToItem(item);
-        });
-    });
-});
