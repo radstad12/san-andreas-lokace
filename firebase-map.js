@@ -92,12 +92,6 @@ function render() {
         div.className = "item";
         div.dataset.id = item.id;
         div.onmouseenter = () => {
-          if (item.type === 'polygon') {
-  const poly = map.querySelector(`polygon[data-id='${item.id}']`);
-  if (poly) poly.classList.add('highlight-polygon');
-}
-          }
-
           const marker = document.getElementById(`marker-${item.id}`);
           if (marker) {
             marker.classList.add("highlight-marker");
@@ -122,14 +116,6 @@ function render() {
           }
         };
         div.onmouseleave = () => {
-          if (item.type === 'polygon') {
-            const poly = map.querySelector(`polygon[data-id='${item.id}']`);
-            if (poly) poly.classList.remove("highlight-polygon");
-            const label = document.getElementById("polygon-label-" + item.id);
-  if (label) label.remove();
-            if (label) label.remove();
-          }
-
           const marker = document.getElementById(`marker-${item.id}`);
           if (marker) {
             marker.classList.remove("highlight-marker");
@@ -178,12 +164,7 @@ function renderPolygon(item) {
   poly.setAttribute("points", item.points.map(p => `${p.x * map.clientWidth},${p.y * map.clientHeight}`).join(" "));
   poly.setAttribute("fill", item.color + "55");
   poly.setAttribute("stroke", item.color);
-  poly.setAttribute("data-id", item.id);
   poly.onmouseenter = e => {
-    const name = item.name?.trim() || "(bez názvu)";
-    const desc = item.desc?.trim() || "";
-    const text = desc ? `${name}: ${desc}` : name;
-    showTooltip(e, text);
     const name = item.name?.trim() || "(bez názvu)";
     const desc = item.desc?.trim() || "";
     const text = desc ? `${name}: ${desc}` : name;
@@ -378,23 +359,25 @@ style.innerHTML = `
 `;
 
 style.innerHTML += `
-.highlight-polygon {
-  stroke: #ff0 !important;
-  stroke-width: 3 !important;
-  fill-opacity: 0.6 !important;
+.category-box:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+  transition: background-color 0.2s ease;
 }
-.polygon-label {
-  position: absolute;
-  background: rgba(0, 0, 0, 0.75);
-  color: white;
-  padding: 5px 10px;
+`;
+
+style.innerHTML += `
+.category-box {
+  background-color: rgba(255, 255, 255, 0.05);
   border-radius: 6px;
-  font-size: 16px;
-  pointer-events: none;
-  z-index: 1001;
+  padding: 8px;
+  transition: background-color 0.2s ease;
+}
+.category-box:hover {
+  background-color: rgba(255, 255, 255, 0.12);
 }
 `;
 document.head.appendChild(style);
+
 
 
   document.getElementById("planning-toggle").onclick = () => {
