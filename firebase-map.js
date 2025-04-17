@@ -96,15 +96,27 @@ function render() {
             const poly = map.querySelector(`polygon[data-id='${item.id}']`);
             if (poly) {
               poly.classList.add("highlight-polygon");
-              const rect = poly.getBoundingClientRect();
+              
+              const points = item.points.map(p => ({ x: p.x * map.clientWidth, y: p.y * map.clientHeight }));
+              let area = 0, cx = 0, cy = 0;
+              for (let i = 0, j = points.length - 1; i < points.length; j = i++) {
+                const f = points[i].x * points[j].y - points[j].x * points[i].y;
+                area += f;
+                cx += (points[i].x + points[j].x) * f;
+                cy += (points[i].y + points[j].y) * f;
+              }
+              area *= 3;
+              cx /= area;
+              cy /= area;
+
               const label = document.createElement("div");
               label.className = "marker-label polygon-label";
               label.id = "polygon-label-" + item.id;
               label.innerText = item.name + (item.desc ? ": " + item.desc : "");
               label.style.position = "absolute";
-              label.style.left = rect.left + window.scrollX + rect.width / 2 + "px";
-              label.style.top = rect.top + window.scrollY - 30 + "px";
-              label.style.transform = "translateX(-50%)";
+              label.style.left = cx + "px";
+              label.style.top = cy + "px";
+
               map.appendChild(label);
             }
           }
