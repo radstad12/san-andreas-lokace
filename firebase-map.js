@@ -359,25 +359,23 @@ style.innerHTML = `
 `;
 
 style.innerHTML += `
-.category-box:hover {
-  background-color: rgba(255, 255, 255, 0.08);
-  transition: background-color 0.2s ease;
+.highlight-polygon {
+  stroke: #ff0 !important;
+  stroke-width: 3 !important;
+  fill-opacity: 0.6 !important;
 }
-`;
-
-style.innerHTML += `
-.category-box {
-  background-color: rgba(255, 255, 255, 0.05);
+.polygon-label {
+  position: absolute;
+  background: rgba(0, 0, 0, 0.75);
+  color: white;
+  padding: 5px 10px;
   border-radius: 6px;
-  padding: 8px;
-  transition: background-color 0.2s ease;
-}
-.category-box:hover {
-  background-color: rgba(255, 255, 255, 0.12);
+  font-size: 16px;
+  pointer-events: none;
+  z-index: 1001;
 }
 `;
 document.head.appendChild(style);
-
 
 
   document.getElementById("planning-toggle").onclick = () => {
