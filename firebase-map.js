@@ -357,7 +357,15 @@ style.innerHTML = `
     transform: scale(1.03);
   }
 `;
+
+style.innerHTML += `
+.category:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+  transition: background-color 0.2s ease;
+}
+`;
 document.head.appendChild(style);
+
 
   document.getElementById("planning-toggle").onclick = () => {
     planningMode = !planningMode;
