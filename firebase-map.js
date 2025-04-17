@@ -121,6 +121,7 @@ function renderMarker(item) {
   }
   const el = document.createElement("div");
   el.className = "marker";
+  el.id = `marker-${item.id}`;
   el.style.left = `${item.x * 100}%`;
   el.style.top = `${item.y * 100}%`;
   el.style.background = item.color;
