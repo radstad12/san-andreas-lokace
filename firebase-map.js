@@ -56,8 +56,7 @@ function deleteItem(id) {
   const marker = document.getElementById(`marker-${id}`);
   if (marker) marker.remove();
   const label = document.getElementById(`marker-label-${id}`);
-    if (polygonLabel) polygonLabel.remove();
-  if (markerLabel) markerLabel.remove();
+  if (label) label.remove();
 }
 
 function render() {
@@ -138,16 +137,15 @@ function render() {
             const poly = map.querySelector(`polygon[data-id='${item.id}']`);
             if (poly) poly.classList.remove("highlight-polygon");
             const label = document.getElementById("polygon-label-" + item.id);
-              if (polygonLabel) polygonLabel.remove();
-  if (markerLabel) markerLabel.remove();
+  if (label) label.remove();
+            if (label) label.remove();
           }
 
           const marker = document.getElementById(`marker-${item.id}`);
           if (marker) {
             marker.classList.remove("highlight-marker");
             const label = document.getElementById("marker-label-" + item.id);
-              if (polygonLabel) polygonLabel.remove();
-  if (markerLabel) markerLabel.remove();
+            if (label) label.remove();
           }
         };
         div.innerHTML = `<div><span class="dot" style="background:${item.color}"></span>${item.name}</div><span class="delete-btn" onclick="window.deleteItem(${item.id}); event.stopPropagation()">🗑</span>`;
