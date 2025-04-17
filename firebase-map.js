@@ -288,18 +288,22 @@ map.addEventListener("click", e => {
 
 
 // Wheel zoom s limitem pouze pro přiblížení (ne oddálení pod scale 1)
+
 map.addEventListener("wheel", e => {
+    e.preventDefault();
+    const delta = -Math.sign(e.deltaY);
     const rect = map.getBoundingClientRect();
     const offsetX = e.clientX - rect.left;
     const offsetY = e.clientY - rect.top;
     const prevScale = scale;
-
-  e.preventDefault();
-  const delta = e.deltaY * -0.001;
-  const newScale = scale + delta;
-  if (delta > 0 || newScale >= 1) {
-    scale = Math.min(8, newScale);
-    map.style.transform = `scale(${scale}) translate(${originX}px, ${originY}px)`;
+    scale += delta * zoomSpeed;
+    scale = Math.max(minZoom, Math.min(maxZoom, scale));
+    const factor = scale / prevScale;
+    translateX -= (offsetX - translateX) * (factor - 1);
+    translateY -= (offsetY - translateY) * (factor - 1);
+    updateTransform();
+}, { passive: false });
+) translate(${originX}px, ${originY}px)`;
   }
 }, { passive: false });
 
