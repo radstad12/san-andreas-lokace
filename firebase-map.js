@@ -90,9 +90,12 @@ function render() {
 div.onclick = () => {
       if (item.type === "point") {
         scale = 2;
-        const rect = map.getBoundingClientRect();
-        originX = -(item.x * rect.width - rect.width / 2) / scale;
-        originY = -(item.y * rect.height - rect.height / 2) / scale;
+        const mapImage = document.getElementById("map-image");
+        const centerX = item.x * mapImage.naturalWidth;
+        const centerY = item.y * mapImage.naturalHeight;
+        const viewport = map.getBoundingClientRect();
+        originX = -(centerX - viewport.width / 2) / scale;
+        originY = -(centerY - viewport.height / 2) / scale;
         map.style.transform = `scale(${scale}) translate(${originX}px, ${originY}px)`;
       }
     };
