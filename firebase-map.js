@@ -171,6 +171,7 @@ function render() {
   }
 }
 
+
 function renderMarker(item) {
   if (typeof item.x !== 'number' || typeof item.y !== 'number') {
     console.warn('Neplatné souřadnice bodu:', item);
@@ -183,6 +184,20 @@ function renderMarker(item) {
   el.style.top = `${item.y * 100}%`;
   el.style.background = item.color;
   el.style.width = el.style.height = `${item.size || 6}px`;
+
+  // přidání ikony
+  const icon = document.createElement("div");
+  icon.className = "marker-icon";
+  icon.textContent = getCategoryIcons(item.categories || item.category);
+  icon.style.position = "absolute";
+  icon.style.left = "50%";
+  icon.style.top = "50%";
+  icon.style.transform = "translate(-50%, -50%)";
+  icon.style.pointerEvents = "none";
+  icon.style.fontSize = "14px";
+  icon.style.zIndex = "1000";
+  el.appendChild(icon);
+
   el.onmouseenter = e => {
     const name = item.name?.trim() || "(bez názvu)";
     const desc = item.desc?.trim() || "";
@@ -192,6 +207,7 @@ function renderMarker(item) {
   el.onmouseleave = hideTooltip;
   map.appendChild(el);
 }
+
 
 function renderPolygon(item) {
   const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
@@ -437,6 +453,14 @@ style.innerHTML += `
 style.innerHTML += `
 .polygon-icon {
   font-size: 18px;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  position: absolute;
+}
+`;
+  style.innerHTML += `
+.marker-icon {
+  font-size: 14px;
   pointer-events: none;
   transform: translate(-50%, -50%);
   position: absolute;
