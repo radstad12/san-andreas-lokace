@@ -161,6 +161,10 @@ function renderMarker(item) {
   }
   const el = document.createElement("div");
   el.className = "marker";
+  const icon = document.createElement("div");
+  icon.className = "marker-icon";
+  icon.textContent = getCategoryIcons(item.categories || item.category);
+  el.appendChild(icon);
   el.id = `marker-${item.id}`;
   el.style.left = `${item.x * 100}%`;
   el.style.top = `${item.y * 100}%`;
@@ -194,6 +198,24 @@ function renderPolygon(item) {
   };
   poly.onmouseleave = hideTooltip;
   svg.appendChild(poly);
+  // ikona do středu polygonu
+  if (item.points?.length) {
+    const bbox = poly.getBBox();
+    const centerX = bbox.x + bbox.width / 2;
+    const centerY = bbox.y + bbox.height / 2;
+    const icon = document.createElement("div");
+    icon.className = "polygon-icon";
+    icon.textContent = getCategoryIcons(item.categories || item.category);
+    icon.style.position = "absolute";
+    icon.style.left = centerX + "px";
+    icon.style.top = centerY + "px";
+    icon.style.transform = "translate(-50%, -50%)";
+    icon.style.pointerEvents = "none";
+    icon.style.fontSize = "16px";
+    icon.id = "polygon-icon-" + item.id;
+    map.appendChild(icon);
+  }
+
   map.appendChild(svg);
 }
 
@@ -319,7 +341,7 @@ function isFormElementFocused() {
 
 function updateTransform() {
   if (isFormElementFocused()) return;
-  const step = 16 / scale;
+  const step = 8 / scale;
   if (keysPressed['w']) originY += step;
   if (keysPressed['s']) originY -= step;
   if (keysPressed['a']) originX += step;
@@ -396,6 +418,14 @@ style.innerHTML += `
 }
 .category-box:hover {
   background-color: rgba(255, 255, 255, 0.12);
+}
+`;
+style.innerHTML += `
+.marker-icon, .polygon-icon {
+  position: absolute;
+  font-size: 16px;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
 }
 `;
 document.head.appendChild(style);
