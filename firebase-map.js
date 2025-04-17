@@ -108,12 +108,32 @@ function renderMarker(item) {
   el.style.background = item.color;
   el.style.width = el.style.height = `${item.size || 6}px`;
   el.onmouseenter = e => {
+  const label = document.createElement("div");
+  label.className = "marker-label";
+  label.textContent = text;
+  label.style.position = "absolute";
+  label.style.left = (el.offsetLeft + 20) + "px";
+  label.style.top = (el.offsetTop - 10) + "px";
+  label.style.color = "#fff";
+  label.style.background = "rgba(0,0,0,0.7)";
+  label.style.padding = "6px 10px";
+  label.style.fontSize = "18px";
+  label.style.fontWeight = "bold";
+  label.style.borderRadius = "6px";
+  label.style.zIndex = 1000;
+  label.id = "marker-label-" + item.id;
+  map.appendChild(label);
+
     const name = item.name?.trim() || "(bez názvu)";
     const desc = item.desc?.trim() || "";
     const text = desc ? `${name}: ${desc}` : name;
     showTooltip(e, text);
   };
-  el.onmouseleave = hideTooltip;
+  el.onmouseleave = () => {
+    hideTooltip();
+    const lbl = document.getElementById("marker-label-" + item.id);
+    if (lbl) lbl.remove();
+  };
   map.appendChild(el);
 }
 
@@ -308,7 +328,14 @@ style.innerHTML = `
     transform: scale(1.03);
   }
 `;
+
+style.innerHTML += `
+.marker-label {
+  pointer-events: none;
+}
+`;
 document.head.appendChild(style);
+
 
   document.getElementById("planning-toggle").onclick = () => {
     planningMode = !planningMode;
