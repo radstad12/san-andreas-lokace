@@ -379,7 +379,7 @@ function isFormElementFocused() {
 
 function updateTransform() {
   if (isFormElementFocused()) return;
-  const step = 2 / scale;
+  const step = 2*3 / scale;
   if (keysPressed['w']) originY += step;
   if (keysPressed['s']) originY -= step;
   if (keysPressed['a']) originX += step;
