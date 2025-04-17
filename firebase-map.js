@@ -11,7 +11,6 @@ const firebaseConfig = {
   messagingSenderId: "966102879269",
   appId: "1:966102879269:web:56156288290ec8b7c4c3cc",
   measurementId: "G-GRJKH0EWJQ"
-
 };
 
 const app = initializeApp(firebaseConfig);
@@ -58,7 +57,6 @@ function deleteItem(id) {
 
 function render() {
   menu.innerHTML = "";
-}
   map.querySelectorAll(".marker, .polygon-point, svg.polygon").forEach(el => el.remove());
   const search = document.getElementById("search").value.toLowerCase();
   for (let cat of categories) {
@@ -69,7 +67,7 @@ function render() {
       if (expandedCategories.has(cat)) expandedCategories.delete(cat);
       else expandedCategories.add(cat);
       render();
-
+    };
 
     const items = document.createElement("div");
     items.className = "category-items";
@@ -102,7 +100,6 @@ function renderMarker(item) {
   if (typeof item.x !== 'number' || typeof item.y !== 'number') {
     console.warn('Neplatné souřadnice bodu:', item);
     return;
-    return;
   }
   const el = document.createElement("div");
   el.className = "marker";
@@ -115,14 +112,13 @@ function renderMarker(item) {
     const desc = item.desc?.trim() || "";
     const text = desc ? `${name}: ${desc}` : name;
     showTooltip(e, text);
-
+  };
   el.onmouseleave = hideTooltip;
   map.appendChild(el);
 }
 
 function renderPolygon(item) {
   const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-}
   svg.classList.add("polygon");
   svg.setAttribute("width", map.clientWidth);
   svg.setAttribute("height", map.clientHeight);
@@ -135,7 +131,7 @@ function renderPolygon(item) {
     const desc = item.desc?.trim() || "";
     const text = desc ? `${name}: ${desc}` : name;
     showTooltip(e, text);
-
+  };
   poly.onmouseleave = hideTooltip;
   svg.appendChild(poly);
   map.appendChild(svg);
@@ -154,7 +150,6 @@ function hideTooltip() {
 
 function openForm(type, coords) {
   const wrapper = document.createElement("div");
-}
   wrapper.id = "form-wrapper";
   wrapper.innerHTML = `
     <label>Název:<br><input id='form-name' style='width:100%'></label><br><br>
@@ -192,7 +187,6 @@ function openForm(type, coords) {
       size,
       categories: selectedCats
     };
-
     if (type === "point") { item.x = coords.x; item.y = coords.y; }
     else { item.points = coords; }
     if (!planningMode) {
@@ -203,7 +197,7 @@ function openForm(type, coords) {
       render();
     }
     wrapper.remove();
-
+  };
 }
 
 map.addEventListener("dblclick", e => {
@@ -263,36 +257,34 @@ function isFormElementFocused() {
   );
 }
 
-
 function updateTransform() {
   if (isFormElementFocused()) return;
   const step = 2 / scale;
-  if (keysPressed['w']) originY += step;
-  if (keysPressed['s']) originY -= step;
-  if (keysPressed['a']) originX += step;
-  if (keysPressed['d']) originX -= step;
-
-  // Získání velikosti mapy a rodiče
-  const mapBounds = map.getBoundingClientRect();
-  const parentBounds = map.parentElement.getBoundingClientRect();
-
-  // Výpočet maximálních hodnot, aby mapa nevystoupila z okna
-  const maxOffsetX = (mapBounds.width * (scale - 1)) / 2;
-  const maxOffsetY = (mapBounds.height * (scale - 1)) / 2;
-
-  originX = Math.min(maxOffsetX, Math.max(-maxOffsetX, originX));
-  originY = Math.min(maxOffsetY, Math.max(-maxOffsetY, originY));
-
+  const maxTranslate = (scale - 1) * 50;
+  if (keysPressed['w']) originY = Math.min(originY + step, maxTranslate);
+  if (keysPressed['s']) originY = Math.max(originY - step, -maxTranslate);
+  if (keysPressed['a']) originX = Math.min(originX + step, maxTranslate);
+  if (keysPressed['d']) originX = Math.max(originX - step, -maxTranslate);
   map.style.transform = `scale(${scale}) translate(${originX}px, ${originY}px)`;
+}
+setInterval(updateTransform, 16);
+window.addEventListener("keydown", e => { keysPressed[e.key.toLowerCase()] = true; });
+window.addEventListener("keyup", e => { keysPressed[e.key.toLowerCase()] = false; });
 
 
+
+window.onload = () => {
+  document.getElementById("planning-toggle").onclick = () => {
+    planningMode = !planningMode;
+    alert(`Plánovací režim: ${planningMode ? 'ZAPNUTÝ' : 'VYPNUTÝ'}`);
+  };
   document.getElementById("show-all").onclick = () => {
     if (expandedCategories.size === categories.length) expandedCategories.clear();
     else expandedCategories = new Set(categories);
     render();
-
+  };
   document.getElementById("search").oninput = () => render();
   window.deleteItem = deleteItem;
   loadData();
-  };
 };
+}
