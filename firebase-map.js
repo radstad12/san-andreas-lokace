@@ -72,6 +72,14 @@ function render() {
     const items = document.createElement("div");
     items.className = "category-items";
     items.style.display = expandedCategories.has(cat) ? "block" : "none";
+item.addEventListener("click", () => {
+  if (data.type === "point" && marker) {
+    map.setView(marker.getLatLng(), 7, { animate: true });
+  } else if (data.type === "polygon" && polygon) {
+    const bounds = polygon.getBounds();
+    map.fitBounds(bounds, { maxZoom: 7, animate: true });
+  }
+});
 
     data.forEach(item => {
       if (!item.categories?.includes(cat)) return;
