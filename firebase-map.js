@@ -341,19 +341,3 @@ style.innerHTML = `
   .category-items .item:hover {
     transform: scale(1.03);
   }
-`;
-document.head.appendChild(style);
-
-  document.getElementById("planning-toggle").onclick = () => {
-    planningMode = !planningMode;
-    alert(`Plánovací režim: ${planningMode ? 'ZAPNUTÝ' : 'VYPNUTÝ'}`);
-  };
-  document.getElementById("show-all").onclick = () => {
-    if (expandedCategories.size === categories.length) expandedCategories.clear();
-    else expandedCategories = new Set(categories);
-    render();
-  };
-  document.getElementById("search").oninput = () => render();
-  window.deleteItem = deleteItem;
-  loadData();
-};
