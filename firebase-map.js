@@ -297,7 +297,7 @@ style.innerHTML = `
   button.category-header:hover,
   #show-all:hover {
     background: #333;
-    transform: scale(1.02);
+  transform: scale(1.02);
   }
 
   /* 3. Hover zvětšení itemů v menu */
