@@ -90,8 +90,9 @@ function render() {
 div.onclick = () => {
       if (item.type === "point") {
         scale = 2;
-        originX = -(item.x * map.offsetWidth - map.offsetWidth / 2) / scale;
-        originY = -(item.y * map.offsetHeight - map.offsetHeight / 2) / scale;
+        const rect = map.getBoundingClientRect();
+        originX = -(item.x * rect.width - rect.width / 2) / scale;
+        originY = -(item.y * rect.height - rect.height / 2) / scale;
         map.style.transform = `scale(${scale}) translate(${originX}px, ${originY}px)`;
       }
     };
