@@ -340,4 +340,3 @@ style.innerHTML = `
   }
   .category-items .item:hover {
     transform: scale(1.03);
-  }
