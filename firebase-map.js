@@ -541,20 +541,7 @@ window.deleteItem = id => {
 };
 
 
-// ======= MiniMapa =======
-const minimap = document.createElement("div");
-minimap.id = "minimap";
-minimap.style.position = "absolute";
-minimap.style.top = "10px";
-minimap.style.right = "10px";
-minimap.style.width = "160px";
-minimap.style.height = "100px";
-minimap.style.border = "2px solid white";
-minimap.style.background = "#000";
-minimap.style.zIndex = "9999";
-minimap.style.opacity = "0.6";
-minimap.style.pointerEvents = "none";
-document.body.appendChild(minimap);
+
 
 // ======= Drag & Drop pro body =======
 map.addEventListener("mousedown", e => {
