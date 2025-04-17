@@ -276,7 +276,11 @@ window.addEventListener("keyup", e => { keysPressed[e.key.toLowerCase()] = false
 function zoomToItem(item) {
   if (!item || !item.id) return;
   const marker = document.getElementById(`marker-${item.id}`);
+  console.log("Zooming to item:", item);
+  console.log("Found marker:", marker);
   if (!marker) return;
+
+  marker.style.border = "2px solid red"; // vizuální potvrzení
 
   const markerRect = marker.getBoundingClientRect();
   const mapRect = map.getBoundingClientRect();
