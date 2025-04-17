@@ -87,6 +87,14 @@ function render() {
         const div = document.createElement("div");
         div.className = "item";
         div.innerHTML = `<div><span class="dot" style="background:${item.color}"></span>${item.name}</div><span class="delete-btn" onclick="window.deleteItem(${item.id}); event.stopPropagation()">🗑</span>`;
+div.onclick = () => {
+      if (item.type === "point") {
+        scale = 2;
+        originX = -(item.x * map.offsetWidth - map.offsetWidth / 2) / scale;
+        originY = -(item.y * map.offsetHeight - map.offsetHeight / 2) / scale;
+        map.style.transform = `scale(${scale}) translate(${originX}px, ${originY}px)`;
+      }
+    };
         items.appendChild(div);
       }
     });
