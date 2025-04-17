@@ -62,7 +62,11 @@ function render() {
   for (let cat of categories) {
     const header = document.createElement("button");
     header.className = "category-header";
-    header.textContent = `${cat} (${data.filter(i => i.categories?.includes(cat)).length})`;
+    const safeCount = data.filter(i => {
+      if (!Array.isArray(i.categories)) { console.warn('⚠️ item bez categories:', i); return false; }
+      return i.categories.includes(cat);
+    }).length;
+    header.textContent = `${cat} (${safeCount})`;
     header.onclick = () => {
       if (expandedCategories.has(cat)) expandedCategories.delete(cat);
       else expandedCategories.add(cat);
@@ -74,7 +78,8 @@ function render() {
     items.style.display = expandedCategories.has(cat) ? "block" : "none";
 
     data.forEach(item => {
-      if (!item.categories?.includes(cat)) return;
+      if (!Array.isArray(item.categories) || !item.categories.includes(cat)) return;
+      if (!expandedCategories.has(cat)) return;
       if (!expandedCategories.has(cat)) return;
       const matchSearch = ((item.name || "").toLowerCase().includes(search) || (item.desc || "").toLowerCase().includes(search));
       if (search === "" || matchSearch) {
