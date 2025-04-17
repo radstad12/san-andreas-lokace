@@ -87,6 +87,22 @@ function render() {
         const div = document.createElement("div");
         div.className = "item";
         div.setAttribute("data-id", item.id);
+div.onclick = () => {
+          const marker = document.getElementById(`marker-${item.id}`);
+          if (!marker) return;
+
+          const map = document.getElementById("map");
+          const rect = map.getBoundingClientRect();
+          const markerRect = marker.getBoundingClientRect();
+
+          const centerX = markerRect.left + markerRect.width / 2 - rect.left;
+          const centerY = markerRect.top + markerRect.height / 2 - rect.top;
+
+          const offsetX = rect.width / 2 - centerX;
+          const offsetY = rect.height / 2 - centerY;
+
+          map.style.transform = `scale(4) translate(${offsetX / 4}px, ${offsetY / 4}px)`;
+        };
         div.innerHTML = `<div><span class="dot" style="background:${item.color}"></span>${item.name}</div><span class="delete-btn" onclick="window.deleteItem(${item.id}); event.stopPropagation()">🗑</span>`;
         items.appendChild(div);
       }
