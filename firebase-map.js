@@ -92,6 +92,16 @@ function render() {
         div.className = "item";
         div.dataset.id = item.id;
         div.onmouseenter = () => {
+          if (item.type === 'polygon') {
+            const polys = document.querySelectorAll("svg.polygon polygon");
+            polys.forEach(poly => {
+              if (poly.getAttribute("data-id") === String(item.id)) {
+                poly.setAttribute("stroke-width", "4");
+                poly.setAttribute("stroke", "#ffff00");
+              }
+            });
+          }
+
           const marker = document.getElementById(`marker-${item.id}`);
           if (marker) {
             marker.classList.add("highlight-marker");
@@ -116,6 +126,17 @@ function render() {
           }
         };
         div.onmouseleave = () => {
+          if (item.type === 'polygon') {
+            const polys = document.querySelectorAll("svg.polygon polygon");
+            polys.forEach(poly => {
+              if (poly.getAttribute("data-id") === String(item.id)) {
+                poly.setAttribute("stroke-width", "2");
+                poly.setAttribute("stroke", item.color);
+  poly.setAttribute("data-id", item.id);
+              }
+            });
+          }
+
           const marker = document.getElementById(`marker-${item.id}`);
           if (marker) {
             marker.classList.remove("highlight-marker");
@@ -164,6 +185,7 @@ function renderPolygon(item) {
   poly.setAttribute("points", item.points.map(p => `${p.x * map.clientWidth},${p.y * map.clientHeight}`).join(" "));
   poly.setAttribute("fill", item.color + "55");
   poly.setAttribute("stroke", item.color);
+  poly.setAttribute("data-id", item.id);
   poly.onmouseenter = e => {
     const name = item.name?.trim() || "(bez názvu)";
     const desc = item.desc?.trim() || "";
