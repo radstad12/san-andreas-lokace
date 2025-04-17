@@ -273,6 +273,43 @@ window.addEventListener("keyup", e => { keysPressed[e.key.toLowerCase()] = false
 
 
 window.onload = () => {
+const style = document.createElement("style");
+style.innerHTML = `
+  /* 1. Vyrovnaná šířka input a tlačítka */
+  #search, #show-all {
+    width: calc(100% - 20px);
+    box-sizing: border-box;
+  }
+
+  /* 2. Hover efekt pro kategorie i zobrazit vše */
+  button.category-header,
+  #show-all {
+    background: #1a1a1a;
+    color: white;
+    border: none;
+    padding: 8px;
+    margin-top: 4px;
+    cursor: pointer;
+    width: 100%;
+    text-align: left;
+    transition: background 0.2s, transform 0.2s;
+  }
+  button.category-header:hover,
+  #show-all:hover {
+    background: #333;
+    transform: scale(1.02);
+  }
+
+  /* 3. Hover zvětšení itemů v menu */
+  .category-items .item {
+    transition: transform 0.2s ease;
+  }
+  .category-items .item:hover {
+    transform: scale(1.03);
+  }
+`;
+document.head.appendChild(style);
+
   document.getElementById("planning-toggle").onclick = () => {
     planningMode = !planningMode;
     alert(`Plánovací režim: ${planningMode ? 'ZAPNUTÝ' : 'VYPNUTÝ'}`);
