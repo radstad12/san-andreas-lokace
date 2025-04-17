@@ -87,14 +87,17 @@ function render() {
         const div = document.createElement("div");
         div.className = "item";
         div.onmouseenter = () => {
-          scale = 1;
-          originX = 0;
-          originY = 0;
-          map.style.transform = `scale(${scale}) translate(${originX}px, ${originY}px)`;
-          const marker = document.querySelector(`#marker-${item.id}`);
-          if (marker) {
-            marker.classList.add("pulsing");
-            marker.style.transform = "scale(3)";
+      const marker = document.querySelector(`#marker-${item.id}`);
+      if (marker) {
+        const centerX = item.x * map.offsetWidth;
+        const centerY = item.y * map.offsetHeight;
+        originX = (map.offsetWidth / 2 - centerX) / 4;
+        originY = (map.offsetHeight / 2 - centerY) / 4;
+        scale = 4;
+        map.style.transform = `scale(${scale}) translate(${originX}px, ${originY}px)`;
+        marker.classList.add("pulsing");
+        marker.style.transform = "scale(3)";
+      }
           }
         };
         div.onmouseleave = () => {
