@@ -260,11 +260,10 @@ function isFormElementFocused() {
 function updateTransform() {
   if (isFormElementFocused()) return;
   const step = 2 / scale;
-  const maxTranslate = (scale - 1) * 50;
-  if (keysPressed['w']) originY = Math.min(originY + step, maxTranslate);
-  if (keysPressed['s']) originY = Math.max(originY - step, -maxTranslate);
-  if (keysPressed['a']) originX = Math.min(originX + step, maxTranslate);
-  if (keysPressed['d']) originX = Math.max(originX - step, -maxTranslate);
+  if (keysPressed['w']) originY += step;
+  if (keysPressed['s']) originY -= step;
+  if (keysPressed['a']) originX += step;
+  if (keysPressed['d']) originX -= step;
   map.style.transform = `scale(${scale}) translate(${originX}px, ${originY}px)`;
 }
 setInterval(updateTransform, 16);
@@ -287,4 +286,3 @@ window.onload = () => {
   window.deleteItem = deleteItem;
   loadData();
 };
-}
