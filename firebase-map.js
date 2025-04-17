@@ -67,8 +67,6 @@ function render() {
       if (expandedCategories.has(cat)) expandedCategories.delete(cat);
       else expandedCategories.add(cat);
       render();
-      };
-      document.getElementById("confirm-no").onclick = () => confirmBox.remove();
     };
 
     const items = document.createElement("div");
@@ -112,9 +110,7 @@ function render() {
               map.appendChild(label);
             }
           }
-          };
-      document.getElementById("confirm-no").onclick = () => confirmBox.remove();
-    };
+        };
         div.onmouseleave = () => {
           const marker = document.getElementById(`marker-${item.id}`);
           if (marker) {
@@ -122,9 +118,7 @@ function render() {
             const label = document.getElementById("marker-label-" + item.id);
             if (label) label.remove();
           }
-          };
-      document.getElementById("confirm-no").onclick = () => confirmBox.remove();
-    };
+        };
         div.innerHTML = `<div><span class="dot" style="background:${item.color}"></span>${item.name}</div><span class="delete-btn" onclick="window.deleteItem(${item.id}); event.stopPropagation()">🗑</span>`;
         items.appendChild(div);
       }
@@ -226,8 +220,6 @@ function openForm(type, coords) {
       color,
       size,
       categories: selectedCats
-      };
-      document.getElementById("confirm-no").onclick = () => confirmBox.remove();
     };
     if (type === "point") { item.x = coords.x; item.y = coords.y; }
     else { item.points = coords; }
@@ -361,42 +353,7 @@ style.innerHTML = `
     transform: scale(1.03);
   }
 `;
-
-style.innerHTML += `
-.highlight-polygon {
-  stroke: #ff0 !important;
-  stroke-width: 3 !important;
-  fill-opacity: 0.6 !important;
-}
-.confirm-box {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background: #222;
-  color: white;
-  padding: 20px;
-  border-radius: 10px;
-  z-index: 9999;
-  font-family: sans-serif;
-  text-align: center;
-}
-.confirm-buttons {
-  margin-top: 10px;
-}
-.confirm-buttons button {
-  margin: 0 10px;
-  padding: 6px 12px;
-  font-size: 14px;
-  border: none;
-  cursor: pointer;
-  border-radius: 5px;
-}
-#confirm-yes { background: red; color: white; }
-#confirm-no { background: #444; color: white; }
-`;
 document.head.appendChild(style);
-
 
   document.getElementById("planning-toggle").onclick = () => {
     planningMode = !planningMode;
