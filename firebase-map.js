@@ -70,6 +70,7 @@ function render() {
     };
 
     const items = document.createElement("div");
+    console.log("Created div:", "items", "->", items);
     items.className = "category-items";
     items.style.display = expandedCategories.has(cat) ? "block" : "none";
 
@@ -85,6 +86,7 @@ function render() {
           renderPolygon(item);
         }
         const div = document.createElement("div");
+        console.log("Created div:", "div", "->", div);
         div.className = "item";
         div.innerHTML = `<div><span class="dot" style="background:${item.color}"></span>${item.name}</div><span class="delete-btn" onclick="window.deleteItem(${item.id}); event.stopPropagation()">🗑</span>`;
         items.appendChild(div);
@@ -102,6 +104,7 @@ function renderMarker(item) {
     return;
   }
   const el = document.createElement("div");
+  console.log("Created div:", "el", "->", el);
   el.className = "marker";
   el.style.left = `${item.x * 100}%`;
   el.style.top = `${item.y * 100}%`;
@@ -150,6 +153,7 @@ function hideTooltip() {
 
 function openForm(type, coords) {
   const wrapper = document.createElement("div");
+  console.log("Created div:", "wrapper", "->", wrapper);
   wrapper.id = "form-wrapper";
   wrapper.innerHTML = `
     <label>Název:<br><input id='form-name' style='width:100%'></label><br><br>
@@ -215,9 +219,7 @@ map.addEventListener("click", e => {
   const y = (e.clientY - r.top) / r.height;
   currentPolygon.push({ x, y });
   const point = document.createElement("div");
-        point.id = `marker-${item.id}`;
-        point.title = item.id;
-        console.log("Created marker with id:", point.id);
+  console.log("Created div:", "point", "->", point);
   point.className = "polygon-point";
   point.style.left = `${x * 100}%`;
   point.style.top = `${y * 100}%`;
