@@ -58,6 +58,7 @@ function deleteItem(id) {
 
 function render() {
   menu.innerHTML = "";
+}
   map.querySelectorAll(".marker, .polygon-point, svg.polygon").forEach(el => el.remove());
   const search = document.getElementById("search").value.toLowerCase();
   for (let cat of categories) {
@@ -99,6 +100,7 @@ function render() {
 
 function renderMarker(item) {
   if (typeof item.x !== 'number' || typeof item.y !== 'number') {
+}
     console.warn('Neplatné souřadnice bodu:', item);
     return;
   }
@@ -120,6 +122,7 @@ function renderMarker(item) {
 
 function renderPolygon(item) {
   const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+}
   svg.classList.add("polygon");
   svg.setAttribute("width", map.clientWidth);
   svg.setAttribute("height", map.clientHeight);
@@ -151,6 +154,7 @@ function hideTooltip() {
 
 function openForm(type, coords) {
   const wrapper = document.createElement("div");
+}
   wrapper.id = "form-wrapper";
   wrapper.innerHTML = `
     <label>Název:<br><input id='form-name' style='width:100%'></label><br><br>
