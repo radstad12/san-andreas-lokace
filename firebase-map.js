@@ -94,7 +94,7 @@ function render() {
           const marker = document.querySelector(`#marker-${item.id}`);
           if (marker) {
             marker.classList.add("pulsing");
-            marker.style.transform = "scale(3)";
+            marker.style.transform = "scale(5)";
           }
         };
         div.onmouseleave = () => {
