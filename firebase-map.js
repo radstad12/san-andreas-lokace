@@ -90,12 +90,8 @@ function render() {
 div.onclick = () => {
       if (item.type === "point") {
         scale = 2;
-        const mapImage = document.getElementById("map-image");
-        const centerX = item.x * mapImage.naturalWidth;
-        const centerY = item.y * mapImage.naturalHeight;
-        const viewport = map.getBoundingClientRect();
-        originX = -(centerX - viewport.width / 2) / scale;
-        originY = -(centerY - viewport.height / 2) / scale;
+        originX = -(item.x * map.offsetWidth - map.offsetWidth / 2) / scale;
+        originY = -(item.y * map.offsetHeight - map.offsetHeight / 2) / scale;
         map.style.transform = `scale(${scale}) translate(${originX}px, ${originY}px)`;
       }
     };
@@ -215,10 +211,10 @@ function openForm(type, coords) {
 map.addEventListener("dblclick", e => {
   if (e.shiftKey) return;
   const r = map.getBoundingClientRect();
-  const x = (e.clientX - r.left) / r.width;
-  const y = (e.clientY - r.top) / r.height;
-  openForm("point", { x, y });
-});
+    const mapImage = document.getElementById("map-image");
+    const rect = map.getBoundingClientRect();
+    const x = (e.clientX - rect.left) / rect.width;
+    const y = (e.clientY - rect.top) / rect.height;
 
 map.addEventListener("click", e => {
   if (!e.shiftKey) return;
