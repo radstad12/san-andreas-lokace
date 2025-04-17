@@ -21,6 +21,23 @@ const dbSet = set;
 const dbRemove = remove;
 const dbPush = push;
 
+
+function getCategoryIcons(categories) {
+  const icons = {
+    "📍 Lokace": "📍",
+    "🗺️ Území": "🥷",
+    "🔫 Předání zbraní": "🔫",
+    "🚗 Ujíždění autem": "🚗",
+    "🏍️ Ujíždění na motorce": "🏍️",
+    "🏃‍♂️ Útěk pěšky": "🏃‍♂️",
+    "📦 Sklady": "📦",
+    "🎭 Místa na výslech": "🎭"
+  };
+  if (!Array.isArray(categories)) categories = [categories];
+  return categories.map(cat => icons[cat] || "").join(" ");
+}
+
+
 // ----- MAP LOGIKA ZDE -----
 
 const map = document.getElementById("map");
@@ -195,6 +212,25 @@ function renderPolygon(item) {
   poly.onmouseleave = hideTooltip;
   svg.appendChild(poly);
   map.appendChild(svg);
+  // ikona do středu polygonu
+  if (item.points?.length) {
+    const bbox = poly.getBBox();
+    const centerX = bbox.x + bbox.width / 2;
+    const centerY = bbox.y + bbox.height / 2;
+    const icon = document.createElement("div");
+    icon.className = "polygon-icon";
+    icon.textContent = getCategoryIcons(item.categories || item.category);
+    icon.style.position = "absolute";
+    icon.style.left = centerX + "px";
+    icon.style.top = centerY + "px";
+    icon.style.transform = "translate(-50%, -50%)";
+    icon.style.pointerEvents = "none";
+    icon.style.fontSize = "18px";
+    icon.style.zIndex = "999";
+    icon.id = "polygon-icon-" + item.id;
+    map.appendChild(icon);
+  }
+
 }
 
 function showTooltip(e, text) {
@@ -398,7 +434,15 @@ style.innerHTML += `
   background-color: rgba(255, 255, 255, 0.12);
 }
 `;
-document.head.appendChild(style);
+style.innerHTML += `
+.polygon-icon {
+  font-size: 18px;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  position: absolute;
+}
+`;
+  document.head.appendChild(style);
 
 
 
