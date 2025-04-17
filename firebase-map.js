@@ -36,7 +36,7 @@ let data = [];
 let expandedCategories = new Set(categories);
 let planningMode = false;
 let currentPolygon = [];
-let scale = 1, originX = 0, originY = 0, isDragging = false, start = { x: 0, y: 0 };
+let scale = 1, originX = 0, originY = 0;
 
 function loadData() {
   dbOnValue(dbRef(db, 'mapData'), (snapshot) => {
@@ -103,6 +103,7 @@ function renderMarker(item) {
   }
   const el = document.createElement("div");
   el.className = "marker";
+  el.id = `marker-${item.id}`;
   el.style.left = `${item.x * 100}%`;
   el.style.top = `${item.y * 100}%`;
   el.style.background = item.color;
@@ -226,29 +227,90 @@ map.addEventListener("click", e => {
   }
 });
 
+
+// Wheel zoom s limitem pouze pro přiblížení (ne oddálení pod scale 1)
 map.addEventListener("wheel", e => {
   e.preventDefault();
-  scale += e.deltaY * -0.001;
-  scale = Math.min(Math.max(0.5, scale), 8);
-  map.style.transform = `scale(${scale}) translate(${originX}px, ${originY}px)`;
+  const delta = e.deltaY * -0.001;
+  const newScale = scale + delta;
+  if (delta > 0 || newScale >= 1) {
+    scale = Math.min(8, newScale);
+    map.style.transform = `scale(${scale}) translate(${originX}px, ${originY}px)`;
+  }
 }, { passive: false });
 
-map.addEventListener("mousedown", e => {
-  isDragging = true;
-  start = { x: e.clientX, y: e.clientY };
-});
 
-window.addEventListener("mouseup", () => isDragging = false);
 
-window.addEventListener("mousemove", e => {
-  if (!isDragging) return;
-  originX += (e.clientX - start.x) / scale;
-  originY += (e.clientY - start.y) / scale;
-  start = { x: e.clientX, y: e.clientY };
+
+
+
+
+
+const keysPressed = {};
+function isFormElementFocused() {
+  const el = document.activeElement;
+  return el && (
+    el.tagName === 'INPUT' ||
+    el.tagName === 'TEXTAREA' ||
+    el.tagName === 'SELECT' ||
+    el.tagName === 'BUTTON' ||
+    el.isContentEditable
+  );
+}
+
+function updateTransform() {
+  if (isFormElementFocused()) return;
+  const step = 2 / scale;
+  if (keysPressed['w']) originY += step;
+  if (keysPressed['s']) originY -= step;
+  if (keysPressed['a']) originX += step;
+  if (keysPressed['d']) originX -= step;
   map.style.transform = `scale(${scale}) translate(${originX}px, ${originY}px)`;
-});
+}
+setInterval(updateTransform, 16);
+window.addEventListener("keydown", e => { keysPressed[e.key.toLowerCase()] = true; });
+window.addEventListener("keyup", e => { keysPressed[e.key.toLowerCase()] = false; });
+
+
 
 window.onload = () => {
+const style = document.createElement("style");
+style.innerHTML = `
+  /* 1. Vyrovnaná šířka input a tlačítka */
+  #search, #show-all {
+    width: calc(100% - 20px);
+    box-sizing: border-box;
+  }
+
+  /* 2. Hover efekt pro kategorie i zobrazit vše */
+  button.category-header,
+  background: #1a1a1a;
+  color: white;
+  border: none;
+  padding: 8px;
+  margin-top: 4px;
+  cursor: pointer;
+  width: 100%;
+  text-align: center;
+  transition: background 0.2s, transform 0.2s;
+    transition: background 0.2s, transform 0.2s;
+  }
+  button.category-header:hover,
+  #show-all:hover {
+    background: #333;
+  transform: scale(1.02);
+  }
+
+  /* 3. Hover zvětšení itemů v menu */
+  .category-items .item {
+    transition: transform 0.2s ease;
+  }
+  .category-items .item:hover {
+    transform: scale(1.03);
+  }
+`;
+document.head.appendChild(style);
+
   document.getElementById("planning-toggle").onclick = () => {
     planningMode = !planningMode;
     alert(`Plánovací režim: ${planningMode ? 'ZAPNUTÝ' : 'VYPNUTÝ'}`);
