@@ -319,7 +319,7 @@ function isFormElementFocused() {
 
 function updateTransform() {
   if (isFormElementFocused()) return;
-  const step = 2 / scale;
+  const step = 16 / scale;
   if (keysPressed['w']) originY += step;
   if (keysPressed['s']) originY -= step;
   if (keysPressed['a']) originX += step;
@@ -412,6 +412,11 @@ document.head.appendChild(style);
     render();
   };
   document.getElementById("search").oninput = () => render();
-  window.deleteItem = deleteItem;
+  window.deleteItem = id => {
+  const item = data.find(i => i.id === id);
+  if (!item) return;
+  const confirmText = `Opravdu chceš odstranit ${item.name || 'tuto položku'}?`;
+  if (confirm(confirmText)) deleteItem(id);
+};
   loadData();
 };
