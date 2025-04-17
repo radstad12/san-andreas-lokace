@@ -350,3 +350,44 @@ document.head.appendChild(style);
   window.deleteItem = deleteItem;
   loadData();
 };
+
+// Přidání CSS animace pro zvýraznění markeru
+const style = document.createElement('style');
+style.textContent = `
+@keyframes pulse {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.2); opacity: 0.8; }
+  100% { transform: scale(1); opacity: 1; }
+}
+.highlight-marker {
+  transform: scale(5);
+  animation: pulse 1s infinite;
+  z-index: 1000;
+}
+`;
+document.head.appendChild(style);
+
+// Funkce pro zvýraznění markeru při najetí na položku v menu
+function setupMarkerHoverEffect() {
+  document.querySelectorAll(".item").forEach(itemEl => {
+    itemEl.addEventListener("mouseenter", () => {
+      const itemId = itemEl.getAttribute("data-id");
+      const marker = document.getElementById("marker-" + itemId);
+      if (marker) {
+        marker.classList.add("highlight-marker");
+      }
+    });
+    itemEl.addEventListener("mouseleave", () => {
+      const itemId = itemEl.getAttribute("data-id");
+      const marker = document.getElementById("marker-" + itemId);
+      if (marker) {
+        marker.classList.remove("highlight-marker");
+      }
+    });
+  });
+}
+
+// Spustíme po načtení obsahu
+window.addEventListener("load", () => {
+  setupMarkerHoverEffect();
+});
