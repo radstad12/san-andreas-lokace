@@ -286,6 +286,21 @@ function zoomToItem(id) {
     x = sum.x / item.points.length;
     y = sum.y / item.points.length;
   }
+
+  const mapImage = document.getElementById("map-image");
+  const imgWidth = mapImage.naturalWidth;
+  const imgHeight = mapImage.naturalHeight;
+  const viewWidth = map.clientWidth;
+  const viewHeight = map.clientHeight;
+
+  const centerX = x * imgWidth;
+  const centerY = y * imgHeight;
+
+  originX = -(centerX - viewWidth / 2) / 4;
+  originY = -(centerY - viewHeight / 2) / 4;
+  scale = 4;
+  map.style.transform = `scale(${scale}) translate(${originX}px, ${originY}px)`;
+}
   originX = (0.5 - x) * map.clientWidth / 100;
   originY = (0.5 - y) * map.clientHeight / 100;
   scale = 4;
