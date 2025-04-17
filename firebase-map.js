@@ -87,14 +87,6 @@ function render() {
         const div = document.createElement("div");
         div.className = "item";
         div.innerHTML = `<div><span class="dot" style="background:${item.color}"></span>${item.name}</div><span class="delete-btn" onclick="window.deleteItem(${item.id}); event.stopPropagation()">🗑</span>`;
-div.onclick = () => {
-      if (item.type === "point") {
-        scale = 2;
-        originX = -(item.x * map.offsetWidth - map.offsetWidth / 2) / scale;
-        originY = -(item.y * map.offsetHeight - map.offsetHeight / 2) / scale;
-        map.style.transform = `scale(${scale}) translate(${originX}px, ${originY}px)`;
-      }
-    };
         items.appendChild(div);
       }
     });
@@ -211,10 +203,10 @@ function openForm(type, coords) {
 map.addEventListener("dblclick", e => {
   if (e.shiftKey) return;
   const r = map.getBoundingClientRect();
-    const mapImage = document.getElementById("map-image");
-    const rect = map.getBoundingClientRect();
-    const x = (e.clientX - rect.left) / rect.width;
-    const y = (e.clientY - rect.top) / rect.height;
+  const x = (e.clientX - r.left) / r.width;
+  const y = (e.clientY - r.top) / r.height;
+  openForm("point", { x, y });
+});
 
 map.addEventListener("click", e => {
   if (!e.shiftKey) return;
