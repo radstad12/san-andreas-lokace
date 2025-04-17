@@ -274,16 +274,23 @@ window.addEventListener("keyup", e => { keysPressed[e.key.toLowerCase()] = false
 
 
 function zoomToItem(item) {
-  if (!item || typeof item.x !== 'number' || typeof item.y !== 'number') return;
-  const mapImage = document.getElementById("map-image");
-  const rect = map.getBoundingClientRect();
-  const centerX = item.x * rect.width;
-  const centerY = item.y * rect.height;
-  const viewportWidth = rect.width;
-  const viewportHeight = rect.height;
+  if (!item || !item.id) return;
+  const marker = document.getElementById(`marker-${item.id}`);
+  if (!marker) return;
+
+  const markerRect = marker.getBoundingClientRect();
+  const mapRect = map.getBoundingClientRect();
+
+  const centerX = markerRect.left + markerRect.width / 2 - mapRect.left;
+  const centerY = markerRect.top + markerRect.height / 2 - mapRect.top;
+
+  const viewportWidth = mapRect.width;
+  const viewportHeight = mapRect.height;
+
   scale = 4;
   originX = -(centerX - viewportWidth / 2) / scale;
   originY = -(centerY - viewportHeight / 2) / scale;
+
   map.style.transform = `scale(${scale}) translate(${originX}px, ${originY}px)`;
 }
 window.onload = () => {
