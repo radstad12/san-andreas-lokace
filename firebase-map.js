@@ -56,6 +56,7 @@ function deleteItem(id) {
 }
 
 function render() {
+  console.log("[DEBUG] Spouštím render s daty:", data);
   menu.innerHTML = "";
   map.querySelectorAll(".marker, .polygon-point, svg.polygon").forEach(el => el.remove());
   const search = document.getElementById("search").value.toLowerCase();
