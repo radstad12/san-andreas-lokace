@@ -76,7 +76,7 @@ function render() {
     data.forEach(item => {
       if (!item.categories?.includes(cat)) return;
       if (!expandedCategories.has(cat)) return;
-      const matchSearch = (item.name && item.name.toLowerCase().includes(search)) || (item.desc && item.desc.toLowerCase().includes(search));
+      const matchSearch = ((item.name || "").toLowerCase().includes(search) || (item.desc || "").toLowerCase().includes(search));
       if (search === "" || matchSearch) {
         if (item.type === 'point') {
           renderMarker(item);
