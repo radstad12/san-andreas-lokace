@@ -102,8 +102,8 @@ function render() {
               label.id = "polygon-label-" + item.id;
               label.innerText = item.name + (item.desc ? ": " + item.desc : "");
               label.style.position = "absolute";
-              label.style.left = rect.left + window.scrollX + rect.width / 2 + "px";
-              label.style.top = rect.top + window.scrollY - 30 + "px";
+              label.style.left = poly.getBoundingClientRect().x + map.offsetLeft + "px";
+              label.style.top = poly.getBoundingClientRect().y + map.offsetTop + "px";
               label.style.transform = "translateX(-50%)";
               map.appendChild(label);
             }
