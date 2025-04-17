@@ -86,6 +86,7 @@ function render() {
         }
         const div = document.createElement("div");
         div.className = "item";
+        div.setAttribute("data-id", item.id);
         div.innerHTML = `<div><span class="dot" style="background:${item.color}"></span>${item.name}</div><span class="delete-btn" onclick="window.deleteItem(${item.id}); event.stopPropagation()">🗑</span>`;
         items.appendChild(div);
       }
@@ -103,6 +104,7 @@ function renderMarker(item) {
   }
   const el = document.createElement("div");
   el.className = "marker";
+    el.id = `marker-${item.id}`;
   el.style.left = `${item.x * 100}%`;
   el.style.top = `${item.y * 100}%`;
   el.style.background = item.color;
