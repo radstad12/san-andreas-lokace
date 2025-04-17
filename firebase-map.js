@@ -25,7 +25,7 @@ const dbPush = push;
 function getCategoryIcons(categories) {
   const icons = {
     "📍 Lokace": "📍",
-    "🗺️ Území": "🥷",
+    "🥷 Území": "🥷",
     "🔫 Předání zbraní": "🔫",
     "🚗 Ujíždění autem": "🚗",
     "🏍️ Ujíždění na motorce": "🏍️",
