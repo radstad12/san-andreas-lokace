@@ -86,6 +86,39 @@ function render() {
         }
         const div = document.createElement("div");
         div.className = "item";
+        div.dataset.id = item.id;
+        div.onmouseenter = () => {
+          const marker = document.getElementById(`marker-${item.id}`);
+          if (marker) {
+            marker.classList.add("highlight-marker");
+            // Přidat textový štítek vedle markeru
+            const existingLabel = document.getElementById("marker-label-" + item.id);
+            if (!existingLabel) {
+              const label = document.createElement("div");
+              label.className = "marker-label";
+              label.id = "marker-label-" + item.id;
+              label.innerText = item.name + (item.desc ? ": " + item.desc : "");
+              label.style.position = "absolute";
+              label.style.left = (marker.offsetLeft + 25) + "px";
+              label.style.top = (marker.offsetTop - 10) + "px";
+              label.style.background = "rgba(0,0,0,0.75)";
+              label.style.color = "#fff";
+              label.style.padding = "6px 10px";
+              label.style.borderRadius = "6px";
+              label.style.fontSize = "16px";
+              label.style.zIndex = "1001";
+              map.appendChild(label);
+            }
+          }
+        };
+        div.onmouseleave = () => {
+          const marker = document.getElementById(`marker-${item.id}`);
+          if (marker) {
+            marker.classList.remove("highlight-marker");
+            const label = document.getElementById("marker-label-" + item.id);
+            if (label) label.remove();
+          }
+        };
         div.innerHTML = `<div><span class="dot" style="background:${item.color}"></span>${item.name}</div><span class="delete-btn" onclick="window.deleteItem(${item.id}); event.stopPropagation()">🗑</span>`;
         items.appendChild(div);
       }
@@ -97,43 +130,24 @@ function render() {
 }
 
 function renderMarker(item) {
-  if (typeof item.x !== 'number' || typeof item.y !== 'number') {)
+  if (typeof item.x !== 'number' || typeof item.y !== 'number') {
     console.warn('Neplatné souřadnice bodu:', item);
     return;
   }
   const el = document.createElement("div");
   el.className = "marker";
+  el.id = `marker-${item.id}`;
   el.style.left = `${item.x * 100}%`;
   el.style.top = `${item.y * 100}%`;
   el.style.background = item.color;
   el.style.width = el.style.height = `${item.size || 6}px`;
   el.onmouseenter = e => {
-  const label = document.createElement("div");
-  label.className = "marker-label";
-  label.textContent = text;
-  label.style.position = "absolute";
-  label.style.left = (el.offsetLeft + 20) + "px";
-  label.style.top = (el.offsetTop - 10) + "px";
-  label.style.color = "#fff";
-  label.style.background = "rgba(0,0,0,0.7)";
-  label.style.padding = "6px 10px";
-  label.style.fontSize = "18px";
-  label.style.fontWeight = "bold";
-  label.style.borderRadius = "6px";
-  label.style.zIndex = 1000;
-  label.id = "marker-label-" + item.id;
-  map.appendChild(label);
-
     const name = item.name?.trim() || "(bez názvu)";
     const desc = item.desc?.trim() || "";
     const text = desc ? `${name}: ${desc}` : name;
     showTooltip(e, text);
   };
-  el.onmouseleave = () => {
-    hideTooltip();
-    const lbl = document.getElementById("marker-label-" + item.id);
-    if (lbl) lbl.remove();
-  };
+  el.onmouseleave = hideTooltip;
   map.appendChild(el);
 }
 
@@ -295,6 +309,17 @@ window.addEventListener("keyup", e => { keysPressed[e.key.toLowerCase()] = false
 window.onload = () => {
 const style = document.createElement("style");
 style.innerHTML = `
+.marker-label { pointer-events: none; }
+@keyframes pulse {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.3); opacity: 0.7; }
+  100% { transform: scale(1); opacity: 1; }
+}
+.highlight-marker {
+  transform: scale(5) !important;
+  animation: pulse 1s infinite;
+  z-index: 1000;
+}
   /* 1. Vyrovnaná šířka input a tlačítka */
   #search, #show-all {
     width: calc(100% - 20px);
@@ -328,14 +353,7 @@ style.innerHTML = `
     transform: scale(1.03);
   }
 `;
-
-style.innerHTML += `
-.marker-label {
-  pointer-events: none;
-}
-`;
 document.head.appendChild(style);
-
 
   document.getElementById("planning-toggle").onclick = () => {
     planningMode = !planningMode;
