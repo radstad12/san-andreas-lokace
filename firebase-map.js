@@ -353,7 +353,16 @@ style.innerHTML = `
     transform: scale(1.03);
   }
 `;
+
+style.innerHTML += `
+.highlight-polygon {
+  stroke: #ff0 !important;
+  stroke-width: 3 !important;
+  fill-opacity: 0.6 !important;
+}
+`;
 document.head.appendChild(style);
+
 
   document.getElementById("planning-toggle").onclick = () => {
     planningMode = !planningMode;
