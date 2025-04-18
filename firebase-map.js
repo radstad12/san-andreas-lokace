@@ -44,7 +44,7 @@ const map = document.getElementById("map");
 const menu = document.getElementById("menu");
 const tooltip = document.getElementById("tooltip");
 const categories = [
-  "📍 Lokace", "🥷 Území", "🔫 Předání zbraní",
+  "🥷 Území", "📍 Lokace", "🔫 Předání zbraní",
   "🚗 Ujíždění autem", "🏍️ Ujíždění na motorce",
   "🏃‍♂️ Útěk pěšky", "📦 Sklady", "🎭 Místa na výslech"
 ];
