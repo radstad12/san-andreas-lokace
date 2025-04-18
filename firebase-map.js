@@ -302,6 +302,9 @@ function renderPolygon(item) {
   svg.setAttribute("height", map.clientHeight);
   const poly = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
   poly.setAttribute("points", item.points.map(p => `${p.x * map.clientWidth},${p.y * map.clientHeight}`).join(" "));
+  const bbox = poly.getBBox();
+  poly.dataset.centerX = ((bbox.x + bbox.width / 2) / map.offsetWidth * 100).toFixed(2);
+  poly.dataset.centerY = ((bbox.y + bbox.height / 2) / map.offsetHeight * 100).toFixed(2);
   poly.setAttribute("fill", item.color + "55");
   poly.setAttribute("stroke", item.color);
   poly.setAttribute("data-id", item.id);
