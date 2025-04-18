@@ -31,8 +31,7 @@ function getCategoryIcons(categories) {
     "🏍️ Ujíždění na motorce": "🏍️",
     "🏃‍♂️ Útěk pěšky": "🏃‍♂️",
     "📦 Sklady": "📦",
-    "🎭 Místa na výslech": "🎭",
-    "🌎 Regiony": "🌎"
+    "🎭 Místa na výslech": "🎭"
   };
   if (!Array.isArray(categories)) categories = [categories];
   return categories.map(cat => icons[cat] || "").join(" ");
@@ -45,7 +44,6 @@ const map = document.getElementById("map");
 const menu = document.getElementById("menu");
 const tooltip = document.getElementById("tooltip");
 const categories = [
-  "🌎 Regiony",
   "📍 Lokace", "🥷 Území", "🔫 Předání zbraní",
   "🚗 Ujíždění autem", "🏍️ Ujíždění na motorce",
   "🏃‍♂️ Útěk pěšky", "📦 Sklady", "🎭 Místa na výslech"
@@ -115,12 +113,6 @@ function render() {
           originY = 0;
           scale = 1;
           map.style.transform = `scale(${scale}) translate(${originX}px, ${originY}px)`;
-          const poly = document.getElementById("polygon-" + item.id);
-          if (poly) poly.classList.add("polygon-highlighted");
-          originX = 0;
-          originY = 0;
-          scale = 1;
-          map.style.transform = `scale(${scale}) translate(${originX}px, ${originY}px)`;
 
           if (item.type === 'polygon') {
             const polys = document.querySelectorAll("svg.polygon polygon");
@@ -156,8 +148,6 @@ function render() {
           }
         };
         div.onmouseleave = () => {
-          const poly = document.getElementById("polygon-" + item.id);
-          if (poly) poly.classList.remove("polygon-highlighted");
           if (item.type === 'polygon') {
             const polys = document.querySelectorAll("svg.polygon polygon");
             polys.forEach(poly => {
@@ -247,111 +237,58 @@ function renderMarker(item) {
   el.style.width = el.style.height = size + "px";
 
   // Přidání dokonale vystředěné ikony
-  const label = document.createElement("div");
-label.className = "polygon-label";
-label.textContent = item.name || "";
-label.style.position = "absolute";
-label.style.left = (avgX * 100) + "%";
-label.style.top = (avgY * 100) + "%";
-label.style.transform = "translate(-50%, -50%)";
-label.style.fontSize = "12px";
-label.style.maxWidth = "100px";
-label.style.textAlign = "center";
-label.style.whiteSpace = "nowrap";
-label.style.overflow = "hidden";
-label.style.textOverflow = "ellipsis";
-label.style.pointerEvents = "none";
-map.appendChild(label);
-  }
+  const icon = document.createElement("div");
+  icon.className = "marker-icon";
+  icon.textContent = getCategoryIcons(item.categories || item.category);
+  icon.style.position = "absolute";
+  icon.style.top = "50%";
+  icon.style.left = "50%";
+  icon.style.transform = "translate(-50%, -50%)";
+  icon.style.pointerEvents = "none";
+  icon.style.fontSize = `${size * 0.65}px`;
+  icon.style.lineHeight = "1";
+  icon.style.width = icon.style.height = `${size * 0.65}px`;
+  icon.style.display = "flex";
+  icon.style.alignItems = "center";
+  icon.style.justifyContent = "center";
+  el.appendChild(icon);
+
+  el.onmouseenter = e => {
+    const name = item.name?.trim() || "(bez názvu)";
+    const desc = item.desc?.trim() || "";
+    const text = desc ? `${name}: ${desc}` : name;
+    showTooltip(e, text);
+  };
+  el.onmouseleave = hideTooltip;
+  map.appendChild(el);
+}
 
 
-  if (item.points?.length) {
-    // Výpočet průměrného středu polygonu
-    const avgX = item.points.reduce((sum, p) => sum + p.x, 0) / item.points.length;
-    const avgY = item.points.reduce((sum, p) => sum + p.y, 0) / item.points.length;
-    const label = document.createElement("div");
-label.className = "polygon-label";
-label.textContent = item.name || "";
-label.style.position = "absolute";
-label.style.left = (avgX * 100) + "%";
-label.style.top = (avgY * 100) + "%";
-label.style.transform = "translate(-50%, -50%)";
-label.style.fontSize = "12px";
-label.style.maxWidth = "100px";
-label.style.textAlign = "center";
-label.style.whiteSpace = "nowrap";
-label.style.overflow = "hidden";
-label.style.textOverflow = "ellipsis";
-label.style.pointerEvents = "none";
-map.appendChild(label);
-  }
 
 
-  if (item.points?.length) {
-    const bbox = poly.getBBox();
-    const centerX = bbox.x + bbox.width / 2;
-    const centerY = bbox.y + bbox.height / 2;
-    const label = document.createElement("div");
-label.className = "polygon-label";
-label.textContent = item.name || "";
-label.style.position = "absolute";
-label.style.left = (avgX * 100) + "%";
-label.style.top = (avgY * 100) + "%";
-label.style.transform = "translate(-50%, -50%)";
-label.style.fontSize = "12px";
-label.style.maxWidth = "100px";
-label.style.textAlign = "center";
-label.style.whiteSpace = "nowrap";
-label.style.overflow = "hidden";
-label.style.textOverflow = "ellipsis";
-label.style.pointerEvents = "none";
-map.appendChild(label);
-  }
 
-  // ikona do středu polygonu
-  if (item.points?.length) {
-    const bbox = poly.getBBox();
-    const centerX = bbox.x + bbox.width / 2;
-    const centerY = bbox.y + bbox.height / 2;
-    const label = document.createElement("div");
-label.className = "polygon-label";
-label.textContent = item.name || "";
-label.style.position = "absolute";
-label.style.left = (avgX * 100) + "%";
-label.style.top = (avgY * 100) + "%";
-label.style.transform = "translate(-50%, -50%)";
-label.style.fontSize = "12px";
-label.style.maxWidth = "100px";
-label.style.textAlign = "center";
-label.style.whiteSpace = "nowrap";
-label.style.overflow = "hidden";
-label.style.textOverflow = "ellipsis";
-label.style.pointerEvents = "none";
-map.appendChild(label);
-  }
+function renderPolygon(item) {
+  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  svg.classList.add("polygon");
+  svg.setAttribute("width", map.clientWidth);
+  svg.setAttribute("height", map.clientHeight);
+  const poly = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
+  poly.setAttribute("points", item.points.map(p => `${p.x * map.clientWidth},${p.y * map.clientHeight}`).join(" "));
+  poly.setAttribute("fill", item.color + "55");
+  poly.setAttribute("stroke", item.color);
+  poly.setAttribute("data-id", item.id);
+  poly.onmouseenter = e => {
+    const name = item.name?.trim() || "(bez názvu)";
+    const desc = item.desc?.trim() || "";
+    const text = desc ? `${name}: ${desc}` : name;
+    showTooltip(e, text);
+  };
+  poly.onmouseleave = hideTooltip;
+  svg.appendChild(poly);
+  
 
   map.appendChild(svg);
-  // ikona do středu polygonu
-  if (item.points?.length) {
-    const bbox = poly.getBBox();
-    const centerX = bbox.x + bbox.width / 2;
-    const centerY = bbox.y + bbox.height / 2;
-    const label = document.createElement("div");
-label.className = "polygon-label";
-label.textContent = item.name || "";
-label.style.position = "absolute";
-label.style.left = (avgX * 100) + "%";
-label.style.top = (avgY * 100) + "%";
-label.style.transform = "translate(-50%, -50%)";
-label.style.fontSize = "12px";
-label.style.maxWidth = "100px";
-label.style.textAlign = "center";
-label.style.whiteSpace = "nowrap";
-label.style.overflow = "hidden";
-label.style.textOverflow = "ellipsis";
-label.style.pointerEvents = "none";
-map.appendChild(label);
-  }
+  
 
 }
 
@@ -578,16 +515,6 @@ style.innerHTML += `
   style.innerHTML += `
 
 `;
-  style.innerHTML += `
-
-
-  50% { stroke-opacity: 0.3; }
-  100% { stroke-opacity: 1; }
-}
-`;
-  style.innerHTML += `
-
-`;
   document.head.appendChild(style);
 
 
@@ -644,27 +571,4 @@ map.addEventListener("mousedown", e => {
 });
 
   loadData();
-
-  const categoryHeaders = document.querySelectorAll('.category-header');
-  categoryHeaders.forEach(header => {
-    header.addEventListener('click', () => {
-      const currentCategory = header.dataset.category;
-      const isRegion = currentCategory === "Regiony";
-      categoryHeaders.forEach(h => {
-        const content = h.nextElementSibling;
-        if (content && content.classList.contains('category-items')) {
-          if (isRegion) {
-            content.style.display = h.dataset.category === "Regiony" ? "block" : "none";
-          } else {
-            if (h.dataset.category === "Regiony") {
-              content.style.display = "none";
-            } else if (h === header) {
-              content.style.display = content.style.display === "block" ? "none" : "block";
-            }
-          }
-        }
-      });
-    });
-  });
-
 };
