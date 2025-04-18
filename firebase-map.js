@@ -31,7 +31,8 @@ function getCategoryIcons(categories) {
     "🏍️ Ujíždění na motorce": "🏍️",
     "🏃‍♂️ Útěk pěšky": "🏃‍♂️",
     "📦 Sklady": "📦",
-    "🎭 Místa na výslech": "🎭"
+    "🎭 Místa na výslech": "🎭",
+    "🌎 Regiony": "🌎"
   };
   if (!Array.isArray(categories)) categories = [categories];
   return categories.map(cat => icons[cat] || "").join(" ");
@@ -44,6 +45,7 @@ const map = document.getElementById("map");
 const menu = document.getElementById("menu");
 const tooltip = document.getElementById("tooltip");
 const categories = [
+  "🌎 Regiony",
   "📍 Lokace", "🥷 Území", "🔫 Předání zbraní",
   "🚗 Ujíždění autem", "🏍️ Ujíždění na motorce",
   "🏃‍♂️ Útěk pěšky", "📦 Sklady", "🎭 Místa na výslech"
@@ -293,26 +295,6 @@ function renderPolygon(item) {
   };
   poly.onmouseleave = hideTooltip;
   svg.appendChild(poly);
-
-  if (item.points?.length) {
-    const avgX = item.points.reduce((sum, p) => sum + p.x, 0) / item.points.length;
-    const avgY = item.points.reduce((sum, p) => sum + p.y, 0) / item.points.length;
-    const polyEl = document.getElementById("polygon-" + item.id);
-    const bbox = polyEl?.getBBox?.() || { width: 100, height: 100 };
-    const iconSize = Math.max(12, Math.min(bbox.width, bbox.height) * 0.4);
-    const icon = document.createElement("div");
-    icon.className = "polygon-icon";
-    icon.textContent = getCategoryIcons(item.categories || item.category);
-    icon.style.position = "absolute";
-    icon.style.left = (avgX * 100) + "%";
-    icon.style.top = (avgY * 100) + "%";
-    icon.style.transform = "translate(-50%, -50%)";
-    icon.style.fontSize = iconSize + "px";
-    icon.style.pointerEvents = "none";
-    icon.id = "polygon-icon-" + item.id;
-    map.appendChild(icon);
-  }
-
 
   if (item.points?.length) {
     const avgX = item.points.reduce((sum, p) => sum + p.x, 0) / item.points.length;
@@ -751,28 +733,6 @@ map.addEventListener("mousedown", e => {
 });
 
   loadData();
-
-  const categoryHeaders = document.querySelectorAll('.category-header');
-  categoryHeaders.forEach(header => {
-    header.addEventListener('click', () => {
-      const current = header.dataset.category;
-      const isRegion = current === "Regiony";
-      categoryHeaders.forEach(h => {
-        const list = h.nextElementSibling;
-        if (!list) return;
-        if (isRegion) {
-          list.style.display = h.dataset.category === "Regiony" ? "block" : "none";
-        } else {
-          if (h.dataset.category === "Regiony") {
-            list.style.display = "none";
-          } else if (h === header) {
-            list.style.display = list.style.display === "block" ? "none" : "block";
-          }
-        }
-      });
-    });
-  });
-
 
   const categoryHeaders = document.querySelectorAll('.category-header');
   categoryHeaders.forEach(header => {
