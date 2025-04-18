@@ -295,6 +295,32 @@ function renderPolygon(item) {
   svg.appendChild(poly);
 
   if (item.points?.length) {
+    const avgX = item.points.reduce((sum, p) => sum + p.x, 0) / item.points.length;
+    const avgY = item.points.reduce((sum, p) => sum + p.y, 0) / item.points.length;
+    const bbox = poly.getBBox();
+    const size = Math.max(12, Math.min(bbox.width, bbox.height) * 0.6);
+
+    const icon = document.createElement("div");
+    icon.className = "polygon-icon";
+    icon.textContent = getCategoryIcons(item.categories || item.category);
+    icon.style.position = "absolute";
+    icon.style.left = (avgX * 100) + "%";
+    icon.style.top = (avgY * 100) + "%";
+    icon.style.transform = "translate(-50%, -50%)";
+    icon.style.pointerEvents = "none";
+    icon.style.fontSize = size + "px";
+    icon.style.lineHeight = "1";
+    icon.style.zIndex = "1000";
+    icon.style.textAlign = "center";
+    icon.style.display = "flex";
+    icon.style.alignItems = "center";
+    icon.style.justifyContent = "center";
+    icon.id = "polygon-icon-" + item.id;
+    map.appendChild(icon);
+  }
+
+
+  if (item.points?.length) {
     // Výpočet průměrného středu polygonu
     const avgX = item.points.reduce((sum, p) => sum + p.x, 0) / item.points.length;
     const avgY = item.points.reduce((sum, p) => sum + p.y, 0) / item.points.length;
@@ -705,4 +731,27 @@ map.addEventListener("mousedown", e => {
 });
 
   loadData();
+
+  const categoryHeaders = document.querySelectorAll('.category-header');
+  categoryHeaders.forEach(header => {
+    header.addEventListener('click', () => {
+      const currentCategory = header.dataset.category;
+      const isRegion = currentCategory === "Regiony";
+      categoryHeaders.forEach(h => {
+        const content = h.nextElementSibling;
+        if (content && content.classList.contains('category-items')) {
+          if (isRegion) {
+            content.style.display = h.dataset.category === "Regiony" ? "block" : "none";
+          } else {
+            if (h.dataset.category === "Regiony") {
+              content.style.display = "none";
+            } else if (h === header) {
+              content.style.display = content.style.display === "block" ? "none" : "block";
+            }
+          }
+        }
+      });
+    });
+  });
+
 };
