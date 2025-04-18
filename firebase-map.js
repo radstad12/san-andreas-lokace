@@ -247,78 +247,21 @@ function renderMarker(item) {
   el.style.width = el.style.height = size + "px";
 
   // Přidání dokonale vystředěné ikony
-  const icon = document.createElement("div");
-  icon.className = "marker-icon";
-  icon.textContent = getCategoryIcons(item.categories || item.category);
-  icon.style.position = "absolute";
-  icon.style.top = "50%";
-  icon.style.left = "50%";
-  icon.style.transform = "translate(-50%, -50%)";
-  icon.style.pointerEvents = "none";
-  icon.style.fontSize = `${size * 0.65}px`;
-  icon.style.lineHeight = "1";
-  icon.style.width = icon.style.height = `${size * 0.65}px`;
-  icon.style.display = "flex";
-  icon.style.alignItems = "center";
-  icon.style.justifyContent = "center";
-  el.appendChild(icon);
-
-  el.onmouseenter = e => {
-    const name = item.name?.trim() || "(bez názvu)";
-    const desc = item.desc?.trim() || "";
-    const text = desc ? `${name}: ${desc}` : name;
-    showTooltip(e, text);
-  };
-  el.onmouseleave = hideTooltip;
-  map.appendChild(el);
-}
-
-
-
-
-
-function renderPolygon(item) {
-  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-  svg.classList.add("polygon");
-  svg.setAttribute("width", map.clientWidth);
-  svg.setAttribute("height", map.clientHeight);
-  const poly = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
-  poly.setAttribute("points", item.points.map(p => `${p.x * map.clientWidth},${p.y * map.clientHeight}`).join(" "));
-  poly.setAttribute("fill", item.color + "55");
-  poly.setAttribute("stroke", item.color);
-  poly.setAttribute("data-id", item.id);
-  poly.onmouseenter = e => {
-    const name = item.name?.trim() || "(bez názvu)";
-    const desc = item.desc?.trim() || "";
-    const text = desc ? `${name}: ${desc}` : name;
-    showTooltip(e, text);
-  };
-  poly.onmouseleave = hideTooltip;
-  svg.appendChild(poly);
-
-  if (item.points?.length) {
-    const avgX = item.points.reduce((sum, p) => sum + p.x, 0) / item.points.length;
-    const avgY = item.points.reduce((sum, p) => sum + p.y, 0) / item.points.length;
-    const bbox = poly.getBBox();
-    const size = Math.max(12, Math.min(bbox.width, bbox.height) * 0.6);
-
-    const icon = document.createElement("div");
-    icon.className = "polygon-icon";
-    icon.textContent = getCategoryIcons(item.categories || item.category);
-    icon.style.position = "absolute";
-    icon.style.left = (avgX * 100) + "%";
-    icon.style.top = (avgY * 100) + "%";
-    icon.style.transform = "translate(-50%, -50%)";
-    icon.style.pointerEvents = "none";
-    icon.style.fontSize = size + "px";
-    icon.style.lineHeight = "1";
-    icon.style.zIndex = "1000";
-    icon.style.textAlign = "center";
-    icon.style.display = "flex";
-    icon.style.alignItems = "center";
-    icon.style.justifyContent = "center";
-    icon.id = "polygon-icon-" + item.id;
-    map.appendChild(icon);
+  const label = document.createElement("div");
+label.className = "polygon-label";
+label.textContent = item.name || "";
+label.style.position = "absolute";
+label.style.left = (avgX * 100) + "%";
+label.style.top = (avgY * 100) + "%";
+label.style.transform = "translate(-50%, -50%)";
+label.style.fontSize = "12px";
+label.style.maxWidth = "100px";
+label.style.textAlign = "center";
+label.style.whiteSpace = "nowrap";
+label.style.overflow = "hidden";
+label.style.textOverflow = "ellipsis";
+label.style.pointerEvents = "none";
+map.appendChild(label);
   }
 
 
@@ -326,23 +269,21 @@ function renderPolygon(item) {
     // Výpočet průměrného středu polygonu
     const avgX = item.points.reduce((sum, p) => sum + p.x, 0) / item.points.length;
     const avgY = item.points.reduce((sum, p) => sum + p.y, 0) / item.points.length;
-    const icon = document.createElement("div");
-    icon.className = "polygon-icon";
-    icon.textContent = getCategoryIcons(item.categories || item.category);
-    icon.style.position = "absolute";
-    icon.style.left = (avgX * 100) + "%";
-    icon.style.top = (avgY * 100) + "%";
-    icon.style.transform = "translate(-50%, -50%)";
-    icon.style.pointerEvents = "none";
-    icon.style.fontSize = "16px";
-    icon.style.lineHeight = "1";
-    icon.style.zIndex = "1000";
-    icon.style.textAlign = "center";
-    icon.style.display = "flex";
-    icon.style.alignItems = "center";
-    icon.style.justifyContent = "center";
-    icon.id = "polygon-icon-" + item.id;
-    map.appendChild(icon);
+    const label = document.createElement("div");
+label.className = "polygon-label";
+label.textContent = item.name || "";
+label.style.position = "absolute";
+label.style.left = (avgX * 100) + "%";
+label.style.top = (avgY * 100) + "%";
+label.style.transform = "translate(-50%, -50%)";
+label.style.fontSize = "12px";
+label.style.maxWidth = "100px";
+label.style.textAlign = "center";
+label.style.whiteSpace = "nowrap";
+label.style.overflow = "hidden";
+label.style.textOverflow = "ellipsis";
+label.style.pointerEvents = "none";
+map.appendChild(label);
   }
 
 
@@ -350,25 +291,21 @@ function renderPolygon(item) {
     const bbox = poly.getBBox();
     const centerX = bbox.x + bbox.width / 2;
     const centerY = bbox.y + bbox.height / 2;
-    const icon = document.createElement("div");
-    icon.className = "polygon-icon";
-    icon.textContent = getCategoryIcons(item.categories || item.category);
-    icon.style.position = "absolute";
-    icon.style.left = centerX + "px";
-    icon.style.top = centerY + "px";
-    icon.style.transform = "translate(-50%, -50%)";
-    icon.style.pointerEvents = "none";
-    const minSize = 12;
-    const size = Math.max(minSize, Math.min(bbox.width, bbox.height) * 0.6);
-    icon.style.fontSize = size + "px";
-    icon.style.lineHeight = "1";
-    icon.style.zIndex = "1000";
-    icon.style.textAlign = "center";
-    icon.style.display = "flex";
-    icon.style.alignItems = "center";
-    icon.style.justifyContent = "center";
-    icon.id = "polygon-icon-" + item.id;
-    map.appendChild(icon);
+    const label = document.createElement("div");
+label.className = "polygon-label";
+label.textContent = item.name || "";
+label.style.position = "absolute";
+label.style.left = (avgX * 100) + "%";
+label.style.top = (avgY * 100) + "%";
+label.style.transform = "translate(-50%, -50%)";
+label.style.fontSize = "12px";
+label.style.maxWidth = "100px";
+label.style.textAlign = "center";
+label.style.whiteSpace = "nowrap";
+label.style.overflow = "hidden";
+label.style.textOverflow = "ellipsis";
+label.style.pointerEvents = "none";
+map.appendChild(label);
   }
 
   // ikona do středu polygonu
@@ -376,23 +313,21 @@ function renderPolygon(item) {
     const bbox = poly.getBBox();
     const centerX = bbox.x + bbox.width / 2;
     const centerY = bbox.y + bbox.height / 2;
-    const icon = document.createElement("div");
-    icon.className = "polygon-icon";
-    icon.textContent = getCategoryIcons(item.categories || item.category);
-    icon.style.position = "absolute";
-    icon.style.left = centerX + "px";
-    icon.style.top = centerY + "px";
-    icon.style.transform = "translate(-50%, -50%)";
-    icon.style.pointerEvents = "none";
-    icon.style.fontSize = "14px";
-    icon.style.lineHeight = "1";
-    icon.style.zIndex = "1000";
-    icon.style.textAlign = "center";
-    icon.style.display = "flex";
-    icon.style.alignItems = "center";
-    icon.style.justifyContent = "center";
-    icon.id = "polygon-icon-" + item.id;
-    map.appendChild(icon);
+    const label = document.createElement("div");
+label.className = "polygon-label";
+label.textContent = item.name || "";
+label.style.position = "absolute";
+label.style.left = (avgX * 100) + "%";
+label.style.top = (avgY * 100) + "%";
+label.style.transform = "translate(-50%, -50%)";
+label.style.fontSize = "12px";
+label.style.maxWidth = "100px";
+label.style.textAlign = "center";
+label.style.whiteSpace = "nowrap";
+label.style.overflow = "hidden";
+label.style.textOverflow = "ellipsis";
+label.style.pointerEvents = "none";
+map.appendChild(label);
   }
 
   map.appendChild(svg);
@@ -401,18 +336,21 @@ function renderPolygon(item) {
     const bbox = poly.getBBox();
     const centerX = bbox.x + bbox.width / 2;
     const centerY = bbox.y + bbox.height / 2;
-    const icon = document.createElement("div");
-    icon.className = "polygon-icon";
-    icon.textContent = getCategoryIcons(item.categories || item.category);
-    icon.style.position = "absolute";
-    icon.style.left = centerX + "px";
-    icon.style.top = centerY + "px";
-    icon.style.transform = "translate(-50%, -50%)";
-    icon.style.pointerEvents = "none";
-    icon.style.fontSize = "18px";
-    icon.style.zIndex = "999";
-    icon.id = "polygon-icon-" + item.id;
-    map.appendChild(icon);
+    const label = document.createElement("div");
+label.className = "polygon-label";
+label.textContent = item.name || "";
+label.style.position = "absolute";
+label.style.left = (avgX * 100) + "%";
+label.style.top = (avgY * 100) + "%";
+label.style.transform = "translate(-50%, -50%)";
+label.style.fontSize = "12px";
+label.style.maxWidth = "100px";
+label.style.textAlign = "center";
+label.style.whiteSpace = "nowrap";
+label.style.overflow = "hidden";
+label.style.textOverflow = "ellipsis";
+label.style.pointerEvents = "none";
+map.appendChild(label);
   }
 
 }
