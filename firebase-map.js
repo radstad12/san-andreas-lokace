@@ -31,7 +31,8 @@ function getCategoryIcons(categories) {
     "🏍️ Ujíždění na motorce": "🏍️",
     "🏃‍♂️ Útěk pěšky": "🏃‍♂️",
     "📦 Sklady": "📦",
-    "🎭 Místa na výslech": "🎭"
+    "🎭 Místa na výslech": "🎭",
+  "🌎 Regiony": "🌎"
   };
   if (!Array.isArray(categories)) categories = [categories];
   return categories.map(cat => icons[cat] || "").join(" ");
@@ -44,6 +45,7 @@ const map = document.getElementById("map");
 const menu = document.getElementById("menu");
 const tooltip = document.getElementById("tooltip");
 const categories = [
+  "🌎 Regiony",
   "📍 Lokace", "🥷 Území", "🔫 Předání zbraní",
   "🚗 Ujíždění autem", "🏍️ Ujíždění na motorce",
   "🏃‍♂️ Útěk pěšky", "📦 Sklady", "🎭 Místa na výslech"
@@ -223,6 +225,32 @@ function render() {
 
 
 
+
+
+
+function highlightPolygonById(id, name, desc) {
+  const poly = document.getElementById("polygon-" + id);
+  if (poly) {
+    poly.classList.add("polygon-highlighted");
+    let label = document.createElement("div");
+    label.className = "hover-polygon-label";
+    label.innerHTML = `<strong>${name}</strong><br>${desc}`;
+    label.style.position = "absolute";
+    label.style.left = poly.dataset.centerX + "%";
+    label.style.top = poly.dataset.centerY + "%";
+    label.style.transform = "translate(-50%, -50%)";
+    label.style.pointerEvents = "none";
+    label.id = "polygon-hover-label";
+    document.getElementById("map").appendChild(label);
+  }
+}
+
+function removeHighlightPolygon(id) {
+  const poly = document.getElementById("polygon-" + id);
+  if (poly) poly.classList.remove("polygon-highlighted");
+  const label = document.getElementById("polygon-hover-label");
+  if (label) label.remove();
+}
 
 
 function renderMarker(item) {
