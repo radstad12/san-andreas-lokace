@@ -109,6 +109,11 @@ function render() {
         div.className = "item";
         div.dataset.id = item.id;
         div.onmouseenter = () => {
+          originX = 0;
+          originY = 0;
+          scale = 1;
+          map.style.transform = `scale(${scale}) translate(${originX}px, ${originY}px)`;
+
           if (item.type === 'polygon') {
             const polys = document.querySelectorAll("svg.polygon polygon");
             polys.forEach(poly => {
@@ -161,6 +166,51 @@ function render() {
             if (label) label.remove();
           }
         };
+        div.oncontextmenu = (e) => {
+          e.preventDefault();
+          if (item.type === 'point') {
+            openForm("point", { x: item.x, y: item.y });
+          } else if (item.type === 'polygon') {
+            openForm("polygon", item.points);
+          }
+          const wrapper = document.getElementById("form-wrapper");
+          if (wrapper) {
+            document.getElementById("form-name").value = item.name || "";
+            document.getElementById("form-desc").value = item.desc || "";
+            document.getElementById("form-color").value = item.color || "#00ffff";
+            document.getElementById("form-size").value = item.size || 6;
+            (item.categories || []).forEach(cat => {
+              const checkbox = wrapper.querySelector(`input[type=checkbox][value="${cat}"]`);
+              if (checkbox) checkbox.checked = true;
+            });
+            document.getElementById("form-ok").onclick = () => {
+              const name = document.getElementById("form-name").value;
+              const desc = document.getElementById("form-desc").value;
+              const color = document.getElementById("form-color").value;
+              const size = +document.getElementById("form-size").value;
+              const selectedCats = Array.from(wrapper.querySelectorAll("input[type=checkbox]:checked")).map(i => i.value);
+              if (!name || selectedCats.length === 0) return alert("Zadej název a vyber kategorii.");
+              const updated = {
+                id: item.id,
+                type: item.type,
+                name: name.trim(),
+                desc: desc.trim(),
+                color,
+                size,
+                categories: selectedCats
+              };
+              if (item.type === "point") {
+                updated.x = item.x;
+                updated.y = item.y;
+              } else {
+                updated.points = item.points;
+              }
+              saveItem(updated);
+              wrapper.remove();
+            };
+          }
+        };
+
         div.innerHTML = `<div><span class="dot" style="background:${item.color}"></span>${item.name}</div><span class="delete-btn" onclick="window.deleteItem(${item.id}); event.stopPropagation()">🗑</span>`;
         items.appendChild(div);
       }
