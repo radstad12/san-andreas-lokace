@@ -295,6 +295,30 @@ function renderPolygon(item) {
   svg.appendChild(poly);
 
   if (item.points?.length) {
+    // Výpočet průměrného středu polygonu
+    const avgX = item.points.reduce((sum, p) => sum + p.x, 0) / item.points.length;
+    const avgY = item.points.reduce((sum, p) => sum + p.y, 0) / item.points.length;
+    const icon = document.createElement("div");
+    icon.className = "polygon-icon";
+    icon.textContent = getCategoryIcons(item.categories || item.category);
+    icon.style.position = "absolute";
+    icon.style.left = (avgX * 100) + "%";
+    icon.style.top = (avgY * 100) + "%";
+    icon.style.transform = "translate(-50%, -50%)";
+    icon.style.pointerEvents = "none";
+    icon.style.fontSize = "16px";
+    icon.style.lineHeight = "1";
+    icon.style.zIndex = "1000";
+    icon.style.textAlign = "center";
+    icon.style.display = "flex";
+    icon.style.alignItems = "center";
+    icon.style.justifyContent = "center";
+    icon.id = "polygon-icon-" + item.id;
+    map.appendChild(icon);
+  }
+
+
+  if (item.points?.length) {
     const bbox = poly.getBBox();
     const centerX = bbox.x + bbox.width / 2;
     const centerY = bbox.y + bbox.height / 2;
@@ -611,6 +635,18 @@ style.innerHTML += `
   0% { stroke-opacity: 1; }
   50% { stroke-opacity: 0.3; }
   100% { stroke-opacity: 1; }
+}
+`;
+  style.innerHTML += `
+.polygon-icon {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
 }
 `;
   document.head.appendChild(style);
