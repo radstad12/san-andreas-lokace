@@ -113,6 +113,12 @@ function render() {
           originY = 0;
           scale = 1;
           map.style.transform = `scale(${scale}) translate(${originX}px, ${originY}px)`;
+          const poly = document.getElementById("polygon-" + item.id);
+          if (poly) poly.classList.add("polygon-highlighted");
+          originX = 0;
+          originY = 0;
+          scale = 1;
+          map.style.transform = `scale(${scale}) translate(${originX}px, ${originY}px)`;
 
           if (item.type === 'polygon') {
             const polys = document.querySelectorAll("svg.polygon polygon");
@@ -148,6 +154,8 @@ function render() {
           }
         };
         div.onmouseleave = () => {
+          const poly = document.getElementById("polygon-" + item.id);
+          if (poly) poly.classList.remove("polygon-highlighted");
           if (item.type === 'polygon') {
             const polys = document.querySelectorAll("svg.polygon polygon");
             polys.forEach(poly => {
@@ -285,6 +293,32 @@ function renderPolygon(item) {
   };
   poly.onmouseleave = hideTooltip;
   svg.appendChild(poly);
+
+  if (item.points?.length) {
+    const bbox = poly.getBBox();
+    const centerX = bbox.x + bbox.width / 2;
+    const centerY = bbox.y + bbox.height / 2;
+    const icon = document.createElement("div");
+    icon.className = "polygon-icon";
+    icon.textContent = getCategoryIcons(item.categories || item.category);
+    icon.style.position = "absolute";
+    icon.style.left = centerX + "px";
+    icon.style.top = centerY + "px";
+    icon.style.transform = "translate(-50%, -50%)";
+    icon.style.pointerEvents = "none";
+    const minSize = 12;
+    const size = Math.max(minSize, Math.min(bbox.width, bbox.height) * 0.6);
+    icon.style.fontSize = size + "px";
+    icon.style.lineHeight = "1";
+    icon.style.zIndex = "1000";
+    icon.style.textAlign = "center";
+    icon.style.display = "flex";
+    icon.style.alignItems = "center";
+    icon.style.justifyContent = "center";
+    icon.id = "polygon-icon-" + item.id;
+    map.appendChild(icon);
+  }
+
   // ikona do středu polygonu
   if (item.points?.length) {
     const bbox = poly.getBBox();
@@ -566,6 +600,17 @@ style.innerHTML += `
   display: flex;
   align-items: center;
   justify-content: center;
+}
+`;
+  style.innerHTML += `
+.polygon-highlighted {
+  animation: pulse-polygon 1s infinite;
+  stroke-width: 4 !important;
+}
+@keyframes pulse-polygon {
+  0% { stroke-opacity: 1; }
+  50% { stroke-opacity: 0.3; }
+  100% { stroke-opacity: 1; }
 }
 `;
   document.head.appendChild(style);
