@@ -31,8 +31,7 @@ function getCategoryIcons(categories) {
     "🏍️ Ujíždění na motorce": "🏍️",
     "🏃‍♂️ Útěk pěšky": "🏃‍♂️",
     "📦 Sklady": "📦",
-    "🎭 Místa na výslech": "🎭",
-  "🌎 Regiony": "🌎"
+    "🎭 Místa na výslech": "🎭"
   };
   if (!Array.isArray(categories)) categories = [categories];
   return categories.map(cat => icons[cat] || "").join(" ");
@@ -45,7 +44,6 @@ const map = document.getElementById("map");
 const menu = document.getElementById("menu");
 const tooltip = document.getElementById("tooltip");
 const categories = [
-  "🌎 Regiony",
   "📍 Lokace", "🥷 Území", "🔫 Předání zbraní",
   "🚗 Ujíždění autem", "🏍️ Ujíždění na motorce",
   "🏃‍♂️ Útěk pěšky", "📦 Sklady", "🎭 Místa na výslech"
@@ -232,15 +230,26 @@ function highlightPolygonById(id, name, desc) {
   const poly = document.getElementById("polygon-" + id);
   if (poly) {
     poly.classList.add("polygon-highlighted");
+
+    // Přidání labelu (název + popis)
     let label = document.createElement("div");
-    label.className = "hover-polygon-label";
-    label.innerHTML = `<strong>${name}</strong><br>${desc}`;
-    label.style.position = "absolute";
-    label.style.left = poly.dataset.centerX + "%";
-    label.style.top = poly.dataset.centerY + "%";
-    label.style.transform = "translate(-50%, -50%)";
-    label.style.pointerEvents = "none";
+    label.className = "marker-label";
     label.id = "polygon-hover-label";
+    label.innerText = desc ? `${name}: ${desc}` : name;
+    label.style.position = "absolute";
+    const bbox = poly.getBBox();
+    const centerX = bbox.x + bbox.width / 2;
+    const centerY = bbox.y + bbox.height / 2;
+    label.style.left = `${centerX}px`;
+    label.style.top = `${centerY}px`;
+    label.style.transform = "translate(-50%, -50%)";
+    label.style.background = "rgba(0,0,0,0.75)";
+    label.style.color = "#fff";
+    label.style.padding = "6px 10px";
+    label.style.borderRadius = "6px";
+    label.style.fontSize = "16px";
+    label.style.zIndex = "1001";
+    label.style.pointerEvents = "none";
     document.getElementById("map").appendChild(label);
   }
 }
@@ -302,9 +311,6 @@ function renderPolygon(item) {
   svg.setAttribute("height", map.clientHeight);
   const poly = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
   poly.setAttribute("points", item.points.map(p => `${p.x * map.clientWidth},${p.y * map.clientHeight}`).join(" "));
-  const bbox = poly.getBBox();
-  poly.dataset.centerX = ((bbox.x + bbox.width / 2) / map.offsetWidth * 100).toFixed(2);
-  poly.dataset.centerY = ((bbox.y + bbox.height / 2) / map.offsetHeight * 100).toFixed(2);
   poly.setAttribute("fill", item.color + "55");
   poly.setAttribute("stroke", item.color);
   poly.setAttribute("data-id", item.id);
