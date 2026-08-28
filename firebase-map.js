@@ -1,17 +1,12 @@
-// firebase-map.js
+```javascript
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
 import {
   getDatabase,
   ref,
   onValue,
   set,
-  remove,
-  push
+  remove
 } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-database.js";
-
-// ============================================================
-// FIREBASE
-// ============================================================
 
 const firebaseConfig = {
   apiKey: "AIzaSyDjdiDEHn6LvQvvtpZ79ueE5JbxLf1ASWU",
@@ -26,35 +21,6 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
-
-// ============================================================
-// IKONY
-// ============================================================
-
-function getCategoryIcons(categories) {
-  const icons = {
-    "📍 Lokace": "📍",
-    "🥷 Území": "🥷",
-    "🚗 Ujíždění autem": "🚗",
-    "🏍️ Ujíždění na motorce": "🏍️",
-    "🏃‍♂️ Útěk pěšky": "🏃‍♂️",
-    "📦 Sklady": "📦",
-    "🎭 Místa na výslech": "🎭"
-  };
-
-  if (!Array.isArray(categories)) {
-    categories = categories ? [categories] : [];
-  }
-
-  return categories
-    .map(cat => icons[cat] || "")
-    .filter(Boolean)
-    .join(" ");
-}
-
-// ============================================================
-// MAPA
-// ============================================================
 
 const map = document.getElementById("map");
 const menu = document.getElementById("menu");
@@ -72,66 +38,234 @@ const categories = [
 
 let data = [];
 let expandedCategories = new Set(categories);
-
 let planningMode = false;
 let currentPolygon = [];
-
 let scale = 1;
 let originX = 0;
 let originY = 0;
+let dragState = null;
+
+// ============================================================
+// LOKÁLNÍ ZÁLOHA
+// ============================================================
+
+const LOCAL_KEY = "verdugos-map-cache-v2";
+
+function loadLocalCache() {
+  try {
+    const raw = localStorage.getItem(LOCAL_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveLocalCache() {
+  try {
+    localStorage.setItem(
+      LOCAL_KEY,
+      JSON.stringify(data.filter(i => !i._temp))
+    );
+  } catch (e) {
+    console.warn("Local cache nejde uložit:", e);
+  }
+}
+
+// ============================================================
+// IKONY
+// ============================================================
+
+function iconForCategories(cats) {
+  const icons = {
+    "📍 Lokace": "📍",
+    "🥷 Území": "🥷",
+    "🚗 Ujíždění autem": "🚗",
+    "🏍️ Ujíždění na motorce": "🏍️",
+    "🏃‍♂️ Útěk pěšky": "🏃‍♂️",
+    "📦 Sklady": "📦",
+    "🎭 Místa na výslech": "🎭"
+  };
+
+  return (Array.isArray(cats) ? cats : [])
+    .map(c => icons[c] || "")
+    .filter(Boolean)
+    .join(" ");
+}
+
+// ============================================================
+// MAPA
+// ============================================================
+
+function setMapTransform() {
+  map.style.transform =
+    `translate(${originX}px, ${originY}px) scale(${scale})`;
+}
+
+function clamp01(v) {
+  return Math.max(0, Math.min(1, v));
+}
+
+function itemMatchesSearch(item, search) {
+  if (!search) return true;
+
+  return (
+    (item.name || "").toLowerCase().includes(search) ||
+    (item.desc || "").toLowerCase().includes(search)
+  );
+}
+
+// ============================================================
+// NORMALIZACE DAT
+// ============================================================
+
+function normalizeLoadedItem(item, key) {
+  if (!item || typeof item !== "object") {
+    return null;
+  }
+
+  const normalized = { ...item };
+
+  if (normalized.id == null) {
+    normalized.id = key;
+  }
+
+  normalized.id = String(normalized.id);
+
+  if (!Array.isArray(normalized.categories)) {
+    normalized.categories =
+      normalized.categories
+        ? [normalized.categories]
+        : [];
+  }
+
+  return normalized;
+}
 
 // ============================================================
 // FIREBASE - NAČÍTÁNÍ
 // ============================================================
 
 function loadData() {
-  const dataRef = ref(db, "mapData");
+  const dbRef = ref(db, "mapData");
 
   onValue(
-    dataRef,
+    dbRef,
     snapshot => {
-      const value = snapshot.val();
+      const raw = snapshot.val();
 
-      if (!value) {
-        data = [];
-      } else {
-        data = Object.values(value).filter(item => !item._temp);
+      let remoteItems = raw
+        ? Object.entries(raw)
+            .map(([key, value]) =>
+              normalizeLoadedItem(value, key)
+            )
+            .filter(Boolean)
+        : [];
+
+      // Pokud Firebase nic nevrátil,
+      // použijeme lokální zálohu.
+      if (remoteItems.length === 0) {
+        const local = loadLocalCache();
+
+        if (local.length > 0) {
+          remoteItems = local;
+        }
       }
+
+      const temporary =
+        data.filter(i => i._temp);
+
+      data = [
+        ...remoteItems.filter(i => !i._temp),
+        ...temporary
+      ];
 
       render();
     },
     error => {
-      console.error("Firebase chyba při načítání:", error);
+      console.error(
+        "Firebase load error:",
+        error
+      );
 
-      alert(
-        "Nepodařilo se načíst data z Firebase.\n\n" +
-        error.message
+      const local =
+        loadLocalCache();
+
+      data = [
+        ...local,
+        ...data.filter(i => i._temp)
+      ];
+
+      render();
+
+      showStatus(
+        "⚠️ Firebase se nepodařilo načíst. Používám lokální data.",
+        true
       );
     }
   );
 }
 
 // ============================================================
-// FIREBASE - UKLÁDÁNÍ
+// FIREBASE - ULOŽENÍ
 // ============================================================
 
 async function saveItem(item) {
+  const clean = {
+    ...item
+  };
+
+  delete clean._temp;
+
+  if (!clean.id) {
+    clean.id =
+      String(Date.now());
+  }
+
+  clean.id =
+    String(clean.id);
+
+  // Nejdřív zobrazíme položku lokálně.
+  const index =
+    data.findIndex(
+      i => String(i.id) === clean.id
+    );
+
+  if (index >= 0) {
+    data[index] = clean;
+  } else {
+    data.push(clean);
+  }
+
+  saveLocalCache();
+  render();
+
   try {
-    if (!item.id) {
-      item.id = Date.now();
-    }
+    await set(
+      ref(
+        db,
+        `mapData/${clean.id}`
+      ),
+      clean
+    );
 
-    await set(ref(db, `mapData/${item.id}`), item);
-
-    console.log("Položka uložena:", item);
+    showStatus(
+      "✅ Položka byla uložena.",
+      false
+    );
 
     return true;
-  } catch (error) {
-    console.error("Firebase chyba při ukládání:", error);
 
-    alert(
-      "Položku se nepodařilo uložit do Firebase.\n\n" +
-      error.message
+  } catch (error) {
+
+    console.error(
+      "Firebase save error:",
+      error
+    );
+
+    showStatus(
+      "⚠️ Položka je uložená lokálně, ale Firebase zápis byl odmítnut: " +
+      error.message,
+      true
     );
 
     return false;
@@ -139,33 +273,111 @@ async function saveItem(item) {
 }
 
 // ============================================================
-// FIREBASE - MAZÁNÍ
+// FIREBASE - SMAZÁNÍ
 // ============================================================
 
 async function deleteItem(id) {
+  const sid =
+    String(id);
+
+  data =
+    data.filter(
+      i => String(i.id) !== sid
+    );
+
+  saveLocalCache();
+  render();
+
   try {
-    await remove(ref(db, `mapData/${id}`));
 
-    const marker = document.getElementById(`marker-${id}`);
-    if (marker) {
-      marker.remove();
-    }
+    await remove(
+      ref(
+        db,
+        `mapData/${sid}`
+      )
+    );
 
-    const label = document.getElementById(`marker-label-${id}`);
-    if (label) {
-      label.remove();
-    }
-
-    console.log("Položka odstraněna:", id);
+    showStatus(
+      "✅ Položka odstraněna."
+    );
 
   } catch (error) {
-    console.error("Firebase chyba při mazání:", error);
 
-    alert(
-      "Položku se nepodařilo odstranit.\n\n" +
-      error.message
+    console.error(
+      "Firebase delete error:",
+      error
+    );
+
+    showStatus(
+      "⚠️ Položka byla odstraněna zde, ale Firebase odmítl smazání.",
+      true
     );
   }
+}
+
+// ============================================================
+// STATUS
+// ============================================================
+
+function showStatus(
+  message,
+  isError = false
+) {
+  let box =
+    document.getElementById(
+      "app-status"
+    );
+
+  if (!box) {
+    box =
+      document.createElement(
+        "div"
+      );
+
+    box.id =
+      "app-status";
+
+    box.style.cssText =
+      `
+      position:fixed;
+      left:300px;
+      bottom:15px;
+      z-index:5000;
+      padding:10px 14px;
+      border-radius:8px;
+      background:#222;
+      color:#fff;
+      max-width:520px;
+      font-size:14px;
+      box-shadow:0 4px 18px rgba(0,0,0,.4);
+      `;
+
+    document.body.appendChild(
+      box
+    );
+  }
+
+  box.textContent =
+    message;
+
+  box.style.border =
+    isError
+      ? "1px solid #b33"
+      : "1px solid #3b3";
+
+  clearTimeout(
+    showStatus.timer
+  );
+
+  showStatus.timer =
+    setTimeout(
+      () => {
+        if (box) {
+          box.remove();
+        }
+      },
+      7000
+    );
 }
 
 // ============================================================
@@ -176,372 +388,534 @@ function render() {
   menu.innerHTML = "";
 
   map
-    .querySelectorAll(".marker, .polygon-point, svg.polygon, .marker-label")
-    .forEach(el => el.remove());
-
-  const searchInput = document.getElementById("search");
-  const search = searchInput
-    ? searchInput.value.toLowerCase().trim()
-    : "";
-
-  // Aby se body nevykreslovaly několikrát,
-  // vykreslíme každou položku pouze jednou.
-  const visibleItems = data.filter(item => {
-    const matchSearch =
-      search === "" ||
-      (item.name &&
-        item.name.toLowerCase().includes(search)) ||
-      (item.desc &&
-        item.desc.toLowerCase().includes(search));
-
-    return matchSearch;
-  });
-
-  // ==========================================================
-  // MENU
-  // ==========================================================
-
-  for (const cat of categories) {
-    const categoryItems = visibleItems.filter(item =>
-      item.categories?.includes(cat)
+    .querySelectorAll(
+      ".map-overlay-item, .polygon-drawing-point"
+    )
+    .forEach(
+      e => e.remove()
     );
 
-    const header = document.createElement("button");
+  const search =
+    (
+      document.getElementById(
+        "search"
+      )?.value || ""
+    )
+      .trim()
+      .toLowerCase();
 
-    header.className = "category-header";
-    header.textContent = `${cat} (${categoryItems.length})`;
+  const visible =
+    data.filter(
+      item =>
+        itemMatchesSearch(
+          item,
+          search
+        )
+    );
+
+  // Každý bod / území vykreslit pouze jednou.
+  for (const item of visible) {
+
+    if (
+      item.type === "point"
+    ) {
+      renderMarker(item);
+    }
+
+    if (
+      item.type === "polygon"
+    ) {
+      renderPolygon(item);
+    }
+  }
+
+  // ==========================================================
+  // KATEGORIE
+  // ==========================================================
+
+  for (
+    const cat of categories
+  ) {
+
+    const categoryItems =
+      visible.filter(
+        item =>
+          item.categories?.includes(
+            cat
+          )
+      );
+
+    const header =
+      document.createElement(
+        "button"
+      );
+
+    header.type =
+      "button";
+
+    header.className =
+      "category-header";
+
+    header.textContent =
+      `${cat} (${categoryItems.length})`;
 
     header.onclick = () => {
-      if (expandedCategories.has(cat)) {
-        expandedCategories.delete(cat);
+
+      if (
+        expandedCategories.has(
+          cat
+        )
+      ) {
+
+        expandedCategories.delete(
+          cat
+        );
+
       } else {
-        expandedCategories.add(cat);
+
+        expandedCategories.add(
+          cat
+        );
       }
 
       render();
     };
 
-    menu.appendChild(header);
+    menu.appendChild(
+      header
+    );
 
-    const items = document.createElement("div");
-    items.className = "category-items";
+    const itemsBox =
+      document.createElement(
+        "div"
+      );
 
-    items.style.display =
+    itemsBox.className =
+      "category-items";
+
+    itemsBox.style.display =
       expandedCategories.has(cat)
         ? "block"
         : "none";
 
-    for (const item of categoryItems) {
-      const div = document.createElement("div");
+    for (
+      const item of categoryItems
+    ) {
 
-      div.className = "item";
-      div.dataset.id = item.id;
+      const row =
+        document.createElement(
+          "div"
+        );
 
-      div.innerHTML = `
+      row.className =
+        "item";
+
+      row.dataset.id =
+        String(item.id);
+
+      row.innerHTML =
+        `
         <div>
           <span
             class="dot"
             style="background:${item.color || "#00ffff"}"
           ></span>
-          ${item.name || "(bez názvu)"}
+
+          ${escapeHtml(
+            item.name ||
+            "(bez názvu)"
+          )}
+
+          ${
+            item._temp
+              ? " <small>(plán)</small>"
+              : ""
+          }
         </div>
 
-        <span class="delete-btn">🗑</span>
-      `;
+        <span
+          class="delete-btn"
+          title="Smazat"
+        >
+          🗑
+        </span>
+        `;
 
-      // Kliknutí na koš
       const deleteButton =
-        div.querySelector(".delete-btn");
-
-      deleteButton.onclick = async e => {
-        e.stopPropagation();
-
-        const ok = confirm(
-          `Opravdu chceš odstranit „${item.name || "tuto položku"}“?`
+        row.querySelector(
+          ".delete-btn"
         );
 
-        if (ok) {
-          await deleteItem(item.id);
-        }
-      };
+      deleteButton.onclick =
+        async e => {
 
-      // Najetí myší
-      div.onmouseenter = () => {
-        if (item.type === "polygon") {
-          const poly =
-            document.getElementById(
-              `polygon-${item.id}`
-            );
+          e.stopPropagation();
 
-          if (poly) {
-            poly.setAttribute("stroke-width", "5");
-            poly.setAttribute("stroke", "#ffff00");
-          }
-        }
-
-        if (item.type === "point") {
-          const marker =
-            document.getElementById(
-              `marker-${item.id}`
-            );
-
-          if (marker) {
-            marker.classList.add(
-              "highlight-marker"
+          if (
+            confirm(
+              `Opravdu chceš odstranit „${item.name || "tuto položku"}“?`
+            )
+          ) {
+            await deleteItem(
+              item.id
             );
           }
-        }
-      };
+        };
 
-      div.onmouseleave = () => {
-        if (item.type === "polygon") {
-          const poly =
-            document.getElementById(
-              `polygon-${item.id}`
-            );
+      row.onmouseenter =
+        () =>
+          highlightItem(
+            item
+          );
 
-          if (poly) {
-            poly.setAttribute(
-              "stroke-width",
-              "2"
-            );
+      row.onmouseleave =
+        () =>
+          unhighlightItem(
+            item
+          );
 
-            poly.setAttribute(
-              "stroke",
-              item.color || "#00ffff"
-            );
-          }
-        }
+      row.onclick =
+        () =>
+          focusItem(
+            item
+          );
 
-        if (item.type === "point") {
-          const marker =
-            document.getElementById(
-              `marker-${item.id}`
-            );
+      row.oncontextmenu =
+        e => {
 
-          if (marker) {
-            marker.classList.remove(
-              "highlight-marker"
-            );
-          }
-        }
-      };
+          e.preventDefault();
 
-      // Pravé tlačítko = editace
-      div.oncontextmenu = e => {
-        e.preventDefault();
+          openEditForm(
+            item
+          );
+        };
 
-        openEditForm(item);
-      };
-
-      items.appendChild(div);
+      itemsBox.appendChild(
+        row
+      );
     }
 
-    menu.appendChild(items);
+    menu.appendChild(
+      itemsBox
+    );
   }
-
-  // ==========================================================
-  // MAPA
-  // ==========================================================
-
-  // Každou položku vykreslíme pouze jednou.
-  visibleItems.forEach(item => {
-    if (item.type === "point") {
-      renderMarker(item);
-    }
-
-    if (item.type === "polygon") {
-      renderPolygon(item);
-    }
-  });
 }
 
 // ============================================================
-// MARKER / BOD
+// HTML ESCAPE
+// ============================================================
+
+function escapeHtml(text) {
+  return String(text).replace(
+    /[&<>"']/g,
+    s =>
+      ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;"
+      }[s])
+  );
+}
+
+// ============================================================
+// BOD
 // ============================================================
 
 function renderMarker(item) {
+
   if (
-    typeof item.x !== "number" ||
-    typeof item.y !== "number"
+    !Number.isFinite(item.x) ||
+    !Number.isFinite(item.y)
   ) {
     return;
   }
 
-  const el = document.createElement("div");
+  const el =
+    document.createElement(
+      "div"
+    );
 
-  el.className = "marker";
-  el.id = `marker-${item.id}`;
+  el.className =
+    "marker map-overlay-item";
 
-  el.style.left = `${item.x * 100}%`;
-  el.style.top = `${item.y * 100}%`;
+  el.id =
+    `marker-${item.id}`;
+
+  el.style.left =
+    `${item.x * 100}%`;
+
+  el.style.top =
+    `${item.y * 100}%`;
+
+  const size =
+    Number(item.size) || 12;
+
+  el.style.width =
+    `${size}px`;
+
+  el.style.height =
+    `${size}px`;
 
   el.style.background =
-    item.color || "#00ffff";
+    item.color ||
+    "#00ffff";
 
-  const size = item.size || 10;
+  const icon =
+    document.createElement(
+      "span"
+    );
 
-  el.style.width = `${size}px`;
-  el.style.height = `${size}px`;
-
-  // Ikona
-  const icon = document.createElement("div");
-
-  icon.className = "marker-icon";
+  icon.className =
+    "marker-icon";
 
   icon.textContent =
-    getCategoryIcons(item.categories);
+    iconForCategories(
+      item.categories
+    );
 
-  icon.style.position = "absolute";
-  icon.style.top = "50%";
-  icon.style.left = "50%";
-  icon.style.transform =
-    "translate(-50%, -50%)";
-
-  icon.style.pointerEvents = "none";
   icon.style.fontSize =
-    `${Math.max(size * 0.9, 10)}px`;
+    `${Math.max(
+      12,
+      size * 0.9
+    )}px`;
 
-  icon.style.lineHeight = "1";
+  el.appendChild(
+    icon
+  );
 
-  el.appendChild(icon);
+  el.title =
+    item.name || "";
 
-  // Tooltip
-  el.onmouseenter = e => {
-    const name =
-      item.name?.trim() || "(bez názvu)";
+  el.onmouseenter =
+    e =>
+      showTooltip(
+        e,
+        item.desc
+          ? `${item.name}: ${item.desc}`
+          : item.name
+      );
 
-    const desc =
-      item.desc?.trim() || "";
+  el.onmouseleave =
+    hideTooltip;
 
-    const text =
-      desc
-        ? `${name}: ${desc}`
-        : name;
+  el.oncontextmenu =
+    e => {
 
-    showTooltip(e, text);
-  };
+      e.preventDefault();
+      e.stopPropagation();
 
-  el.onmouseleave = hideTooltip;
+      openEditForm(
+        item
+      );
+    };
 
-  map.appendChild(el);
+  el.ondblclick =
+    e =>
+      e.stopPropagation();
+
+  map.appendChild(
+    el
+  );
 }
 
 // ============================================================
-// POLYGON / ÚZEMÍ
+// ÚZEMÍ
 // ============================================================
 
 function renderPolygon(item) {
+
   if (
-    !Array.isArray(item.points) ||
+    !Array.isArray(
+      item.points
+    ) ||
     item.points.length < 3
   ) {
     return;
   }
 
-  const svg =
-    document.createElementNS(
-      "http://www.w3.org/2000/svg",
-      "svg"
+  const overlay =
+    document.createElement(
+      "div"
     );
 
-  svg.classList.add("polygon");
+  overlay.className =
+    "polygon-overlay map-overlay-item";
 
-  svg.id = `polygon-svg-${item.id}`;
+  overlay.dataset.id =
+    String(item.id);
 
-  svg.style.position = "absolute";
-  svg.style.left = "0";
-  svg.style.top = "0";
+  // Důležité:
+  // clip-path se vztahuje na samotný overlay.
+  // Už se tedy nezbarví celá mapa.
+  const polygonCss =
+    item.points
+      .map(
+        p =>
+          `${p.x * 100}% ${p.y * 100}%`
+      )
+      .join(", ");
 
-  svg.setAttribute(
-    "width",
-    map.clientWidth
+  overlay.style.clipPath =
+    `polygon(${polygonCss})`;
+
+  overlay.style.background =
+    item.color ||
+    "#00ffff";
+
+  overlay.style.opacity =
+    "0.32";
+
+  overlay.title =
+    item.name || "";
+
+  overlay.onmouseenter =
+    e => {
+
+      overlay.style.opacity =
+        "0.5";
+
+      showTooltip(
+        e,
+        item.desc
+          ? `${item.name}: ${item.desc}`
+          : item.name
+      );
+    };
+
+  overlay.onmouseleave =
+    () => {
+
+      overlay.style.opacity =
+        "0.32";
+
+      hideTooltip();
+    };
+
+  overlay.oncontextmenu =
+    e => {
+
+      e.preventDefault();
+      e.stopPropagation();
+
+      openEditForm(
+        item
+      );
+    };
+
+  map.appendChild(
+    overlay
   );
+}
 
-  svg.setAttribute(
-    "height",
-    map.clientHeight
-  );
+// ============================================================
+// HIGHLIGHT
+// ============================================================
 
-  svg.setAttribute(
-    "viewBox",
-    `0 0 ${map.clientWidth} ${map.clientHeight}`
-  );
+function highlightItem(item) {
 
-  const poly =
-    document.createElementNS(
-      "http://www.w3.org/2000/svg",
-      "polygon"
+  if (
+    item.type === "point"
+  ) {
+
+    const el =
+      document.getElementById(
+        `marker-${item.id}`
+      );
+
+    if (el) {
+      el.classList.add(
+        "highlight-map-item"
+      );
+    }
+
+  } else {
+
+    const el =
+      document.querySelector(
+        `.polygon-overlay[data-id="${CSS.escape(String(item.id))}"]`
+      );
+
+    if (el) {
+      el.classList.add(
+        "highlight-map-item"
+      );
+    }
+  }
+}
+
+function unhighlightItem(item) {
+
+  if (
+    item.type === "point"
+  ) {
+
+    const el =
+      document.getElementById(
+        `marker-${item.id}`
+      );
+
+    if (el) {
+      el.classList.remove(
+        "highlight-map-item"
+      );
+    }
+
+  } else {
+
+    const el =
+      document.querySelector(
+        `.polygon-overlay[data-id="${CSS.escape(String(item.id))}"]`
+      );
+
+    if (el) {
+      el.classList.remove(
+        "highlight-map-item"
+      );
+    }
+  }
+}
+
+function focusItem(item) {
+
+  if (
+    item.type !== "point"
+  ) {
+    return;
+  }
+
+  const el =
+    document.getElementById(
+      `marker-${item.id}`
     );
 
-  poly.id = `polygon-${item.id}`;
+  if (!el) return;
 
-  const points = item.points
-    .map(p => {
-      return `${p.x * map.clientWidth},${p.y * map.clientHeight}`;
-    })
-    .join(" ");
-
-  poly.setAttribute(
-    "points",
-    points
+  el.classList.add(
+    "highlight-map-item"
   );
 
-  const color =
-    item.color || "#00ffff";
-
-  poly.setAttribute(
-    "fill",
-    color + "55"
+  setTimeout(
+    () =>
+      el.classList.remove(
+        "highlight-map-item"
+      ),
+    1200
   );
-
-  poly.setAttribute(
-    "stroke",
-    color
-  );
-
-  poly.setAttribute(
-    "stroke-width",
-    "2"
-  );
-
-  poly.setAttribute(
-    "data-id",
-    item.id
-  );
-
-  poly.style.cursor = "pointer";
-
-  poly.onmouseenter = e => {
-    const name =
-      item.name?.trim() ||
-      "(bez názvu)";
-
-    const desc =
-      item.desc?.trim() || "";
-
-    const text =
-      desc
-        ? `${name}: ${desc}`
-        : name;
-
-    showTooltip(e, text);
-  };
-
-  poly.onmouseleave =
-    hideTooltip;
-
-  svg.appendChild(poly);
-
-  map.appendChild(svg);
 }
 
 // ============================================================
 // TOOLTIP
 // ============================================================
 
-function showTooltip(e, text) {
-  tooltip.style.display = "block";
+function showTooltip(
+  e,
+  text
+) {
+
+  tooltip.style.display =
+    "block";
 
   tooltip.style.left =
     `${e.clientX + 10}px`;
@@ -549,35 +923,42 @@ function showTooltip(e, text) {
   tooltip.style.top =
     `${e.clientY + 10}px`;
 
-  tooltip.textContent = text;
+  tooltip.textContent =
+    text || "";
 }
 
 function hideTooltip() {
-  tooltip.style.display = "none";
+  tooltip.style.display =
+    "none";
 }
 
 // ============================================================
-// FORMULÁŘ - NOVÁ POLOŽKA
+// FORMULÁŘ
 // ============================================================
 
-function openForm(type, coords) {
+function buildForm(
+  title,
+  item = null
+) {
+
   const wrapper =
-    document.createElement("div");
+    document.createElement(
+      "div"
+    );
 
-  wrapper.id = "form-wrapper";
+  wrapper.id =
+    "form-wrapper";
 
-  wrapper.innerHTML = `
-    <h3>
-      ${type === "point"
-        ? "📍 Nový bod"
-        : "🥷 Nové území"}
-    </h3>
+  wrapper.innerHTML =
+    `
+    <h3>${title}</h3>
 
     <label>
       Název:<br>
       <input
         id="form-name"
-        style="width:100%;box-sizing:border-box"
+        type="text"
+        autocomplete="off"
       >
     </label>
 
@@ -585,10 +966,7 @@ function openForm(type, coords) {
 
     <label>
       Popis:<br>
-      <textarea
-        id="form-desc"
-        style="width:100%;box-sizing:border-box"
-      ></textarea>
+      <textarea id="form-desc"></textarea>
     </label>
 
     <br><br>
@@ -605,268 +983,7 @@ function openForm(type, coords) {
     <br><br>
 
     ${
-      type === "point"
-        ? `
-          <label>
-            Velikost:<br>
-            <input
-              type="number"
-              id="form-size"
-              value="10"
-              min="3"
-              max="40"
-            >
-          </label>
-          <br><br>
-        `
-        : ""
-    }
-
-    <div>
-      <b>Přednastavené barvy:</b><br>
-
-      <span
-        class="color-sample"
-        style="background:#ff0000"
-        data-color="#ff0000"
-      ></span>
-
-      <span
-        class="color-sample"
-        style="background:#00ff00"
-        data-color="#00ff00"
-      ></span>
-
-      <span
-        class="color-sample"
-        style="background:#0000ff"
-        data-color="#0000ff"
-      ></span>
-
-      <span
-        class="color-sample"
-        style="background:#ffff00"
-        data-color="#ffff00"
-      ></span>
-
-      <span
-        class="color-sample"
-        style="background:#ff00ff"
-        data-color="#ff00ff"
-      ></span>
-
-      <span
-        class="color-sample"
-        style="background:#00ffff"
-        data-color="#00ffff"
-      ></span>
-    </div>
-
-    <br>
-
-    <div>
-      <b>Zařadit do kategorií:</b><br>
-
-      ${categories
-        .map(
-          c => `
-            <label>
-              <input
-                type="checkbox"
-                value="${c}"
-              >
-              ${c}
-            </label>
-            <br>
-          `
-        )
-        .join("")}
-    </div>
-
-    <br>
-
-    <button id="form-ok">
-      OK
-    </button>
-
-    <button id="form-cancel">
-      Zrušit
-    </button>
-  `;
-
-  document.body.appendChild(wrapper);
-
-  // Barvy
-  wrapper
-    .querySelectorAll(".color-sample")
-    .forEach(sample => {
-      sample.onclick = () => {
-        document.getElementById(
-          "form-color"
-        ).value =
-          sample.dataset.color;
-      };
-    });
-
-  // Zrušit
-  document.getElementById(
-    "form-cancel"
-  ).onclick = () => {
-    wrapper.remove();
-  };
-
-  // OK
-  document.getElementById(
-    "form-ok"
-  ).onclick = async () => {
-
-    const name =
-      document.getElementById(
-        "form-name"
-      ).value.trim();
-
-    const desc =
-      document.getElementById(
-        "form-desc"
-      ).value.trim();
-
-    const color =
-      document.getElementById(
-        "form-color"
-      ).value;
-
-    const selectedCats =
-      Array.from(
-        wrapper.querySelectorAll(
-          "input[type=checkbox]:checked"
-        )
-      ).map(i => i.value);
-
-    if (!name) {
-      alert(
-        "Zadej název."
-      );
-      return;
-    }
-
-    if (selectedCats.length === 0) {
-      alert(
-        "Vyber alespoň jednu kategorii."
-      );
-      return;
-    }
-
-    const item = {
-      id: Date.now(),
-      type,
-      name,
-      desc,
-      color,
-      categories: selectedCats
-    };
-
-    if (type === "point") {
-      const sizeInput =
-        document.getElementById(
-          "form-size"
-        );
-
-      item.size =
-        sizeInput
-          ? Number(sizeInput.value) || 10
-          : 10;
-
-      item.x = coords.x;
-      item.y = coords.y;
-
-    } else {
-      item.points =
-        coords.map(p => ({
-          x: p.x,
-          y: p.y
-        }));
-    }
-
-    // ========================================================
-    // PLÁNOVACÍ REŽIM
-    // ========================================================
-
-    if (planningMode) {
-
-      item._temp = true;
-
-      data.push(item);
-
-      render();
-
-      wrapper.remove();
-
-      return;
-    }
-
-    // ========================================================
-    // NORMÁLNÍ ULOŽENÍ
-    // ========================================================
-
-    const success =
-      await saveItem(item);
-
-    if (success) {
-
-      // Lokálně ji přidáme okamžitě.
-      data.push(item);
-
-      render();
-
-      wrapper.remove();
-    }
-  };
-}
-
-// ============================================================
-// EDITACE
-// ============================================================
-
-function openEditForm(item) {
-  const wrapper =
-    document.createElement("div");
-
-  wrapper.id = "form-wrapper";
-
-  wrapper.innerHTML = `
-    <h3>✏️ Upravit položku</h3>
-
-    <label>
-      Název:<br>
-      <input
-        id="form-name"
-        style="width:100%;box-sizing:border-box"
-      >
-    </label>
-
-    <br><br>
-
-    <label>
-      Popis:<br>
-      <textarea
-        id="form-desc"
-        style="width:100%;box-sizing:border-box"
-      ></textarea>
-    </label>
-
-    <br><br>
-
-    <label>
-      Barva:<br>
-      <input
-        type="color"
-        id="form-color"
-      >
-    </label>
-
-    <br><br>
-
-    ${
+      !item ||
       item.type === "point"
         ? `
           <label>
@@ -874,8 +991,9 @@ function openEditForm(item) {
             <input
               type="number"
               id="form-size"
-              min="3"
+              min="4"
               max="40"
+              value="12"
             >
           </label>
 
@@ -887,172 +1005,409 @@ function openEditForm(item) {
     <div>
       <b>Kategorie:</b><br>
 
-      ${categories
-        .map(
-          c => `
-            <label>
-              <input
-                type="checkbox"
-                value="${c}"
+      ${
+        categories
+          .map(
+            (c, i) =>
+              `
+              <label
+                style="display:block;margin:5px 0"
               >
-              ${c}
-            </label>
-            <br>
-          `
-        )
-        .join("")}
+                <input
+                  type="checkbox"
+                  class="form-cat"
+                  value="${escapeHtml(c)}"
+                  id="cat-${i}"
+                >
+
+                ${escapeHtml(c)}
+              </label>
+              `
+          )
+          .join("")
+      }
     </div>
 
     <br>
 
-    <button id="form-ok">
-      Uložit
-    </button>
+    <div style="display:flex;gap:8px">
 
-    <button id="form-cancel">
-      Zrušit
-    </button>
-  `;
+      <button
+        type="button"
+        id="form-ok"
+      >
+        ${item ? "Uložit" : "Přidat"}
+      </button>
 
-  document.body.appendChild(wrapper);
+      <button
+        type="button"
+        id="form-cancel"
+      >
+        Zrušit
+      </button>
 
-  document.getElementById(
-    "form-name"
-  ).value =
-    item.name || "";
+    </div>
+    `;
 
-  document.getElementById(
-    "form-desc"
-  ).value =
-    item.desc || "";
+  document.body.appendChild(
+    wrapper
+  );
 
-  document.getElementById(
-    "form-color"
-  ).value =
-    item.color || "#00ffff";
+  if (item) {
 
-  if (item.type === "point") {
-    document.getElementById(
-      "form-size"
+    wrapper.querySelector(
+      "#form-name"
     ).value =
-      item.size || 10;
+      item.name || "";
+
+    wrapper.querySelector(
+      "#form-desc"
+    ).value =
+      item.desc || "";
+
+    wrapper.querySelector(
+      "#form-color"
+    ).value =
+      item.color || "#00ffff";
+
+    const size =
+      wrapper.querySelector(
+        "#form-size"
+      );
+
+    if (size) {
+      size.value =
+        item.size || 12;
+    }
+
+    (
+      item.categories || []
+    ).forEach(
+      cat => {
+
+        const checkbox =
+          [
+            ...wrapper.querySelectorAll(
+              ".form-cat"
+            )
+          ].find(
+            x => x.value === cat
+          );
+
+        if (checkbox) {
+          checkbox.checked =
+            true;
+        }
+      }
+    );
   }
 
-  (item.categories || [])
-    .forEach(cat => {
+  return wrapper;
+}
 
-      const checkbox =
+// ============================================================
+// ČTENÍ FORMULÁŘE
+// ============================================================
+
+function readForm(
+  wrapper,
+  type
+) {
+
+  const name =
+    wrapper
+      .querySelector(
+        "#form-name"
+      )
+      .value
+      .trim();
+
+  const desc =
+    wrapper
+      .querySelector(
+        "#form-desc"
+      )
+      .value
+      .trim();
+
+  const color =
+    wrapper
+      .querySelector(
+        "#form-color"
+      )
+      .value;
+
+  const selected =
+    [
+      ...wrapper.querySelectorAll(
+        ".form-cat:checked"
+      )
+    ].map(
+      c => c.value
+    );
+
+  if (!name) {
+    alert(
+      "Zadej název."
+    );
+    return null;
+  }
+
+  if (!selected.length) {
+    alert(
+      "Vyber alespoň jednu kategorii."
+    );
+    return null;
+  }
+
+  const item = {
+    type,
+    name,
+    desc,
+    color,
+    categories: selected
+  };
+
+  if (
+    type === "point"
+  ) {
+
+    item.size =
+      Number(
         wrapper.querySelector(
-          `input[type=checkbox][value="${cat}"]`
+          "#form-size"
+        )?.value || 12
+      );
+  }
+
+  return item;
+}
+
+// ============================================================
+// NOVÝ BOD
+// ============================================================
+
+function openNewPointForm(
+  coords
+) {
+
+  const wrapper =
+    buildForm(
+      "📍 Nový bod"
+    );
+
+  wrapper.querySelector(
+    "#form-cancel"
+  ).onclick =
+    () =>
+      wrapper.remove();
+
+  wrapper.querySelector(
+    "#form-ok"
+  ).onclick =
+    async () => {
+
+      const item =
+        readForm(
+          wrapper,
+          "point"
         );
 
-      if (checkbox) {
-        checkbox.checked = true;
+      if (!item) {
+        return;
       }
-    });
 
-  document.getElementById(
-    "form-cancel"
-  ).onclick = () => {
-    wrapper.remove();
-  };
+      item.id =
+        String(Date.now());
 
-  document.getElementById(
-    "form-ok"
-  ).onclick = async () => {
+      item.x =
+        coords.x;
 
-    const name =
-      document.getElementById(
-        "form-name"
-      ).value.trim();
+      item.y =
+        coords.y;
 
-    const desc =
-      document.getElementById(
-        "form-desc"
-      ).value.trim();
+      if (planningMode) {
 
-    const color =
-      document.getElementById(
-        "form-color"
-      ).value;
+        item._temp =
+          true;
 
-    const selectedCats =
-      Array.from(
-        wrapper.querySelectorAll(
-          "input[type=checkbox]:checked"
-        )
-      ).map(i => i.value);
+        data.push(
+          item
+        );
 
-    if (!name) {
-      alert(
-        "Zadej název."
-      );
-      return;
-    }
+        render();
 
-    if (selectedCats.length === 0) {
-      alert(
-        "Vyber alespoň jednu kategorii."
-      );
-      return;
-    }
+        wrapper.remove();
 
-    const updated = {
-      ...item,
-      name,
-      desc,
-      color,
-      categories: selectedCats
+        updatePlanningButtons();
+
+      } else {
+
+        await saveItem(
+          item
+        );
+
+        wrapper.remove();
+      }
     };
+}
 
-    if (item.type === "point") {
-      updated.size =
-        Number(
-          document.getElementById(
-            "form-size"
-          ).value
-        ) || 10;
-    }
+// ============================================================
+// NOVÉ ÚZEMÍ
+// ============================================================
 
-    // Pokud upravujeme dočasný plán,
-    // stačí upravit lokální položku.
-    if (item._temp) {
+function openNewPolygonForm(
+  points
+) {
 
-      const index =
-        data.findIndex(
-          i => i.id === item.id
-        );
+  const wrapper =
+    buildForm(
+      "🥷 Nové území",
+      { type: "polygon" }
+    );
 
-      if (index !== -1) {
-        data[index] = updated;
-      }
-
-      render();
-
+  wrapper.querySelector(
+    "#form-cancel"
+  ).onclick =
+    () =>
       wrapper.remove();
 
-      return;
-    }
+  wrapper.querySelector(
+    "#form-ok"
+  ).onclick =
+    async () => {
 
-    const success =
-      await saveItem(updated);
-
-    if (success) {
-
-      const index =
-        data.findIndex(
-          i => i.id === item.id
+      const item =
+        readForm(
+          wrapper,
+          "polygon"
         );
 
-      if (index !== -1) {
-        data[index] = updated;
+      if (!item) {
+        return;
       }
 
-      render();
+      item.id =
+        String(Date.now());
 
+      item.points =
+        points.map(
+          p => ({
+            x: p.x,
+            y: p.y
+          })
+        );
+
+      if (planningMode) {
+
+        item._temp =
+          true;
+
+        data.push(
+          item
+        );
+
+        render();
+
+        wrapper.remove();
+
+        updatePlanningButtons();
+
+      } else {
+
+        await saveItem(
+          item
+        );
+
+        wrapper.remove();
+      }
+    };
+}
+
+// ============================================================
+// EDITACE
+// ============================================================
+
+function openEditForm(
+  item
+) {
+
+  const wrapper =
+    buildForm(
+      "✏️ Upravit položku",
+      item
+    );
+
+  wrapper.querySelector(
+    "#form-cancel"
+  ).onclick =
+    () =>
       wrapper.remove();
-    }
-  };
+
+  wrapper.querySelector(
+    "#form-ok"
+  ).onclick =
+    async () => {
+
+      const updated =
+        readForm(
+          wrapper,
+          item.type
+        );
+
+      if (!updated) {
+        return;
+      }
+
+      updated.id =
+        String(item.id);
+
+      if (
+        item.type === "point"
+      ) {
+
+        updated.x =
+          item.x;
+
+        updated.y =
+          item.y;
+
+      } else {
+
+        updated.points =
+          item.points;
+      }
+
+      if (item._temp) {
+
+        const index =
+          data.findIndex(
+            i =>
+              String(i.id) ===
+              String(item.id)
+          );
+
+        if (index >= 0) {
+
+          data[index] = {
+            ...updated,
+            _temp: true
+          };
+        }
+
+        render();
+
+        wrapper.remove();
+
+      } else {
+
+        await saveItem(
+          updated
+        );
+
+        wrapper.remove();
+      }
+    };
 }
 
 // ============================================================
@@ -1063,28 +1418,36 @@ map.addEventListener(
   "dblclick",
   e => {
 
-    if (e.shiftKey) {
+    if (
+      e.target.closest(
+        ".map-overlay-item"
+      )
+    ) {
       return;
     }
+
+    e.preventDefault();
+    e.stopPropagation();
 
     const r =
       map.getBoundingClientRect();
 
     const x =
-      (e.clientX - r.left) /
-      r.width;
+      clamp01(
+        (e.clientX - r.left) /
+        r.width
+      );
 
     const y =
-      (e.clientY - r.top) /
-      r.height;
+      clamp01(
+        (e.clientY - r.top) /
+        r.height
+      );
 
-    openForm(
-      "point",
-      {
-        x: Math.max(0, Math.min(1, x)),
-        y: Math.max(0, Math.min(1, y))
-      }
-    );
+    openNewPointForm({
+      x,
+      y
+    });
   }
 );
 
@@ -1100,39 +1463,33 @@ map.addEventListener(
       return;
     }
 
+    if (
+      e.target.closest(
+        ".map-overlay-item"
+      )
+    ) {
+      return;
+    }
+
     const r =
       map.getBoundingClientRect();
 
-    const x =
-      (e.clientX - r.left) /
-      r.width;
+    currentPolygon.push({
 
-    const y =
-      (e.clientY - r.top) /
-      r.height;
+      x:
+        clamp01(
+          (e.clientX - r.left) /
+          r.width
+        ),
 
-    const point = {
-      x: Math.max(0, Math.min(1, x)),
-      y: Math.max(0, Math.min(1, y))
-    };
+      y:
+        clamp01(
+          (e.clientY - r.top) /
+          r.height
+        )
+    });
 
-    currentPolygon.push(point);
-
-    const visualPoint =
-      document.createElement("div");
-
-    visualPoint.className =
-      "polygon-point";
-
-    visualPoint.style.left =
-      `${point.x * 100}%`;
-
-    visualPoint.style.top =
-      `${point.y * 100}%`;
-
-    map.appendChild(
-      visualPoint
-    );
+    drawPolygonPoints();
 
     if (
       currentPolygon.length >= 3
@@ -1144,22 +1501,194 @@ map.addEventListener(
         )
       ) {
 
-        openForm(
-          "polygon",
-          [...currentPolygon]
+        const points =
+          [
+            ...currentPolygon
+          ];
+
+        currentPolygon =
+          [];
+
+        clearPolygonPoints();
+
+        openNewPolygonForm(
+          points
         );
-
-        currentPolygon = [];
-
-        document
-          .querySelectorAll(
-            ".polygon-point"
-          )
-          .forEach(el =>
-            el.remove()
-          );
       }
     }
+  }
+);
+
+// ============================================================
+// BODY PRO KRESLENÍ ÚZEMÍ
+// ============================================================
+
+function drawPolygonPoints() {
+
+  clearPolygonPoints();
+
+  for (
+    const p of currentPolygon
+  ) {
+
+    const dot =
+      document.createElement(
+        "div"
+      );
+
+    dot.className =
+      "polygon-drawing-point";
+
+    dot.style.left =
+      `${p.x * 100}%`;
+
+    dot.style.top =
+      `${p.y * 100}%`;
+
+    map.appendChild(
+      dot
+    );
+  }
+}
+
+function clearPolygonPoints() {
+
+  map
+    .querySelectorAll(
+      ".polygon-drawing-point"
+    )
+    .forEach(
+      e => e.remove()
+    );
+}
+
+// ============================================================
+// DRAGOVÁNÍ BODŮ
+// ============================================================
+
+map.addEventListener(
+  "pointerdown",
+  e => {
+
+    const marker =
+      e.target.closest(
+        ".marker"
+      );
+
+    if (!marker) {
+      return;
+    }
+
+    e.preventDefault();
+    e.stopPropagation();
+
+    const id =
+      marker.id.replace(
+        "marker-",
+        ""
+      );
+
+    const r =
+      map.getBoundingClientRect();
+
+    dragState = {
+      id,
+      moved: false
+    };
+
+    const move =
+      ev => {
+
+        if (!dragState) {
+          return;
+        }
+
+        dragState.moved =
+          true;
+
+        const x =
+          clamp01(
+            (ev.clientX - r.left) /
+            r.width
+          );
+
+        const y =
+          clamp01(
+            (ev.clientY - r.top) /
+            r.height
+          );
+
+        const item =
+          data.find(
+            i =>
+              String(i.id) ===
+              String(id)
+          );
+
+        if (
+          !item ||
+          item._temp
+        ) {
+          return;
+        }
+
+        item.x =
+          x;
+
+        item.y =
+          y;
+
+        marker.style.left =
+          `${x * 100}%`;
+
+        marker.style.top =
+          `${y * 100}%`;
+      };
+
+    const up =
+      async () => {
+
+        window.removeEventListener(
+          "pointermove",
+          move
+        );
+
+        window.removeEventListener(
+          "pointerup",
+          up
+        );
+
+        const item =
+          data.find(
+            i =>
+              String(i.id) ===
+              String(id)
+          );
+
+        if (
+          item &&
+          dragState?.moved &&
+          !item._temp
+        ) {
+
+          await saveItem(
+            item
+          );
+        }
+
+        dragState =
+          null;
+      };
+
+    window.addEventListener(
+      "pointermove",
+      move
+    );
+
+    window.addEventListener(
+      "pointerup",
+      up
+    );
   }
 );
 
@@ -1174,607 +1703,393 @@ map.addEventListener(
     e.preventDefault();
 
     const delta =
-      e.deltaY * -0.001;
+      -e.deltaY * 0.001;
 
-    const newScale =
-      scale + delta;
-
-    if (
-      delta > 0 ||
-      newScale >= 1
-    ) {
-
-      scale =
+    scale =
+      Math.max(
+        1,
         Math.min(
-          8,
-          newScale
-        );
+          6,
+          scale + delta
+        )
+      );
 
-      map.style.transform =
-        `scale(${scale}) translate(${originX}px, ${originY}px)`;
-    }
+    setMapTransform();
   },
-  { passive: false }
+  {
+    passive: false
+  }
 );
 
 // ============================================================
-// W A S D POHYB
+// W A S D
 // ============================================================
 
-const keysPressed = {};
-
-function isFormElementFocused() {
-  const el =
-    document.activeElement;
-
-  return (
-    el &&
-    (
-      el.tagName === "INPUT" ||
-      el.tagName === "TEXTAREA" ||
-      el.tagName === "SELECT" ||
-      el.tagName === "BUTTON" ||
-      el.isContentEditable
-    )
-  );
-}
-
-function updateTransform() {
-
-  if (
-    isFormElementFocused()
-  ) {
-    return;
-  }
-
-  const step =
-    (6 * 3) / scale;
-
-  if (
-    keysPressed["w"]
-  ) {
-    originY += step;
-  }
-
-  if (
-    keysPressed["s"]
-  ) {
-    originY -= step;
-  }
-
-  if (
-    keysPressed["a"]
-  ) {
-    originX += step;
-  }
-
-  if (
-    keysPressed["d"]
-  ) {
-    originX -= step;
-  }
-
-  map.style.transform =
-    `scale(${scale}) translate(${originX}px, ${originY}px)`;
-}
-
-setInterval(
-  updateTransform,
-  16
-);
+const keys = {};
 
 window.addEventListener(
   "keydown",
   e => {
-    keysPressed[
-      e.key.toLowerCase()
-    ] = true;
+
+    if (
+      !isTyping()
+    ) {
+
+      keys[
+        e.key.toLowerCase()
+      ] = true;
+    }
   }
 );
 
 window.addEventListener(
   "keyup",
   e => {
-    keysPressed[
+
+    keys[
       e.key.toLowerCase()
     ] = false;
   }
 );
 
-// ============================================================
-// TLAČÍTKA
-// ============================================================
-
-window.addEventListener(
-  "load",
+setInterval(
   () => {
 
-    // ----------------------------------------
-    // PLÁNOVÁNÍ
-    // ----------------------------------------
-
-    const planningButton =
-      document.getElementById(
-        "planning-toggle"
-      );
-
-    if (planningButton) {
-
-      planningButton.onclick =
-        () => {
-
-          planningMode =
-            !planningMode;
-
-          if (planningMode) {
-
-            planningButton.textContent =
-              "📝 Plánování: ZAPNUTO";
-
-            planningButton.style.background =
-              "#555";
-
-            alert(
-              "Plánovací režim je zapnutý.\n\n" +
-              "Nové body a území se zatím neuloží do databáze."
-            );
-
-          } else {
-
-            planningButton.textContent =
-              "📝 Plánovat";
-
-            planningButton.style.background =
-              "";
-
-            // Vyhodíme dočasné prvky
-            data =
-              data.filter(
-                item => !item._temp
-              );
-
-            currentPolygon = [];
-
-            document
-              .querySelectorAll(
-                ".polygon-point"
-              )
-              .forEach(el =>
-                el.remove()
-              );
-
-            render();
-          }
-        };
-    }
-
-    // ----------------------------------------
-    // ULOŽIT PLÁN
-    // ----------------------------------------
-
-    let savePlanButton =
-      document.getElementById(
-        "save-plan"
-      );
-
-    if (!savePlanButton) {
-
-      savePlanButton =
-        document.createElement(
-          "button"
-        );
-
-      savePlanButton.id =
-        "save-plan";
-
-      savePlanButton.textContent =
-        "💾 Uložit plán";
-
-      savePlanButton.style.display =
-        "none";
-
-      savePlanButton.style.width =
-        "100%";
-
-      savePlanButton.style.marginBottom =
-        "5px";
-
-      const controls =
-        document.getElementById(
-          "controls"
-        );
-
-      if (controls) {
-        controls.appendChild(
-          savePlanButton
-        );
-      }
-    }
-
-    savePlanButton.onclick =
-      async () => {
-
-        const temporary =
-          data.filter(
-            item => item._temp
-          );
-
-        if (
-          temporary.length === 0
-        ) {
-
-          alert(
-            "V plánu není nic k uložení."
-          );
-
-          return;
-        }
-
-        let successCount = 0;
-
-        for (
-          const item of temporary
-        ) {
-
-          const cleanItem = {
-            ...item
-          };
-
-          delete cleanItem._temp;
-
-          const success =
-            await saveItem(
-              cleanItem
-            );
-
-          if (success) {
-            successCount++;
-          }
-        }
-
-        if (
-          successCount ===
-          temporary.length
-        ) {
-
-          data =
-            data.filter(
-              item => !item._temp
-            );
-
-          alert(
-            `Plán uložen. Počet položek: ${successCount}`
-          );
-
-          planningMode = false;
-
-          if (planningButton) {
-            planningButton.textContent =
-              "📝 Plánovat";
-
-            planningButton.style.background =
-              "";
-          }
-
-          savePlanButton.style.display =
-            "none";
-
-          render();
-
-        } else {
-
-          alert(
-            `Uloženo ${successCount} z ${temporary.length} položek.`
-          );
-        }
-      };
-
-    // ----------------------------------------
-    // ZRUŠIT PLÁN
-    // ----------------------------------------
-
-    let cancelPlanButton =
-      document.getElementById(
-        "cancel-plan"
-      );
-
-    if (!cancelPlanButton) {
-
-      cancelPlanButton =
-        document.createElement(
-          "button"
-        );
-
-      cancelPlanButton.id =
-        "cancel-plan";
-
-      cancelPlanButton.textContent =
-        "❌ Zrušit plán";
-
-      cancelPlanButton.style.display =
-        "none";
-
-      cancelPlanButton.style.width =
-        "100%";
-
-      cancelPlanButton.style.marginBottom =
-        "5px";
-
-      const controls =
-        document.getElementById(
-          "controls"
-        );
-
-      if (controls) {
-        controls.appendChild(
-          cancelPlanButton
-        );
-      }
-    }
-
-    cancelPlanButton.onclick =
-      () => {
-
-        data =
-          data.filter(
-            item => !item._temp
-          );
-
-        planningMode =
-          false;
-
-        currentPolygon = [];
-
-        if (planningButton) {
-          planningButton.textContent =
-            "📝 Plánovat";
-
-          planningButton.style.background =
-            "";
-        }
-
-        savePlanButton.style.display =
-          "none";
-
-        cancelPlanButton.style.display =
-          "none";
-
-        document
-          .querySelectorAll(
-            ".polygon-point"
-          )
-          .forEach(el =>
-            el.remove()
-          );
-
-        render();
-      };
-
-    // ----------------------------------------
-    // SHOW ALL
-    // ----------------------------------------
-
-    const showAll =
-      document.getElementById(
-        "show-all"
-      );
-
-    if (showAll) {
-
-      showAll.onclick =
-        () => {
-
-          if (
-            expandedCategories.size ===
-            categories.length
-          ) {
-
-            expandedCategories.clear();
-
-          } else {
-
-            expandedCategories =
-              new Set(categories);
-          }
-
-          render();
-        };
-    }
-
-    // ----------------------------------------
-    // SEARCH
-    // ----------------------------------------
-
-    const search =
-      document.getElementById(
-        "search"
-      );
-
-    if (search) {
-
-      search.oninput =
-        () => render();
-    }
-
-    // ----------------------------------------
-    // PLÁNOVACÍ REŽIM -
-    // ZOBRAZENÍ TLAČÍTEK
-    // ----------------------------------------
-
-    if (planningButton) {
-
-      const oldClick =
-        planningButton.onclick;
-
-      planningButton.onclick =
-        () => {
-
-          planningMode =
-            !planningMode;
-
-          if (planningMode) {
-
-            planningButton.textContent =
-              "📝 Plánování: ZAPNUTO";
-
-            planningButton.style.background =
-              "#555";
-
-            savePlanButton.style.display =
-              "block";
-
-            cancelPlanButton.style.display =
-              "block";
-
-          } else {
-
-            planningButton.textContent =
-              "📝 Plánovat";
-
-            planningButton.style.background =
-              "";
-
-            savePlanButton.style.display =
-              "none";
-
-            cancelPlanButton.style.display =
-              "none";
-
-            data =
-              data.filter(
-                item => !item._temp
-              );
-
-            render();
-          }
-        };
-    }
-
-    // ----------------------------------------
-    // START
-    // ----------------------------------------
-
-    loadData();
-  }
-);
-
-// ============================================================
-// DRAG & DROP BODŮ
-// ============================================================
-
-map.addEventListener(
-  "mousedown",
-  e => {
-
     if (
-      !e.target.classList.contains(
-        "marker"
-      )
+      isTyping()
     ) {
       return;
     }
 
-    const marker =
-      e.target;
+    const step =
+      4 / scale;
 
-    const id =
-      marker.id.replace(
-        "marker-",
-        ""
+    if (keys.w) {
+      originY += step;
+    }
+
+    if (keys.s) {
+      originY -= step;
+    }
+
+    if (keys.a) {
+      originX += step;
+    }
+
+    if (keys.d) {
+      originX -= step;
+    }
+
+    if (
+      keys.w ||
+      keys.s ||
+      keys.a ||
+      keys.d
+    ) {
+
+      setMapTransform();
+    }
+  },
+  16
+);
+
+function isTyping() {
+
+  const el =
+    document.activeElement;
+
+  return (
+    !!el &&
+    [
+      "INPUT",
+      "TEXTAREA",
+      "SELECT",
+      "BUTTON"
+    ].includes(
+      el.tagName
+    )
+  );
+}
+
+// ============================================================
+// PLÁNOVÁNÍ
+// ============================================================
+
+function updatePlanningButtons() {
+
+  const toggle =
+    document.getElementById(
+      "planning-toggle"
+    );
+
+  const save =
+    document.getElementById(
+      "save-plan"
+    );
+
+  const cancel =
+    document.getElementById(
+      "cancel-plan"
+    );
+
+  if (toggle) {
+
+    toggle.textContent =
+      planningMode
+        ? "📝 Plánování: ZAPNUTO"
+        : "📝 Plánovat";
+  }
+
+  if (save) {
+
+    save.style.display =
+      planningMode
+        ? "block"
+        : "none";
+  }
+
+  if (cancel) {
+
+    cancel.style.display =
+      planningMode
+        ? "block"
+        : "none";
+  }
+}
+
+// ============================================================
+// TLAČÍTKA
+// ============================================================
+
+function setupButtons() {
+
+  const controls =
+    document.getElementById(
+      "controls"
+    );
+
+  const toggle =
+    document.getElementById(
+      "planning-toggle"
+    );
+
+  const showAll =
+    document.getElementById(
+      "show-all"
+    );
+
+  const search =
+    document.getElementById(
+      "search"
+    );
+
+  // ----------------------------------------
+  // ULOŽIT PLÁN
+  // ----------------------------------------
+
+  let savePlan =
+    document.getElementById(
+      "save-plan"
+    );
+
+  if (!savePlan) {
+
+    savePlan =
+      document.createElement(
+        "button"
       );
 
-    const r =
-      map.getBoundingClientRect();
+    savePlan.id =
+      "save-plan";
 
-    const move = e2 => {
+    savePlan.type =
+      "button";
 
-      const x =
-        (e2.clientX - r.left) /
-        r.width;
+    savePlan.textContent =
+      "💾 Uložit plán";
 
-      const y =
-        (e2.clientY - r.top) /
-        r.height;
-
-      const safeX =
-        Math.max(
-          0,
-          Math.min(1, x)
-        );
-
-      const safeY =
-        Math.max(
-          0,
-          Math.min(1, y)
-        );
-
-      marker.style.left =
-        `${safeX * 100}%`;
-
-      marker.style.top =
-        `${safeY * 100}%`;
-
-      const index =
-        data.findIndex(
-          i => String(i.id) ===
-            String(id)
-        );
-
-      if (index !== -1) {
-
-        data[index].x =
-          safeX;
-
-        data[index].y =
-          safeY;
-      }
-    };
-
-    const up =
-      async () => {
-
-        window.removeEventListener(
-          "mousemove",
-          move
-        );
-
-        window.removeEventListener(
-          "mouseup",
-          up
-        );
-
-        const index =
-          data.findIndex(
-            i => String(i.id) ===
-              String(id)
-          );
-
-        if (
-          index === -1
-        ) {
-          return;
-        }
-
-        const item =
-          data[index];
-
-        // Pokud je to plánovací položka,
-        // ještě ji neukládáme.
-        if (item._temp) {
-          return;
-        }
-
-        await saveItem(item);
-      };
-
-    window.addEventListener(
-      "mousemove",
-      move
-    );
-
-    window.addEventListener(
-      "mouseup",
-      up
+    controls.appendChild(
+      savePlan
     );
   }
-);
+
+  // ----------------------------------------
+  // ZRUŠIT PLÁN
+  // ----------------------------------------
+
+  let cancelPlan =
+    document.getElementById(
+      "cancel-plan"
+    );
+
+  if (!cancelPlan) {
+
+    cancelPlan =
+      document.createElement(
+        "button"
+      );
+
+    cancelPlan.id =
+      "cancel-plan";
+
+    cancelPlan.type =
+      "button";
+
+    cancelPlan.textContent =
+      "❌ Zrušit plán";
+
+    controls.appendChild(
+      cancelPlan
+    );
+  }
+
+  // ----------------------------------------
+  // PLÁNOVÁNÍ
+  // ----------------------------------------
+
+  toggle.onclick =
+    () => {
+
+      planningMode =
+        !planningMode;
+
+      if (!planningMode) {
+
+        data =
+          data.filter(
+            i => !i._temp
+          );
+
+        currentPolygon =
+          [];
+
+        clearPolygonPoints();
+
+        render();
+      }
+
+      updatePlanningButtons();
+    };
+
+  // ----------------------------------------
+  // ULOŽIT PLÁN
+  // ----------------------------------------
+
+  savePlan.onclick =
+    async () => {
+
+      const temps =
+        data.filter(
+          i => i._temp
+        );
+
+      if (
+        !temps.length
+      ) {
+
+        alert(
+          "V plánu není nic k uložení."
+        );
+
+        return;
+      }
+
+      let ok = 0;
+
+      for (
+        const item of temps
+      ) {
+
+        const copy =
+          {
+            ...item
+          };
+
+        delete copy._temp;
+
+        if (
+          await saveItem(
+            copy
+          )
+        ) {
+
+          ok++;
+        }
+      }
+
+      data =
+        data.filter(
+          i => !i._temp
+        );
+
+      planningMode =
+        false;
+
+      updatePlanningButtons();
+
+      render();
+
+      alert(
+        `Uloženo ${ok} z ${temps.length} položek.`
+      );
+    };
+
+  // ----------------------------------------
+  // ZRUŠIT PLÁN
+  // ----------------------------------------
+
+  cancelPlan.onclick =
+    () => {
+
+      data =
+        data.filter(
+          i => !i._temp
+        );
+
+      planningMode =
+        false;
+
+      currentPolygon =
+        [];
+
+      clearPolygonPoints();
+
+      updatePlanningButtons();
+
+      render();
+    };
+
+  // ----------------------------------------
+  // ZOBRAZIT VŠE
+  // ----------------------------------------
+
+  showAll.onclick =
+    () => {
+
+      expandedCategories =
+        expandedCategories.size ===
+        categories.length
+          ? new Set()
+          : new Set(categories);
+
+      render();
+    };
+
+  // ----------------------------------------
+  // HLEDÁNÍ
+  // ----------------------------------------
+
+  search.oninput =
+    () =>
+      render();
+
+  updatePlanningButtons();
+}
+
+// ============================================================
+// START
+// ============================================================
+
+setupButtons();
+loadData();
+```
