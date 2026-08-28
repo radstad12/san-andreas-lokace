@@ -7,98 +7,44 @@
   <title>Verdugos MC - Mapa</title>
   <style>
     * { box-sizing: border-box; }
-    html, body {
-      margin: 0; padding: 0; height: 100%; overflow: hidden;
-      font-family: Arial, sans-serif; background: #111; color: #fff;
-    }
-    #sidebar {
-      position: fixed; top: 0; left: 0; bottom: 0; width: 280px;
-      background: #1a1a1a; padding: 20px; overflow-y: auto;
-      z-index: 100; border-right: 2px solid #222;
-    }
-    #sidebar img { display: block; margin: 0 auto 10px; max-width: 100px; }
-    #sidebar h1 {
-      text-align: center; font-size: 26px; font-weight: bold;
-      color: red; text-shadow: 0 0 10px red; letter-spacing: 2px;
-      margin: 0 0 12px;
-    }
-    #controls input, #controls button {
-      width: 100%; margin-bottom: 6px; padding: 9px;
-      background: #333; color: white; border: none; border-radius: 4px;
-    }
-    #controls button { cursor: pointer; text-align: center; }
-    #controls button:hover, #controls button.active { background: #444; }
-    #status { min-height: 16px; margin: 4px 0 10px; font-size: 11px; color: #aaa; }
-    .category-header {
-      width: 100%; margin-bottom: 5px; padding: 8px;
-      background: #333; color: white; border: none; border-radius: 6px;
-      font-weight: 900; font-size: 16px; cursor: pointer;
-      text-align: center;
-    }
-    .category-header:hover { background: #444; }
-    .category-items { margin-left: 8px; display: none; }
-    .item {
-      display: flex; justify-content: space-between; align-items: center;
-      gap: 8px; font-size: 14px; margin: 5px 0; cursor: pointer;
-      padding: 3px 2px;
-    }
-    .item:hover { background: rgba(255,255,255,.08); transform: scale(1.02); }
-    .dot { width: 10px; height: 10px; border-radius: 50%; margin-right: 8px; display: inline-block; }
-    .delete-btn { color: #888; font-size: 12px; cursor: pointer; }
-    #map {
-      position: absolute; left: 280px; top: 0; right: 0; bottom: 0;
-      background: #000; cursor: grab; overflow: hidden; transform-origin: 0 0;
-    }
-    #map-image {
-      width: 100%; height: 100%; object-fit: contain;
-      position: absolute; top: 0; left: 0; z-index: 1;
-      pointer-events: none;
-    }
-    .marker {
-      position: absolute; border-radius: 50%; border: 1px solid white;
-      transform: translate(-50%, -50%); cursor: pointer; z-index: 20;
-      display: flex; align-items: center; justify-content: center;
-    }
-    .marker-icon {
-      position: absolute; top: 50%; left: 50%;
-      transform: translate(-50%, -50%); pointer-events: none;
-      line-height: 1; white-space: nowrap;
-      display: flex; align-items: center; justify-content: center;
-    }
-    .polygon-point {
-      position: absolute; width: 9px; height: 9px;
-      background: cyan; border: 1px solid white; border-radius: 50%;
-      transform: translate(-50%, -50%); z-index: 30;
-    }
-    svg.polygon {
-      position: absolute; top: 0; left: 0; pointer-events: auto;
-      overflow: visible;
-    }
-    .tooltip {
-      position: fixed; background: rgba(0,0,0,.85); color: white;
-      padding: 5px 9px; font-size: 12px; border-radius: 4px;
-      pointer-events: none; z-index: 9999; display: none; white-space: nowrap;
-    }
-    .color-sample {
-      display: inline-block; width: 22px; height: 22px; margin: 2px;
-      border: 1px solid #777; cursor: pointer; border-radius: 3px;
-    }
-    #form-wrapper {
-      position: fixed; top: 50%; left: calc(50% + 140px);
-      transform: translate(-50%, -50%); width: 330px; max-height: 90vh;
-      overflow-y: auto; background: #222; padding: 20px;
-      border: 1px solid #555; border-radius: 8px; z-index: 9998; color: white;
-      box-shadow: 0 10px 40px rgba(0,0,0,.6);
-    }
-    #form-wrapper h2 { margin-top: 0; }
-    #form-wrapper input, #form-wrapper textarea { background: #111; color: white; border: 1px solid #555; padding: 7px; }
-    #form-wrapper button { padding: 8px 14px; margin-right: 6px; cursor: pointer; }
-    .highlight-marker { transform: translate(-50%, -50%) scale(2.5) !important; z-index: 1000 !important; }
-    .polygon-highlighted { filter: brightness(1.5); }
-    @media (max-width: 700px) {
-      #sidebar { width: 230px; }
-      #map { left: 230px; }
-      #form-wrapper { left: 60%; width: 300px; }
+    html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; font-family: Arial, sans-serif; background: #111; color: #fff; }
+    #sidebar { position: fixed; inset: 0 auto 0 0; width: 280px; background:#1a1a1a; padding:20px; overflow-y:auto; z-index:20; border-right:2px solid #222; }
+    #sidebar img { display:block; margin:0 auto 10px; max-width:100px; max-height:100px; object-fit:contain; }
+    #sidebar h1 { text-align:center; font-size:26px; font-weight:bold; color:red; text-shadow:0 0 10px red; letter-spacing:2px; margin:0 0 10px; }
+    #controls input, #controls button { width:100%; margin-bottom:6px; padding:9px; background:#333; color:#fff; border:0; border-radius:5px; }
+    #controls input { outline:none; }
+    #controls button { cursor:pointer; text-align:center; }
+    #controls button:hover { background:#444; }
+    .category-header { width:100%; margin:5px 0; padding:9px; background:#333; color:#fff; border:0; font-weight:900; font-size:16px; cursor:pointer; border-radius:6px; }
+    .category-header:hover { background:#444; }
+    .category-items { margin-left:10px; }
+    .item { display:flex; justify-content:space-between; align-items:center; gap:8px; font-size:14px; margin:5px 0; padding:5px; cursor:pointer; border-radius:4px; }
+    .item:hover { background:rgba(255,255,255,.08); }
+    .dot { width:11px; height:11px; border-radius:50%; margin-right:7px; display:inline-block; vertical-align:middle; }
+    .delete-btn { color:#aaa; cursor:pointer; }
+
+    #map { position:absolute; left:280px; top:0; right:0; bottom:0; overflow:hidden; background:#000; cursor:grab; transform-origin:0 0; }
+    #map-image { position:absolute; inset:0; width:100%; height:100%; object-fit:contain; user-select:none; pointer-events:none; }
+
+    /* Všechny značky jsou skutečně jen malé overlay prvky. Nic nezakrývá celou mapu. */
+    .map-overlay-item { position:absolute; }
+    .marker { transform:translate(-50%,-50%); border-radius:50%; border:1px solid #fff; cursor:pointer; z-index:30; display:flex; align-items:center; justify-content:center; }
+    .marker-icon { line-height:1; pointer-events:none; display:flex; align-items:center; justify-content:center; white-space:nowrap; }
+    .polygon-overlay { inset:0; z-index:10; cursor:pointer; }
+    .highlight-map-item { animation:pulse .8s infinite; z-index:40 !important; }
+    @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.25)} }
+    .polygon-drawing-point { position:absolute; width:10px; height:10px; margin:-5px 0 0 -5px; border-radius:50%; background:cyan; border:2px solid white; z-index:60; pointer-events:none; }
+
+    .tooltip { position:fixed; background:rgba(0,0,0,.85); color:#fff; padding:6px 9px; font-size:12px; border-radius:4px; pointer-events:none; z-index:10000; display:none; white-space:nowrap; }
+    #form-wrapper { position:fixed; top:50%; left:calc(50% + 140px); transform:translate(-50%,-50%); width:min(380px,calc(100vw - 40px)); max-height:85vh; overflow:auto; background:#222; padding:20px; border:1px solid #555; border-radius:10px; z-index:20000; color:#fff; box-shadow:0 10px 40px rgba(0,0,0,.65); }
+    #form-wrapper input, #form-wrapper textarea { width:100%; color:#fff; background:#111; border:1px solid #555; border-radius:4px; padding:7px; }
+    #form-wrapper textarea { min-height:80px; resize:vertical; }
+    #form-wrapper button { padding:8px 14px; cursor:pointer; border:0; border-radius:5px; }
+    .color-sample { display:inline-block; width:20px; height:20px; border:1px solid #555; margin:2px; }
+    @media (max-width:700px) {
+      #sidebar { width:230px; }
+      #map { left:230px; }
+      #form-wrapper { left:50%; }
     }
   </style>
 </head>
@@ -108,22 +54,18 @@
     <h1>Verdugos MC</h1>
     <div id="controls">
       <input type="text" id="search" placeholder="🔍 Hledat...">
-      <button id="show-all">Zobrazit / Skrýt vše</button>
-      <button id="planning-toggle">📝 Plánovat</button>
-      <button id="save-plan" style="display:none">💾 Uložit plán</button>
-      <button id="cancel-plan" style="display:none">❌ Zrušit plán</button>
-      <div id="status">Připojování k databázi...</div>
+      <button id="show-all" type="button">Zobrazit / Skrýt vše</button>
+      <button id="planning-toggle" type="button">📝 Plánovat</button>
     </div>
+    <div style="height:20px"></div>
     <div id="menu"></div>
   </div>
 
   <div id="map">
-    <img id="map-image" src="mapa.png" alt="Mapa San Andreas">
+    <img id="map-image" src="mapa.png" alt="Mapa San Andreas" draggable="false">
   </div>
 
   <div id="tooltip" class="tooltip"></div>
-  <div id="form-container"></div>
-
   <script type="module" src="firebase-map.js"></script>
 </body>
 </html>
