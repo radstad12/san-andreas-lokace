@@ -26,7 +26,6 @@ function getCategoryIcons(categories) {
   const icons = {
     "📍 Lokace": "📍",
     "🥷 Území": "🥷",
-    "🔫 Předání zbraní": "🔫",
     "🚗 Ujíždění autem": "🚗",
     "🏍️ Ujíždění na motorce": "🏍️",
     "🏃‍♂️ Útěk pěšky": "🏃‍♂️",
@@ -44,8 +43,7 @@ const map = document.getElementById("map");
 const menu = document.getElementById("menu");
 const tooltip = document.getElementById("tooltip");
 const categories = [
-  "🥷 Území", "📍 Lokace", "🔫 Předání zbraní",
-  "🚗 Ujíždění autem", "🏍️ Ujíždění na motorce",
+  "🥷 Území", "📍 Lokace", "🚗 Ujíždění autem", "🏍️ Ujíždění na motorce",
   "🏃‍♂️ Útěk pěšky", "📦 Sklady", "🎭 Místa na výslech"
 ];
 
