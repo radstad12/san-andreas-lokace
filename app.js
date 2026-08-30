@@ -44,9 +44,6 @@ const pointContextMenu = document.getElementById("pointContextMenu");
 const editPointBtn = document.getElementById("editPointBtn");
 const deletePointBtn = document.getElementById("deletePointBtn");
 
-const controlsBtn = document.getElementById("controlsBtn");
-const controlsHelp = document.getElementById("controlsHelp");
-
 
 /* =====================================================
    MAPA
@@ -56,14 +53,16 @@ let scale = 1;
 let x = 0;
 let y = 0;
 
-const MIN_SCALE = 0.45;
-const MAX_SCALE = 10;
-
 let dragging = false;
+
 let startX = 0;
 let startY = 0;
+
 let startMapX = 0;
 let startMapY = 0;
+
+const MIN_SCALE = 0.45;
+const MAX_SCALE = 10;
 
 
 /* =====================================================
@@ -76,7 +75,7 @@ let editingPointId = null;
 
 
 /* =====================================================
-   FOCUS
+   HIGHLIGHT
 ===================================================== */
 
 let focusedPointId = null;
@@ -105,9 +104,9 @@ const COLOR_PRESETS = [
 let selectedColor = "#ff3b30";
 let selectedSize = 6;
 
+let colorWheelDragging = false;
 let wheelHue = 0;
 let wheelSaturation = 1;
-let colorWheelDragging = false;
 
 
 /* =====================================================
@@ -115,8 +114,22 @@ let colorWheelDragging = false;
 ===================================================== */
 
 const WASD_SPEED = 25;
+
 const pressedKeys = new Set();
+
 let wasdAnimationId = null;
+
+
+/* =====================================================
+   ID
+===================================================== */
+
+function createId() {
+  return (
+    Date.now().toString(36) +
+    Math.random().toString(36).slice(2)
+  );
+}
 
 
 /* =====================================================
@@ -152,71 +165,51 @@ const DEFAULT_CATEGORIES = [
 
 
 /* =====================================================
-   DATA
-===================================================== */
-
-let categories = loadData(
-  "verdugosCategories",
-  DEFAULT_CATEGORIES
-);
-
-let points = loadData(
-  "verdugosPoints",
-  []
-);
-
-
-/* =====================================================
    STORAGE
 ===================================================== */
 
-function loadData(key, fallback) {
+function loadJson(key, fallback) {
   try {
-    const raw = localStorage.getItem(key);
+
+    const raw =
+      localStorage.getItem(key);
 
     if (!raw) {
       return fallback;
     }
 
-    const data = JSON.parse(raw);
+    const data =
+      JSON.parse(raw);
 
     return Array.isArray(data)
       ? data
       : fallback;
 
   } catch {
+
     return fallback;
+
   }
 }
 
 
 function saveCategories() {
+
   localStorage.setItem(
     "verdugosCategories",
     JSON.stringify(categories)
   );
+
 }
 
 
 function savePoints() {
+
   localStorage.setItem(
     "verdugosPoints",
     JSON.stringify(points)
   );
-}
 
-
-/* =====================================================
-   ID
-===================================================== */
-
-function createId() {
-  return (
-    Date.now().toString(36) +
-    Math.random()
-      .toString(36)
-      .slice(2)
-  );
 }
 
 
@@ -224,32 +217,109 @@ function createId() {
    KATEGORIE
 ===================================================== */
 
-categories = categories.map(category => ({
-  id: category.id || createId(),
-  name: category.name || "Bez názvu",
-  emoji: category.emoji || "📌",
-  visible: category.visible !== false
-}));
+function normalizeCategory(category) {
+
+  let name =
+    category.name ||
+    "Bez názvu";
+
+  let emoji =
+    category.emoji ||
+    "📌";
+
+
+  if (
+    !category.emoji &&
+    /^[\p{Extended_Pictographic}]/u.test(name)
+  ) {
+
+    const match =
+      name.match(
+        /^(\p{Extended_Pictographic})\s*(.*)$/u
+      );
+
+    if (match) {
+
+      emoji =
+        match[1];
+
+      name =
+        match[2] ||
+        name;
+
+    }
+
+  }
+
+
+  return {
+
+    id:
+      category.id ||
+      createId(),
+
+    name,
+
+    emoji,
+
+    visible:
+      category.visible !== false
+
+  };
+
+}
+
+
+let categories =
+  loadJson(
+    "verdugosCategories",
+    DEFAULT_CATEGORIES
+  ).map(
+    normalizeCategory
+  );
+
+
+let points =
+  loadJson(
+    "verdugosPoints",
+    []
+  );
+
 
 saveCategories();
 
 
+/* =====================================================
+   HELPERY
+===================================================== */
+
 function getCategory(id) {
+
   return categories.find(
-    category => category.id === id
+    category =>
+      category.id === id
   );
+
 }
 
 
 function countPoints(categoryId) {
+
   return points.filter(
-    point => point.categoryId === categoryId
+    point =>
+      point.categoryId ===
+      categoryId
   ).length;
+
 }
 
 
 function categoryLabel(category) {
-  return `${category.emoji || "📌"} ${category.name}`;
+
+  return (
+    `${category.emoji || "📌"} ${category.name}`
+  );
+
 }
 
 
@@ -262,241 +332,317 @@ function renderCategories() {
   categoryList.innerHTML = "";
 
 
-  categories.forEach(category => {
+  categories.forEach(
+    category => {
 
-    const wrap = document.createElement("div");
-    wrap.className = "category-wrap";
+      const wrap =
+        document.createElement(
+          "div"
+        );
 
-
-    const item = document.createElement("div");
-    item.className = "category-item";
-
-
-    if (!category.visible) {
-      item.classList.add("hidden-category");
-    }
+      wrap.className =
+        "category-wrap";
 
 
-    const emoji = document.createElement("span");
-    emoji.className = "category-emoji";
-    emoji.textContent = category.emoji || "📌";
+      const item =
+        document.createElement(
+          "div"
+        );
+
+      item.className =
+        "category-item";
 
 
-    const name = document.createElement("span");
-    name.className = "category-name";
-    name.textContent = category.name;
+      if (
+        !category.visible
+      ) {
 
-
-    const count = document.createElement("span");
-    count.className = "category-count";
-    count.textContent = countPoints(category.id);
-
-
-    const state = document.createElement("span");
-    state.className = "category-state";
-    state.textContent = category.visible
-      ? "zobrazeno"
-      : "skryto";
-
-
-    item.append(
-      emoji,
-      name,
-      count,
-      state
-    );
-
-
-    /* -----------------------------------------------
-       HOVER NA KATEGORII
-       => pulsují všechny body v kategorii
-    ------------------------------------------------ */
-
-    item.addEventListener(
-      "mouseenter",
-      () => {
-        highlightCategory(category.id);
-      }
-    );
-
-
-    item.addEventListener(
-      "mouseleave",
-      () => {
-        unhighlightCategory(category.id);
-      }
-    );
-
-
-    /* -----------------------------------------------
-       KLIK
-    ------------------------------------------------ */
-
-    item.addEventListener(
-      "click",
-      () => {
-
-        category.visible =
-          !category.visible;
-
-        saveCategories();
-
-        renderCategories();
-        renderPoints();
-
-      }
-    );
-
-
-    /* -----------------------------------------------
-       PRAVÝ KLIK
-    ------------------------------------------------ */
-
-    item.addEventListener(
-      "contextmenu",
-      event => {
-
-        event.preventDefault();
-
-        deleteCategory(
-          category.id
+        item.classList.add(
+          "hidden-category"
         );
 
       }
-    );
 
 
-    wrap.appendChild(item);
+      const emoji =
+        document.createElement(
+          "span"
+        );
+
+      emoji.className =
+        "category-emoji";
+
+      emoji.textContent =
+        category.emoji ||
+        "📌";
 
 
-    /* =================================================
-       PODBODY
-    ================================================= */
+      const name =
+        document.createElement(
+          "span"
+        );
 
-    const children =
-      document.createElement("div");
+      name.className =
+        "category-name";
 
-    children.className =
-      "category-points";
+      name.textContent =
+        category.name;
 
 
-    points
-      .filter(
-        point =>
-          point.categoryId ===
+      const count =
+        document.createElement(
+          "span"
+        );
+
+      count.className =
+        "category-count";
+
+      count.textContent =
+        countPoints(
           category.id
-      )
-      .forEach(point => {
-
-        const child =
-          document.createElement("div");
-
-        child.className =
-          "category-point";
-
-        child.title =
-          "Klik = zvýraznit bod a zobrazit tooltip";
-
-
-        const dot =
-          document.createElement("span");
-
-        dot.className =
-          "category-point-dot";
-
-        dot.style.backgroundColor =
-          point.color ||
-          "#ff3b30";
-
-
-        const text =
-          document.createElement("span");
-
-        text.className =
-          "category-point-name";
-
-        text.textContent =
-          point.name;
-
-
-        child.append(
-          dot,
-          text
         );
 
 
-        /* ---------------------------------------------
-           HOVER PODBODU
-           NIC NEDĚLÁ
-        --------------------------------------------- */
+      const state =
+        document.createElement(
+          "span"
+        );
+
+      state.className =
+        "category-state";
+
+      state.textContent =
+        category.visible
+          ? "zobrazeno"
+          : "skryto";
 
 
-        /* ---------------------------------------------
-           KLIK PODBODU
-           => zvýraznění + tooltip
-        --------------------------------------------- */
+      item.append(
+        emoji,
+        name,
+        count,
+        state
+      );
 
-        child.addEventListener(
-          "click",
-          event => {
 
-            event.stopPropagation();
+      /*
+        Hover na hlavní kategorii:
+        všechny body v kategorii pulsují.
+      */
 
-            highlightPoint(
-              point.id,
-              true
+      item.addEventListener(
+        "mouseenter",
+        () => {
+
+          highlightCategory(
+            category.id
+          );
+
+        }
+      );
+
+
+      item.addEventListener(
+        "mouseleave",
+        () => {
+
+          unhighlightCategory(
+            category.id
+          );
+
+        }
+      );
+
+
+      /*
+        Klik na kategorii:
+        zobrazit / skrýt.
+      */
+
+      item.addEventListener(
+        "click",
+        () => {
+
+          category.visible =
+            !category.visible;
+
+          saveCategories();
+
+          renderCategories();
+
+          renderPoints();
+
+        }
+      );
+
+
+      /*
+        Pravý klik:
+        smazat kategorii.
+      */
+
+      item.addEventListener(
+        "contextmenu",
+        event => {
+
+          event.preventDefault();
+
+          deleteCategory(
+            category.id
+          );
+
+        }
+      );
+
+
+      wrap.appendChild(
+        item
+      );
+
+
+      /* =================================================
+         PODBODY
+      ================================================= */
+
+      const children =
+        document.createElement(
+          "div"
+        );
+
+      children.className =
+        "category-points";
+
+
+      points
+        .filter(
+          point =>
+            point.categoryId ===
+            category.id
+        )
+        .forEach(
+          point => {
+
+            const child =
+              document.createElement(
+                "div"
+              );
+
+            child.className =
+              "category-point";
+
+
+            const dot =
+              document.createElement(
+                "span"
+              );
+
+            dot.className =
+              "category-point-dot";
+
+            dot.style.backgroundColor =
+              point.color ||
+              "#ff3b30";
+
+
+            const text =
+              document.createElement(
+                "span"
+              );
+
+            text.className =
+              "category-point-name";
+
+            text.textContent =
+              point.name;
+
+
+            child.append(
+              dot,
+              text
+            );
+
+
+            /*
+              HOVER NA PODBODU:
+              NIC SE NEDĚJE.
+            */
+
+
+            /*
+              KLIK NA PODBOD:
+              zvětšení/puls + tooltip.
+            */
+
+            child.addEventListener(
+              "click",
+              event => {
+
+                event.stopPropagation();
+
+                highlightPoint(
+                  point.id,
+                  true
+                );
+
+              }
+            );
+
+
+            /*
+              Pravý klik na bod.
+            */
+
+            child.addEventListener(
+              "contextmenu",
+              event => {
+
+                event.preventDefault();
+                event.stopPropagation();
+
+                openContextMenu(
+                  event.clientX,
+                  event.clientY,
+                  point.id
+                );
+
+              }
+            );
+
+
+            children.appendChild(
+              child
             );
 
           }
         );
 
 
-        /* ---------------------------------------------
-           PRAVÝ KLIK PODBODU
-        --------------------------------------------- */
+      if (
+        children.children.length
+      ) {
 
-        child.addEventListener(
-          "contextmenu",
-          event => {
-
-            event.preventDefault();
-            event.stopPropagation();
-
-            openContextMenu(
-              event.clientX,
-              event.clientY,
-              point.id
-            );
-
-          }
+        wrap.appendChild(
+          children
         );
 
-
-        children.appendChild(child);
-
-      });
+      }
 
 
-    if (
-      children.children.length > 0
-    ) {
-
-      wrap.appendChild(children);
+      categoryList.appendChild(
+        wrap
+      );
 
     }
-
-
-    categoryList.appendChild(wrap);
-
-  });
+  );
 
 
   updateToggleAllButton();
+
 }
 
 
 /* =====================================================
-   SKRÝT / ZOBRAZIT VŠE
+   TOGGLE VŠE
 ===================================================== */
 
 function updateToggleAllButton() {
@@ -513,6 +659,7 @@ function updateToggleAllButton() {
     allVisible
       ? "Skrýt vše"
       : "Zobrazit vše";
+
 }
 
 
@@ -529,8 +676,12 @@ function toggleAllCategories() {
   categories =
     categories.map(
       category => ({
+
         ...category,
-        visible: !allVisible
+
+        visible:
+          !allVisible
+
       })
     );
 
@@ -538,40 +689,41 @@ function toggleAllCategories() {
   saveCategories();
 
   renderCategories();
+
   renderPoints();
+
 }
 
 
 /* =====================================================
-   CATEGORY PULS
+   HIGHLIGHT KATEGORIE
 ===================================================== */
 
 function highlightCategory(
   categoryId
 ) {
 
-  const elements =
-    pointsLayer.querySelectorAll(
+  pointsLayer
+    .querySelectorAll(
       `[data-category-id="${categoryId}"]`
-    );
+    )
+    .forEach(
+      element => {
+
+        if (
+          element.dataset.preview ===
+          "true"
+        ) {
+          return;
+        }
 
 
-  elements.forEach(
-    element => {
+        element.classList.add(
+          "category-hover-point"
+        );
 
-      if (
-        element.dataset.preview === "true"
-      ) {
-        return;
       }
-
-
-      element.classList.add(
-        "category-hover-point"
-      );
-
-    }
-  );
+    );
 
 }
 
@@ -580,27 +732,25 @@ function unhighlightCategory(
   categoryId
 ) {
 
-  const elements =
-    pointsLayer.querySelectorAll(
+  pointsLayer
+    .querySelectorAll(
       `[data-category-id="${categoryId}"]`
+    )
+    .forEach(
+      element => {
+
+        element.classList.remove(
+          "category-hover-point"
+        );
+
+      }
     );
-
-
-  elements.forEach(
-    element => {
-
-      element.classList.remove(
-        "category-hover-point"
-      );
-
-    }
-  );
 
 }
 
 
 /* =====================================================
-   FOCUS JEDNOHO BODU
+   HIGHLIGHT BODU
 ===================================================== */
 
 function highlightPoint(
@@ -608,18 +758,10 @@ function highlightPoint(
   persistent = false
 ) {
 
-  focusedPointId =
-    id;
-
-
   clearTimeout(
     focusedPointTimer
   );
 
-
-  /*
-    Zrušíme předchozí highlighty.
-  */
 
   pointsLayer
     .querySelectorAll(
@@ -647,6 +789,10 @@ function highlightPoint(
   }
 
 
+  focusedPointId =
+    id;
+
+
   element.classList.add(
     "focused-point"
   );
@@ -662,11 +808,13 @@ function highlightPoint(
             "focused-point"
           );
 
+
           if (
             focusedPointId === id
           ) {
 
-            focusedPointId = null;
+            focusedPointId =
+              null;
 
           }
 
@@ -695,7 +843,7 @@ function highlightPoint(
 
 
 /* =====================================================
-   SMAZAT KATEGORII
+   SMAZÁNÍ KATEGORIE
 ===================================================== */
 
 function deleteCategory(id) {
@@ -717,7 +865,9 @@ function deleteCategory(id) {
     `Opravdu chceš smazat kategorii „${category.name}“?`;
 
 
-  if (amount > 0) {
+  if (
+    amount > 0
+  ) {
 
     message +=
       `\n\nObsahuje ${amount} bodů. Ty budou také odstraněny.`;
@@ -728,14 +878,16 @@ function deleteCategory(id) {
   if (
     !confirm(message)
   ) {
+
     return;
+
   }
 
 
   categories =
     categories.filter(
-      category =>
-        category.id !== id
+      item =>
+        item.id !== id
     );
 
 
@@ -747,22 +899,21 @@ function deleteCategory(id) {
 
 
   saveCategories();
+
   savePoints();
 
   renderCategories();
+
   renderPoints();
 
 }
 
 
 /* =====================================================
-   CATEGORY MODAL
+   MODAL KATEGORIE
 ===================================================== */
 
 function openCategoryModal() {
-
-  closeContextMenu();
-
 
   categoryNameInput.value =
     "";
@@ -863,7 +1014,46 @@ function addCategory() {
 
 
 /* =====================================================
-   POINT MODE
+   SELECT KATEGORIE
+===================================================== */
+
+function renderCategorySelect() {
+
+  pointCategorySelect.innerHTML =
+    "";
+
+
+  categories.forEach(
+    category => {
+
+      const option =
+        document.createElement(
+          "option"
+        );
+
+
+      option.value =
+        category.id;
+
+
+      option.textContent =
+        categoryLabel(
+          category
+        );
+
+
+      pointCategorySelect.appendChild(
+        option
+      );
+
+    }
+  );
+
+}
+
+
+/* =====================================================
+   PŘIDÁNÍ BODU
 ===================================================== */
 
 function startPointMode() {
@@ -932,7 +1122,83 @@ function stopPointMode() {
 
 
 /* =====================================================
-   POINT MODAL - NOVÝ
+   UMÍSTĚNÍ NOVÉHO BODU
+===================================================== */
+
+function placePoint(
+  event
+) {
+
+  if (!addingPoint) {
+    return;
+  }
+
+
+  const rect =
+    mapImage.getBoundingClientRect();
+
+
+  if (
+
+    event.clientX < rect.left ||
+    event.clientX > rect.right ||
+    event.clientY < rect.top ||
+    event.clientY > rect.bottom
+
+  ) {
+
+    return;
+
+  }
+
+
+  const mapX =
+    event.clientX -
+    rect.left;
+
+
+  const mapY =
+    event.clientY -
+    rect.top;
+
+
+  pendingPoint = {
+
+    x:
+      mapX /
+      rect.width *
+      100,
+
+    y:
+      mapY /
+      rect.height *
+      100,
+
+    clientX:
+      event.clientX,
+
+    clientY:
+      event.clientY
+
+  };
+
+
+  stopPointMode();
+
+
+  renderPoints();
+
+
+  openPointModalAt(
+    event.clientX,
+    event.clientY
+  );
+
+}
+
+
+/* =====================================================
+   POINT MODAL
 ===================================================== */
 
 function openPointModalAt(
@@ -942,10 +1208,6 @@ function openPointModalAt(
 
   editingPointId =
     null;
-
-
-  pendingPoint =
-    pendingPoint;
 
 
   pointModalTitle.textContent =
@@ -961,7 +1223,6 @@ function openPointModalAt(
 
   pointNameInput.value =
     "";
-
 
   pointDescriptionInput.value =
     "";
@@ -985,7 +1246,8 @@ function openPointModalAt(
 
 
   pointCategorySelect.value =
-    categories[0]?.id || "";
+    categories[0]?.id ||
+    "";
 
 
   pointModal.classList.remove(
@@ -1018,7 +1280,7 @@ function openPointModalAt(
 
 
 /* =====================================================
-   POINT MODAL - EDITACE
+   EDITACE BODU
 ===================================================== */
 
 function openEditPoint(
@@ -1076,7 +1338,9 @@ function openEditPoint(
 
 
   selectedSize =
-    Number(point.size) || 6;
+    Number(
+      point.size
+    ) || 6;
 
 
   pointSizeInput.value =
@@ -1116,45 +1380,6 @@ function openEditPoint(
 
 
 /* =====================================================
-   SELECT
-===================================================== */
-
-function renderCategorySelect() {
-
-  pointCategorySelect.innerHTML =
-    "";
-
-
-  categories.forEach(
-    category => {
-
-      const option =
-        document.createElement(
-          "option"
-        );
-
-
-      option.value =
-        category.id;
-
-
-      option.textContent =
-        categoryLabel(
-          category
-        );
-
-
-      pointCategorySelect.appendChild(
-        option
-      );
-
-    }
-  );
-
-}
-
-
-/* =====================================================
    MODAL POSITION
 ===================================================== */
 
@@ -1170,14 +1395,18 @@ function positionPointModal(
         pointModalCard.getBoundingClientRect();
 
 
+      const gap =
+        16;
+
+
       let left =
         clientX +
-        16;
+        gap;
 
 
       let top =
         clientY +
-        16;
+        gap;
 
 
       if (
@@ -1190,7 +1419,7 @@ function positionPointModal(
         left =
           clientX -
           rect.width -
-          16;
+          gap;
 
       }
 
@@ -1205,7 +1434,7 @@ function positionPointModal(
         top =
           clientY -
           rect.height -
-          16;
+          gap;
 
       }
 
@@ -1248,7 +1477,7 @@ function positionPointModal(
 
 
 /* =====================================================
-   CLOSE POINT MODAL
+   ZAVŘENÍ MODALU BODU
 ===================================================== */
 
 function closePointModal() {
@@ -1266,6 +1495,7 @@ function closePointModal() {
 
   pendingPoint =
     null;
+
 
   editingPointId =
     null;
@@ -1569,7 +1799,7 @@ function renderPoints() {
           Math.max(
             2,
             Math.min(
-              size * 0.75,
+              size * .75,
               10
             )
           );
@@ -1654,7 +1884,7 @@ function renderPoints() {
 
 
         /*
-          PRAVÝ KLIK
+          Pravý klik na bod.
         */
 
         element.addEventListener(
@@ -1683,27 +1913,6 @@ function renderPoints() {
 
     }
   );
-
-}
-
-
-/* =====================================================
-   LIVE SIZE PREVIEW
-===================================================== */
-
-function updatePreview() {
-
-  selectedSize =
-    Number(
-      pointSizeInput.value
-    ) || 6;
-
-
-  pointSizeValue.textContent =
-    `${selectedSize} px`;
-
-
-  renderPoints();
 
 }
 
@@ -1799,7 +2008,7 @@ function closeContextMenu() {
 
 
 /* =====================================================
-   EDIT
+   CONTEXT MENU EVENTY
 ===================================================== */
 
 editPointBtn.addEventListener(
@@ -1825,10 +2034,6 @@ editPointBtn.addEventListener(
   }
 );
 
-
-/* =====================================================
-   DELETE
-===================================================== */
 
 deletePointBtn.addEventListener(
   "click",
@@ -1886,10 +2091,6 @@ deletePointBtn.addEventListener(
 );
 
 
-/* =====================================================
-   KLIK MIMO CONTEXT MENU
-===================================================== */
-
 document.addEventListener(
   "click",
   event => {
@@ -1909,29 +2110,894 @@ document.addEventListener(
 
 
 /* =====================================================
-   MAP CLICK
+   BARVY
+===================================================== */
+
+function hexToRgb(hex) {
+
+  const value =
+    hex.replace(
+      "#",
+      ""
+    );
+
+
+  return {
+
+    r:
+      parseInt(
+        value.slice(0,2),
+        16
+      ),
+
+    g:
+      parseInt(
+        value.slice(2,4),
+        16
+      ),
+
+    b:
+      parseInt(
+        value.slice(4,6),
+        16
+      )
+
+  };
+
+}
+
+
+function rgbToHex(
+  r,
+  g,
+  b
+) {
+
+  return (
+    "#" +
+
+    [r,g,b]
+      .map(
+        value =>
+          Math.round(
+            value
+          )
+          .toString(16)
+          .padStart(
+            2,
+            "0"
+          )
+      )
+      .join("")
+  );
+
+}
+
+
+function hslToRgb(
+  h,
+  s,
+  l
+) {
+
+  h /= 360;
+
+
+  let r;
+  let g;
+  let b;
+
+
+  if (
+    s === 0
+  ) {
+
+    r =
+      l;
+
+    g =
+      l;
+
+    b =
+      l;
+
+  }
+  else {
+
+    const hue =
+      (
+        p,
+        q,
+        t
+      ) => {
+
+        if (
+          t < 0
+        ) {
+
+          t += 1;
+
+        }
+
+
+        if (
+          t > 1
+        ) {
+
+          t -= 1;
+
+        }
+
+
+        if (
+          t < 1/6
+        ) {
+
+          return (
+            p +
+            (q-p) *
+            6 *
+            t
+          );
+
+        }
+
+
+        if (
+          t < 1/2
+        ) {
+
+          return q;
+
+        }
+
+
+        if (
+          t < 2/3
+        ) {
+
+          return (
+            p +
+            (q-p) *
+            (
+              2/3 -
+              t
+            ) *
+            6
+          );
+
+        }
+
+
+        return p;
+
+      };
+
+
+    const q =
+      l < .5
+        ? l *
+          (1+s)
+
+        : l +
+          s -
+          l*s;
+
+
+    const p =
+      2*l -
+      q;
+
+
+    r =
+      hue(
+        p,
+        q,
+        h + 1/3
+      );
+
+
+    g =
+      hue(
+        p,
+        q,
+        h
+      );
+
+
+    b =
+      hue(
+        p,
+        q,
+        h - 1/3
+      );
+
+  }
+
+
+  return {
+
+    r:
+      Math.round(
+        r*255
+      ),
+
+    g:
+      Math.round(
+        g*255
+      ),
+
+    b:
+      Math.round(
+        b*255
+      )
+
+  };
+
+}
+
+
+function rgbToHsl(
+  r,
+  g,
+  b
+) {
+
+  r /= 255;
+  g /= 255;
+  b /= 255;
+
+
+  const max =
+    Math.max(
+      r,
+      g,
+      b
+    );
+
+
+  const min =
+    Math.min(
+      r,
+      g,
+      b
+    );
+
+
+  const lightness =
+    (max + min) / 2;
+
+
+  let hue = 0;
+  let saturation = 0;
+
+
+  if (
+    max !== min
+  ) {
+
+    const difference =
+      max - min;
+
+
+    saturation =
+      lightness > .5
+
+        ? difference /
+          (
+            2 -
+            max -
+            min
+          )
+
+        : difference /
+          (
+            max +
+            min
+          );
+
+
+    switch(max) {
+
+      case r:
+
+        hue =
+          (
+            g-b
+          ) /
+          difference +
+          (
+            g < b
+              ? 6
+              : 0
+          );
+
+        break;
+
+
+      case g:
+
+        hue =
+          (
+            b-r
+          ) /
+          difference +
+          2;
+
+        break;
+
+
+      default:
+
+        hue =
+          (
+            r-g
+          ) /
+          difference +
+          4;
+
+    }
+
+
+    hue /= 6;
+
+  }
+
+
+  return {
+
+    h:
+      hue * 360,
+
+    s:
+      saturation,
+
+    l:
+      lightness
+
+  };
+
+}
+
+
+function setColor(
+  hex
+) {
+
+  const rgb =
+    hexToRgb(
+      hex
+    );
+
+
+  selectedColor =
+    rgbToHex(
+      rgb.r,
+      rgb.g,
+      rgb.b
+    );
+
+
+  redInput.value =
+    rgb.r;
+
+  greenInput.value =
+    rgb.g;
+
+  blueInput.value =
+    rgb.b;
+
+
+  colorPreview.style.backgroundColor =
+    selectedColor;
+
+
+  const hsl =
+    rgbToHsl(
+      rgb.r,
+      rgb.g,
+      rgb.b
+    );
+
+
+  wheelHue =
+    hsl.h;
+
+
+  wheelSaturation =
+    hsl.s;
+
+
+  updateWheelCursor();
+
+  renderColorPresets();
+
+  renderPoints();
+
+}
+
+
+/* =====================================================
+   RGB INPUT
+===================================================== */
+
+function updateFromRgb() {
+
+  const r =
+    Math.max(
+      0,
+      Math.min(
+        255,
+        Number(
+          redInput.value
+        ) || 0
+      )
+    );
+
+
+  const g =
+    Math.max(
+      0,
+      Math.min(
+        255,
+        Number(
+          greenInput.value
+        ) || 0
+      )
+    );
+
+
+  const b =
+    Math.max(
+      0,
+      Math.min(
+        255,
+        Number(
+          blueInput.value
+        ) || 0
+      )
+    );
+
+
+  setColor(
+    rgbToHex(
+      r,
+      g,
+      b
+    )
+  );
+
+}
+
+
+/* =====================================================
+   COLOR WHEEL
+===================================================== */
+
+function updateWheelCursor() {
+
+  const rect =
+    colorWheel.getBoundingClientRect();
+
+
+  const radius =
+    rect.width / 2;
+
+
+  const distance =
+    wheelSaturation *
+    radius;
+
+
+  const angle =
+    (
+      wheelHue -
+      90
+    ) *
+    Math.PI /
+    180;
+
+
+  colorWheelCursor.style.left =
+    `${
+      radius +
+      Math.cos(angle) *
+      distance
+    }px`;
+
+
+  colorWheelCursor.style.top =
+    `${
+      radius +
+      Math.sin(angle) *
+      distance
+    }px`;
+
+}
+
+
+function pickWheel(
+  event
+) {
+
+  const rect =
+    colorWheel.getBoundingClientRect();
+
+
+  const centerX =
+    rect.width / 2;
+
+
+  const centerY =
+    rect.height / 2;
+
+
+  const dx =
+    event.clientX -
+    rect.left -
+    centerX;
+
+
+  const dy =
+    event.clientY -
+    rect.top -
+    centerY;
+
+
+  const radius =
+    Math.min(
+      Math.hypot(
+        dx,
+        dy
+      ),
+      rect.width / 2
+    );
+
+
+  let hue =
+    Math.atan2(
+      dy,
+      dx
+    ) *
+    180 /
+    Math.PI +
+    90;
+
+
+  if (
+    hue < 0
+  ) {
+
+    hue +=
+      360;
+
+  }
+
+
+  wheelHue =
+    hue;
+
+
+  wheelSaturation =
+    radius /
+    (
+      rect.width / 2
+    );
+
+
+  const rgb =
+    hslToRgb(
+      hue,
+      wheelSaturation,
+      .5
+    );
+
+
+  selectedColor =
+    rgbToHex(
+      rgb.r,
+      rgb.g,
+      rgb.b
+    );
+
+
+  redInput.value =
+    rgb.r;
+
+  greenInput.value =
+    rgb.g;
+
+  blueInput.value =
+    rgb.b;
+
+
+  colorPreview.style.backgroundColor =
+    selectedColor;
+
+
+  colorWheelCursor.style.left =
+    `${
+      event.clientX -
+      rect.left
+    }px`;
+
+
+  colorWheelCursor.style.top =
+    `${
+      event.clientY -
+      rect.top
+    }px`;
+
+
+  renderColorPresets();
+
+  renderPoints();
+
+}
+
+
+colorWheel.addEventListener(
+  "pointerdown",
+  event => {
+
+    colorWheelDragging =
+      true;
+
+
+    colorWheel.setPointerCapture(
+      event.pointerId
+    );
+
+
+    pickWheel(
+      event
+    );
+
+  }
+);
+
+
+colorWheel.addEventListener(
+  "pointermove",
+  event => {
+
+    if (
+      colorWheelDragging
+    ) {
+
+      pickWheel(
+        event
+      );
+
+    }
+
+  }
+);
+
+
+colorWheel.addEventListener(
+  "pointerup",
+  () => {
+
+    colorWheelDragging =
+      false;
+
+  }
+);
+
+
+colorWheel.addEventListener(
+  "pointercancel",
+  () => {
+
+    colorWheelDragging =
+      false;
+
+  }
+);
+
+
+/* =====================================================
+   PRESETY
+===================================================== */
+
+function renderColorPresets() {
+
+  colorPresets.innerHTML =
+    "";
+
+
+  COLOR_PRESETS.forEach(
+    color => {
+
+      const button =
+        document.createElement(
+          "button"
+        );
+
+
+      button.type =
+        "button";
+
+
+      button.className =
+        "color-preset";
+
+
+      button.style.backgroundColor =
+        color;
+
+
+      if (
+        color.toLowerCase() ===
+        selectedColor.toLowerCase()
+      ) {
+
+        button.classList.add(
+          "selected"
+        );
+
+      }
+
+
+      button.addEventListener(
+        "click",
+        () => {
+
+          setColor(
+            color
+          );
+
+        }
+      );
+
+
+      colorPresets.appendChild(
+        button
+      );
+
+    }
+  );
+
+}
+
+
+/* =====================================================
+   EVENTY KATEGORIÍ
+===================================================== */
+
+addCategoryBtn.addEventListener(
+  "click",
+  openCategoryModal
+);
+
+
+toggleAllBtn.addEventListener(
+  "click",
+  toggleAllCategories
+);
+
+
+saveCategoryBtn.addEventListener(
+  "click",
+  addCategory
+);
+
+
+cancelCategoryBtn.addEventListener(
+  "click",
+  closeCategoryModal
+);
+
+
+closeCategoryBtn.addEventListener(
+  "click",
+  closeCategoryModal
+);
+
+
+/* =====================================================
+   EVENTY BODŮ
+===================================================== */
+
+addPointBtn.addEventListener(
+  "click",
+  startPointMode
+);
+
+
+savePointBtn.addEventListener(
+  "click",
+  savePoint
+);
+
+
+cancelPointBtn.addEventListener(
+  "click",
+  closePointModal
+);
+
+
+closePointBtn.addEventListener(
+  "click",
+  closePointModal
+);
+
+
+pointSizeInput.addEventListener(
+  "input",
+  updatePreview
+);
+
+
+pointNameInput.addEventListener(
+  "input",
+  renderPoints
+);
+
+
+pointDescriptionInput.addEventListener(
+  "input",
+  renderPoints
+);
+
+
+pointCategorySelect.addEventListener(
+  "change",
+  renderPoints
+);
+
+
+redInput.addEventListener(
+  "input",
+  updateFromRgb
+);
+
+
+greenInput.addEventListener(
+  "input",
+  updateFromRgb
+);
+
+
+blueInput.addEventListener(
+  "input",
+  updateFromRgb
+);
+
+
+/* =====================================================
+   MAPA - KLIK PRO NOVÝ BOD
 ===================================================== */
 
 viewport.addEventListener(
   "click",
   event => {
 
-    if (!addingPoint) {
-      return;
+    if (
+      addingPoint
+    ) {
+
+      placePoint(
+        event
+      );
+
     }
 
+  }
+);
 
-    const rect =
-      mapImage.getBoundingClientRect();
 
+/* =====================================================
+   MAPA - DRAG
+===================================================== */
+
+viewport.addEventListener(
+  "pointerdown",
+  event => {
 
     if (
-
-      event.clientX < rect.left ||
-      event.clientX > rect.right ||
-      event.clientY < rect.top ||
-      event.clientY > rect.bottom
-
+      addingPoint
     ) {
 
       return;
@@ -1939,67 +3005,8 @@ viewport.addEventListener(
     }
 
 
-    const mapX =
-      event.clientX -
-      rect.left;
-
-
-    const mapY =
-      event.clientY -
-      rect.top;
-
-
-    pendingPoint = {
-
-      x:
-        mapX /
-        rect.width *
-        100,
-
-      y:
-        mapY /
-        rect.height *
-        100,
-
-      clientX:
-        event.clientX,
-
-      clientY:
-        event.clientY
-
-    };
-
-
-    stopPointMode();
-
-
-    renderPoints();
-
-
-    openPointModalAt(
-      event.clientX,
-      event.clientY
-    );
-
-  }
-);
-
-
-/* =====================================================
-   MYŠ - DRAG
-===================================================== */
-
-viewport.addEventListener(
-  "pointerdown",
-  event => {
-
-    if (addingPoint) {
-      return;
-    }
-
-
     /*
-      Klik na bod nesmí
+      Kliknutí na bod nesmí
       tahat mapu.
     */
 
@@ -2049,8 +3056,12 @@ viewport.addEventListener(
   "pointermove",
   event => {
 
-    if (!dragging) {
+    if (
+      !dragging
+    ) {
+
       return;
+
     }
 
 
@@ -2076,19 +3087,9 @@ viewport.addEventListener(
 );
 
 
-viewport.addEventListener(
-  "pointerup",
-  stopDragging
-);
-
-
-viewport.addEventListener(
-  "pointercancel",
-  stopDragging
-);
-
-
-function stopDragging(event) {
+function stopDragging(
+  event
+) {
 
   dragging =
     false;
@@ -2115,8 +3116,20 @@ function stopDragging(event) {
 }
 
 
+viewport.addEventListener(
+  "pointerup",
+  stopDragging
+);
+
+
+viewport.addEventListener(
+  "pointercancel",
+  stopDragging
+);
+
+
 /* =====================================================
-   ZOOM
+   MAPA - ZOOM
 ===================================================== */
 
 viewport.addEventListener(
@@ -2158,13 +3171,15 @@ function zoomAt(
   const pointerX =
     clientX -
     rect.left -
-    rect.width / 2;
+    rect.width /
+    2;
 
 
   const pointerY =
     clientY -
     rect.top -
-    rect.height / 2;
+    rect.height /
+    2;
 
 
   const oldScale =
@@ -2210,7 +3225,24 @@ function zoomAt(
 
 
 /* =====================================================
-   TLAČÍTKA ZOOMU
+   MAPA - RENDER
+===================================================== */
+
+function renderMap() {
+
+  canvas.style.transform =
+    `translate3d(
+      calc(-50% + ${x}px),
+      calc(-50% + ${y}px),
+      0
+    )
+    scale(${scale})`;
+
+}
+
+
+/* =====================================================
+   MAPA - BUTTONS
 ===================================================== */
 
 document
@@ -2368,7 +3400,7 @@ function startWASD() {
 
 
     if (
-      pressedKeys.size > 0
+      pressedKeys.size
     ) {
 
       wasdAnimationId =
@@ -2458,906 +3490,6 @@ document.addEventListener(
 
 
 /* =====================================================
-   OVLÁDÁNÍ
-===================================================== */
-
-if (
-  controlsBtn &&
-  controlsHelp
-) {
-
-  controlsBtn.addEventListener(
-    "click",
-    () => {
-
-      const hidden =
-        controlsHelp.classList.contains(
-          "hidden"
-        );
-
-
-      if (hidden) {
-
-        controlsHelp.classList.remove(
-          "hidden"
-        );
-
-
-        controlsBtn.setAttribute(
-          "aria-expanded",
-          "true"
-        );
-
-
-        controlsBtn.textContent =
-          "⚙️ Skrýt ovládání";
-
-      }
-      else {
-
-        controlsHelp.classList.add(
-          "hidden"
-        );
-
-
-        controlsBtn.setAttribute(
-          "aria-expanded",
-          "false"
-        );
-
-
-        controlsBtn.textContent =
-          "⚙️ Ovládání";
-
-      }
-
-    }
-  );
-
-}
-
-
-/* =====================================================
-   RGB
-===================================================== */
-
-function hexToRgb(hex) {
-
-  const value =
-    hex.replace(
-      "#",
-      ""
-    );
-
-
-  return {
-
-    r:
-      parseInt(
-        value.slice(0,2),
-        16
-      ),
-
-    g:
-      parseInt(
-        value.slice(2,4),
-        16
-      ),
-
-    b:
-      parseInt(
-        value.slice(4,6),
-        16
-      )
-
-  };
-
-}
-
-
-function rgbToHex(
-  r,
-  g,
-  b
-) {
-
-  return (
-    "#" +
-    [r,g,b]
-      .map(
-        value =>
-          Math.round(value)
-            .toString(16)
-            .padStart(2,"0")
-      )
-      .join("")
-  );
-
-}
-
-
-/* =====================================================
-   HSL
-===================================================== */
-
-function hslToRgb(
-  h,
-  s,
-  l
-) {
-
-  h /= 360;
-
-
-  let r;
-  let g;
-  let b;
-
-
-  if (
-    s === 0
-  ) {
-
-    r =
-      l;
-
-    g =
-      l;
-
-    b =
-      l;
-
-  }
-  else {
-
-    const hue =
-      (
-        p,
-        q,
-        t
-      ) => {
-
-        if (
-          t < 0
-        ) {
-          t += 1;
-        }
-
-        if (
-          t > 1
-        ) {
-          t -= 1;
-        }
-
-        if (
-          t < 1/6
-        ) {
-
-          return (
-            p +
-            (q-p) *
-            6 *
-            t
-          );
-
-        }
-
-        if (
-          t < 1/2
-        ) {
-
-          return q;
-
-        }
-
-        if (
-          t < 2/3
-        ) {
-
-          return (
-            p +
-            (q-p) *
-            (
-              2/3 -
-              t
-            ) *
-            6
-          );
-
-        }
-
-        return p;
-
-      };
-
-
-    const q =
-      l < .5
-        ? l *
-          (1+s)
-        : l+s-l*s;
-
-
-    const p =
-      2*l-q;
-
-
-    r =
-      hue(
-        p,
-        q,
-        h+1/3
-      );
-
-
-    g =
-      hue(
-        p,
-        q,
-        h
-      );
-
-
-    b =
-      hue(
-        p,
-        q,
-        h-1/3
-      );
-
-  }
-
-
-  return {
-
-    r:
-      Math.round(r*255),
-
-    g:
-      Math.round(g*255),
-
-    b:
-      Math.round(b*255)
-
-  };
-
-}
-
-
-function rgbToHsl(
-  r,
-  g,
-  b
-) {
-
-  r /= 255;
-  g /= 255;
-  b /= 255;
-
-
-  const max =
-    Math.max(
-      r,
-      g,
-      b
-    );
-
-
-  const min =
-    Math.min(
-      r,
-      g,
-      b
-    );
-
-
-  const l =
-    (max+min) / 2;
-
-
-  let h = 0;
-  let s = 0;
-
-
-  if (
-    max !== min
-  ) {
-
-    const d =
-      max-min;
-
-
-    s =
-      l > .5
-        ? d /
-          (
-            2 -
-            max -
-            min
-          )
-        : d /
-          (
-            max +
-            min
-          );
-
-
-    switch(max) {
-
-      case r:
-
-        h =
-          (
-            g-b
-          ) /
-          d +
-          (
-            g < b
-              ? 6
-              : 0
-          );
-
-        break;
-
-
-      case g:
-
-        h =
-          (
-            b-r
-          ) /
-          d +
-          2;
-
-        break;
-
-
-      default:
-
-        h =
-          (
-            r-g
-          ) /
-          d +
-          4;
-
-    }
-
-
-    h /= 6;
-
-  }
-
-
-  return {
-
-    h:
-      h*360,
-
-    s,
-
-    l
-
-  };
-
-}
-
-
-/* =====================================================
-   NASTAVIT BARVU
-===================================================== */
-
-function setColor(
-  hex
-) {
-
-  const rgb =
-    hexToRgb(
-      hex
-    );
-
-
-  selectedColor =
-    rgbToHex(
-      rgb.r,
-      rgb.g,
-      rgb.b
-    );
-
-
-  redInput.value =
-    rgb.r;
-
-
-  greenInput.value =
-    rgb.g;
-
-
-  blueInput.value =
-    rgb.b;
-
-
-  colorPreview.style.backgroundColor =
-    selectedColor;
-
-
-  const hsl =
-    rgbToHsl(
-      rgb.r,
-      rgb.g,
-      rgb.b
-    );
-
-
-  wheelHue =
-    hsl.h;
-
-
-  wheelSaturation =
-    hsl.s;
-
-
-  updateWheelCursor();
-
-
-  renderColorPresets();
-
-
-  renderPoints();
-
-}
-
-
-/* =====================================================
-   RGB INPUT
-===================================================== */
-
-function updateFromRgb() {
-
-  const r =
-    Math.max(
-      0,
-      Math.min(
-        255,
-        Number(
-          redInput.value
-        ) || 0
-      )
-    );
-
-
-  const g =
-    Math.max(
-      0,
-      Math.min(
-        255,
-        Number(
-          greenInput.value
-        ) || 0
-      )
-    );
-
-
-  const b =
-    Math.max(
-      0,
-      Math.min(
-        255,
-        Number(
-          blueInput.value
-        ) || 0
-      )
-    );
-
-
-  setColor(
-    rgbToHex(
-      r,
-      g,
-      b
-    )
-  );
-
-}
-
-
-/* =====================================================
-   COLOR WHEEL
-===================================================== */
-
-function updateWheelCursor() {
-
-  if (!colorWheelCursor) {
-    return;
-  }
-
-
-  const rect =
-    colorWheel.getBoundingClientRect();
-
-
-  const radius =
-    rect.width / 2;
-
-
-  const distance =
-    wheelSaturation *
-    radius;
-
-
-  const angle =
-    (
-      wheelHue -
-      90
-    ) *
-    Math.PI /
-    180;
-
-
-  colorWheelCursor.style.left =
-    `${
-      radius +
-      Math.cos(angle) *
-      distance
-    }px`;
-
-
-  colorWheelCursor.style.top =
-    `${
-      radius +
-      Math.sin(angle) *
-      distance
-    }px`;
-
-}
-
-
-function pickWheel(event) {
-
-  const rect =
-    colorWheel.getBoundingClientRect();
-
-
-  const centerX =
-    rect.width / 2;
-
-
-  const centerY =
-    rect.height / 2;
-
-
-  const dx =
-    event.clientX -
-    rect.left -
-    centerX;
-
-
-  const dy =
-    event.clientY -
-    rect.top -
-    centerY;
-
-
-  const radius =
-    Math.min(
-      Math.hypot(
-        dx,
-        dy
-      ),
-      rect.width / 2
-    );
-
-
-  let hue =
-    Math.atan2(
-      dy,
-      dx
-    ) *
-    180 /
-    Math.PI +
-    90;
-
-
-  if (
-    hue < 0
-  ) {
-
-    hue +=
-      360;
-
-  }
-
-
-  wheelHue =
-    hue;
-
-
-  wheelSaturation =
-    radius /
-    (
-      rect.width / 2
-    );
-
-
-  const rgb =
-    hslToRgb(
-      hue,
-      wheelSaturation,
-      .5
-    );
-
-
-  const color =
-    rgbToHex(
-      rgb.r,
-      rgb.g,
-      rgb.b
-    );
-
-
-  selectedColor =
-    color;
-
-
-  redInput.value =
-    rgb.r;
-
-
-  greenInput.value =
-    rgb.g;
-
-
-  blueInput.value =
-    rgb.b;
-
-
-  colorPreview.style.backgroundColor =
-    color;
-
-
-  colorWheelCursor.style.left =
-    `${
-      event.clientX -
-      rect.left
-    }px`;
-
-
-  colorWheelCursor.style.top =
-    `${
-      event.clientY -
-      rect.top
-    }px`;
-
-
-  renderColorPresets();
-
-  renderPoints();
-
-}
-
-
-colorWheel.addEventListener(
-  "pointerdown",
-  event => {
-
-    colorWheelDragging =
-      true;
-
-
-    colorWheel.setPointerCapture(
-      event.pointerId
-    );
-
-
-    pickWheel(
-      event
-    );
-
-  }
-);
-
-
-colorWheel.addEventListener(
-  "pointermove",
-  event => {
-
-    if (
-      colorWheelDragging
-    ) {
-
-      pickWheel(
-        event
-      );
-
-    }
-
-  }
-);
-
-
-colorWheel.addEventListener(
-  "pointerup",
-  () => {
-
-    colorWheelDragging =
-      false;
-
-  }
-);
-
-
-colorWheel.addEventListener(
-  "pointercancel",
-  () => {
-
-    colorWheelDragging =
-      false;
-
-  }
-);
-
-
-/* =====================================================
-   PRESETY
-===================================================== */
-
-function renderColorPresets() {
-
-  colorPresets.innerHTML =
-    "";
-
-
-  COLOR_PRESETS.forEach(
-    color => {
-
-      const button =
-        document.createElement(
-          "button"
-        );
-
-
-      button.type =
-        "button";
-
-
-      button.className =
-        "color-preset";
-
-
-      button.style.backgroundColor =
-        color;
-
-
-      if (
-        color.toLowerCase() ===
-        selectedColor.toLowerCase()
-      ) {
-
-        button.classList.add(
-          "selected"
-        );
-
-      }
-
-
-      button.addEventListener(
-        "click",
-        () => {
-
-          setColor(
-            color
-          );
-
-        }
-      );
-
-
-      colorPresets.appendChild(
-        button
-      );
-
-    }
-  );
-
-}
-
-
-/* =====================================================
-   MODAL KATEGORIE EVENTY
-===================================================== */
-
-saveCategoryBtn.addEventListener(
-  "click",
-  addCategory
-);
-
-cancelCategoryBtn.addEventListener(
-  "click",
-  closeCategoryModal
-);
-
-closeCategoryBtn.addEventListener(
-  "click",
-  closeCategoryModal
-);
-
-
-/* =====================================================
-   BOD EVENTY
-===================================================== */
-
-addPointBtn.addEventListener(
-  "click",
-  startPointMode
-);
-
-savePointBtn.addEventListener(
-  "click",
-  savePoint
-);
-
-cancelPointBtn.addEventListener(
-  "click",
-  closePointModal
-);
-
-closePointBtn.addEventListener(
-  "click",
-  closePointModal
-);
-
-pointSizeInput.addEventListener(
-  "input",
-  updatePreview
-);
-
-redInput.addEventListener(
-  "input",
-  updateFromRgb
-);
-
-greenInput.addEventListener(
-  "input",
-  updateFromRgb
-);
-
-blueInput.addEventListener(
-  "input",
-  updateFromRgb
-);
-
-pointNameInput.addEventListener(
-  "input",
-  renderPoints
-);
-
-pointDescriptionInput.addEventListener(
-  "input",
-  renderPoints
-);
-
-pointCategorySelect.addEventListener(
-  "change",
-  renderPoints
-);
-
-
-/* =====================================================
-   CATEGORY EVENTY
-===================================================== */
-
-addCategoryBtn.addEventListener(
-  "click",
-  openCategoryModal
-);
-
-toggleAllBtn.addEventListener(
-  "click",
-  toggleAllCategories
-);
-
-
-/* =====================================================
    ESC
 ===================================================== */
 
@@ -3417,8 +3549,6 @@ document.addEventListener(
 
 renderCategories();
 
-renderPoints();
-
 renderColorPresets();
 
 setColor(
@@ -3426,5 +3556,7 @@ setColor(
 );
 
 updatePreview();
+
+renderPoints();
 
 renderMap();
