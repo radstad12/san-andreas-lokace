@@ -13,6 +13,13 @@
     </div>
 
     <section class="menu-section">
+      <button id="addPointBtn" class="add-point-btn" type="button">
+        <span>📍</span> Přidat bod
+      </button>
+
+      <div id="pointModeHint" class="point-mode-hint hidden">
+        Klikni na místo na mapě pro umístění bodu. ESC zruší režim.
+      </div>
       <div class="section-title-row">
         <h2>Kategorie</h2>
         <button id="toggleAllBtn" class="small-action" type="button">
@@ -50,11 +57,45 @@
     <div id="mapViewport" class="map-viewport">
       <div id="mapCanvas" class="map-canvas">
         <img id="mapImage" src="mapa.png" alt="Mapa Los Santos" draggable="false" />
+        <div id="pointsLayer" class="points-layer"></div>
       </div>
     </div>
 
     <div class="map-hint">Tažením mapu posuneš · kolečkem přiblížíš</div>
   </main>
+
+  <div id="pointModal" class="modal hidden" aria-hidden="true">
+    <div class="modal-card point-modal-card" role="dialog" aria-modal="true" aria-labelledby="pointModalTitle">
+      <div class="modal-header">
+        <h3 id="pointModalTitle">Přidat bod</h3>
+        <button id="closePointBtn" class="close-btn" type="button" aria-label="Zavřít">×</button>
+      </div>
+
+      <label for="pointName">Název</label>
+      <input id="pointName" type="text" maxlength="60" placeholder="Např. Sklad / místo schůzky" autocomplete="off" />
+
+      <label for="pointDescription">Popisek</label>
+      <textarea id="pointDescription" class="point-textarea" maxlength="300" placeholder="Krátký popis bodu..."></textarea>
+
+      <label for="pointCategory">Kategorie</label>
+      <select id="pointCategory" class="point-select"></select>
+
+      <label>Barva bodu</label>
+      <div id="colorPresets" class="color-presets"></div>
+
+      <div class="rgb-row">
+        <div class="rgb-field"><label for="redInput">R</label><input id="redInput" type="number" min="0" max="255" value="255" /></div>
+        <div class="rgb-field"><label for="greenInput">G</label><input id="greenInput" type="number" min="0" max="255" value="59" /></div>
+        <div class="rgb-field"><label for="blueInput">B</label><input id="blueInput" type="number" min="0" max="255" value="48" /></div>
+        <div id="colorPreview" class="color-preview" title="Náhled barvy"></div>
+      </div>
+
+      <div class="modal-actions">
+        <button id="cancelPointBtn" class="secondary-btn" type="button">Zrušit</button>
+        <button id="savePointBtn" class="primary-btn" type="button">Přidat bod</button>
+      </div>
+    </div>
+  </div>
 
   <div id="categoryModal" class="modal hidden" aria-hidden="true">
     <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
