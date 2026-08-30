@@ -1,5 +1,10 @@
 @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&display=swap');
 
+
+/* =====================================================
+   ZÁKLAD
+===================================================== */
+
 :root{
   --sidebar-width:310px;
   --background:#080808;
@@ -463,8 +468,8 @@ body{
   background:#070807;
 
   /*
-    Důležité pro správné pointer eventy
-    a stabilní tažení mapy.
+    Důležité pro myš,
+    drag a zoom.
   */
   touch-action:none;
 }
@@ -520,9 +525,10 @@ body{
 }
 
 
-/*
-  Základní bod.
-*/
+/* =====================================================
+   ZÁKLADNÍ BOD
+===================================================== */
+
 .map-point{
   position:absolute;
 
@@ -531,12 +537,17 @@ body{
   align-items:center;
   justify-content:center;
 
+  /*
+    Emoji se nebude dostávat
+    mimo kruh.
+  */
   overflow:hidden;
 
   transform:
     translate(-50%,-50%);
 
-  border:1px solid #fff;
+  border:
+    1px solid #fff;
 
   border-radius:50%;
 
@@ -550,29 +561,37 @@ body{
   z-index:10;
 
   transition:
-    width .12s ease,
-    height .12s ease,
     transform .12s ease,
     box-shadow .12s ease;
+
+  /*
+    Důležité kvůli tooltipu.
+  */
+  isolation:isolate;
 }
 
 
-/*
-  Hover přímo na bod.
-*/
+/* =====================================================
+   HOVER PŘÍMO NA BODU
+===================================================== */
+
 .map-point:hover{
+
   transform:
     translate(-50%,-50%)
     scale(1.35);
 
   z-index:80;
+
 }
 
 
-/*
-  Bod zvýrazněný z levého menu.
-*/
+/* =====================================================
+   ZVÝRAZNĚNÝ BOD Z MENU
+===================================================== */
+
 .map-point.focused-point{
+
   transform:
     translate(-50%,-50%)
     scale(2);
@@ -580,22 +599,27 @@ body{
   z-index:100;
 
   box-shadow:
-    0 0 0 4px rgba(255,255,255,.18),
-    0 0 14px rgba(255,255,255,.55);
+    0 0 0 4px
+    rgba(255,255,255,.18),
+
+    0 0 14px
+    rgba(255,255,255,.55);
 
   animation:
     pointFocusedPulse
     .7s
     ease-in-out
     infinite;
+
 }
 
 
-/*
-  Všechny body kategorie při hoveru
-  na kategorii.
-*/
+/* =====================================================
+   CELÁ KATEGORIE
+===================================================== */
+
 .map-point.category-hover-point{
+
   animation:
     pointCategoryPulse
     .8s
@@ -603,25 +627,31 @@ body{
     infinite;
 
   z-index:60;
+
 }
 
 
-/*
-  Náhled při vytváření bodu.
-*/
+/* =====================================================
+   NÁHLED BODU
+===================================================== */
+
 .map-point-preview{
+
   animation:
-    pointPulse
+    pointPreviewPulse
     1s
     ease-in-out
     infinite;
+
 }
 
 
-/*
-  Emoji je skutečně uvnitř bodu.
-*/
+/* =====================================================
+   EMOJI V BODU
+===================================================== */
+
 .map-point-emoji{
+
   position:absolute;
 
   left:50%;
@@ -646,12 +676,9 @@ body{
 
   z-index:2;
 
-  /*
-    Emoji nikdy nemůže být větší
-    než samotný bod.
-  */
   max-width:100%;
   max-height:100%;
+
 }
 
 
@@ -660,10 +687,15 @@ body{
 ===================================================== */
 
 .point-tooltip{
+
   position:absolute;
 
   left:50%;
-  bottom:18px;
+
+  /*
+    Tooltip bude nad bodem.
+  */
+  bottom:calc(100% + 10px);
 
   transform:
     translateX(-50%);
@@ -671,12 +703,14 @@ body{
   width:max-content;
 
   min-width:150px;
+
   max-width:280px;
 
   padding:9px 11px;
 
   border:
-    1px solid rgba(183,74,28,.55);
+    1px solid
+    rgba(183,74,28,.65);
 
   border-radius:4px;
 
@@ -684,11 +718,13 @@ body{
     rgba(8,8,8,.97);
 
   box-shadow:
-    0 8px 24px rgba(0,0,0,.65);
+    0 8px 24px
+    rgba(0,0,0,.70);
 
   color:#eee;
 
   opacity:0;
+
   visibility:hidden;
 
   pointer-events:none;
@@ -697,130 +733,221 @@ body{
     opacity .12s ease,
     visibility .12s ease;
 
-  z-index:300;
+  z-index:1000;
+
+  /*
+    Aby tooltip nezmizel kvůli
+    overflow bodu.
+  */
+  white-space:normal;
+
 }
 
 
 /*
-  Tooltip při najetí přímo na bod.
+  MALÁ ŠIPKA POD TOOLTIP.
 */
-.map-point:hover .point-tooltip{
+
+.point-tooltip::after{
+
+  content:"";
+
+  position:absolute;
+
+  left:50%;
+
+  top:100%;
+
+  transform:
+    translateX(-50%);
+
+  border-left:6px solid transparent;
+
+  border-right:6px solid transparent;
+
+  border-top:6px solid rgba(183,74,28,.65);
+
+}
+
+
+/*
+  TOOLTIP PŘI HOVERU PŘÍMO NA BOD.
+*/
+
+.map-point:hover
+.point-tooltip{
+
   opacity:1;
+
   visibility:visible;
+
 }
 
 
 /*
-  Tooltip při hoveru podkategorie.
+  TOOLTIP PŘI ZVÝRAZNĚNÍ Z PODKATEGORIE.
 */
-.map-point.focused-point .point-tooltip{
+
+.map-point.focused-point
+.point-tooltip{
+
   opacity:1;
+
   visibility:visible;
+
 }
 
 
 /*
-  Tooltip při hoveru celé kategorie.
+  TOOLTIP PŘI HOVERU CELÉ KATEGORIE.
 */
-.map-point.category-hover-point .point-tooltip{
+
+.map-point.category-hover-point
+.point-tooltip{
+
   opacity:1;
+
   visibility:visible;
+
 }
 
 
 /*
-  Náhled ho nezobrazuje.
+  Náhled bodu tooltip nepotřebuje.
 */
-.map-point-preview .point-tooltip{
+
+.map-point-preview
+.point-tooltip{
+
   display:none;
+
 }
+
 
 .point-tooltip-title{
+
   margin-bottom:3px;
 
   font-size:14px;
 
   font-weight:600;
+
 }
 
+
 .point-tooltip-description{
+
   color:#aaa;
 
   font:
-    10px/1.35
+    10px/1.4
     Arial,sans-serif;
 
   white-space:normal;
+
 }
 
 
 /* =====================================================
-   ANIMACE BODŮ
+   ANIMACE
 ===================================================== */
 
-@keyframes pointPulse{
+
+/*
+  Náhled při vytváření.
+*/
+
+@keyframes pointPreviewPulse{
 
   0%{
+
     box-shadow:
       0 2px 7px rgba(0,0,0,.75);
+
   }
 
   50%{
+
     box-shadow:
       0 0 0 5px
-      rgba(215,106,44,.14),
-      0 2px 7px rgba(0,0,0,.75);
+      rgba(215,106,44,.18),
+
+      0 2px 7px
+      rgba(0,0,0,.75);
+
   }
 
   100%{
+
     box-shadow:
       0 2px 7px rgba(0,0,0,.75);
+
   }
 
 }
 
+
+/*
+  Jeden vybraný bod.
+*/
 
 @keyframes pointFocusedPulse{
 
   0%{
+
     transform:
       translate(-50%,-50%)
       scale(1.7);
+
   }
 
   50%{
+
     transform:
       translate(-50%,-50%)
       scale(2.25);
+
   }
 
   100%{
+
     transform:
       translate(-50%,-50%)
       scale(1.7);
+
   }
 
 }
 
 
+/*
+  Všechny body jedné kategorie.
+*/
+
 @keyframes pointCategoryPulse{
 
   0%{
+
     transform:
       translate(-50%,-50%)
       scale(1);
+
   }
 
   50%{
+
     transform:
       translate(-50%,-50%)
       scale(1.6);
+
   }
 
   100%{
+
     transform:
       translate(-50%,-50%)
       scale(1);
+
   }
 
 }
@@ -831,6 +958,7 @@ body{
 ===================================================== */
 
 .map-controls{
+
   position:absolute;
 
   right:20px;
@@ -839,12 +967,16 @@ body{
   z-index:25;
 
   display:flex;
+
   flex-direction:column;
 
   gap:6px;
+
 }
 
+
 .map-controls button{
+
   width:42px;
   height:42px;
 
@@ -869,9 +1001,12 @@ body{
   transition:.15s;
 
   backdrop-filter:blur(6px);
+
 }
 
+
 .map-controls button:hover{
+
   border-color:
     var(--orange-light);
 
@@ -879,6 +1014,7 @@ body{
     rgba(34,20,15,.95);
 
   color:#fff;
+
 }
 
 
@@ -887,6 +1023,7 @@ body{
 ===================================================== */
 
 .map-hint{
+
   position:absolute;
 
   z-index:25;
@@ -897,7 +1034,8 @@ body{
   transform:
     translateX(-50%);
 
-  padding:7px 12px;
+  padding:
+    7px 12px;
 
   border:
     1px solid
@@ -913,6 +1051,7 @@ body{
   font-size:11px;
 
   pointer-events:none;
+
 }
 
 
@@ -921,6 +1060,7 @@ body{
 ===================================================== */
 
 .modal{
+
   position:fixed;
 
   inset:0;
@@ -940,13 +1080,19 @@ body{
 
   backdrop-filter:
     blur(3px);
+
 }
+
 
 .modal.hidden{
+
   display:none;
+
 }
 
+
 .modal-card{
+
   width:
     min(420px,100%);
 
@@ -968,9 +1114,12 @@ body{
   box-shadow:
     0 20px 60px
     rgba(0,0,0,.55);
+
 }
 
+
 .modal-header{
+
   display:flex;
 
   align-items:center;
@@ -980,9 +1129,12 @@ body{
   gap:10px;
 
   margin-bottom:14px;
+
 }
 
+
 .modal-card h3{
+
   margin:0;
 
   color:#eee7e0;
@@ -990,10 +1142,14 @@ body{
   font-size:21px;
 
   font-weight:600;
+
 }
 
+
 .close-btn{
+
   width:30px;
+
   height:30px;
 
   border:
@@ -1009,11 +1165,17 @@ body{
   font-size:20px;
 
   cursor:pointer;
+
 }
 
+
 .close-btn:hover{
+
   color:#fff;
-  border-color:var(--orange);
+
+  border-color:
+    var(--orange);
+
 }
 
 
@@ -1022,6 +1184,7 @@ body{
 ===================================================== */
 
 .point-modal{
+
   position:fixed;
 
   inset:0;
@@ -1033,17 +1196,24 @@ body{
   background:transparent;
 
   display:block;
+
 }
 
+
 .point-modal.hidden{
+
   display:none;
+
 }
+
 
 .point-modal
 .point-modal-card{
+
   position:fixed;
 
   pointer-events:auto;
+
 }
 
 
@@ -1052,6 +1222,7 @@ body{
 ===================================================== */
 
 .modal-card label{
+
   display:block;
 
   margin:
@@ -1062,11 +1233,14 @@ body{
   font-size:12px;
 
   letter-spacing:.5px;
+
 }
+
 
 .modal-card input,
 .modal-card textarea,
 .modal-card select{
+
   width:100%;
 
   border:
@@ -1086,9 +1260,12 @@ body{
   font:
     400 14px/1.2
     'Oswald',sans-serif;
+
 }
 
+
 .modal-card textarea{
+
   min-height:80px;
 
   resize:vertical;
@@ -1097,13 +1274,17 @@ body{
     Arial,sans-serif;
 
   line-height:1.4;
+
 }
+
 
 .modal-card input:focus,
 .modal-card textarea:focus,
 .modal-card select:focus{
+
   border-color:
     var(--orange);
+
 }
 
 
@@ -1112,6 +1293,7 @@ body{
 ===================================================== */
 
 .color-layout{
+
   display:flex;
 
   align-items:center;
@@ -1119,12 +1301,16 @@ body{
   gap:18px;
 
   margin-top:8px;
+
 }
 
+
 .color-wheel{
+
   position:relative;
 
   width:150px;
+
   height:150px;
 
   flex-shrink:0;
@@ -1143,9 +1329,12 @@ body{
       magenta,
       red
     );
+
 }
 
+
 .color-wheel::after{
+
   content:"";
 
   position:absolute;
@@ -1160,9 +1349,12 @@ body{
       #fff 0%,
       rgba(255,255,255,0) 72%
     );
+
 }
 
+
 .color-wheel::before{
+
   content:"";
 
   position:absolute;
@@ -1178,9 +1370,12 @@ body{
       transparent 55%,
       rgba(0,0,0,.2) 100%
     );
+
 }
 
+
 .color-wheel-cursor{
+
   position:absolute;
 
   left:75px;
@@ -1204,9 +1399,12 @@ body{
   pointer-events:none;
 
   z-index:10;
+
 }
 
+
 .preset-side{
+
   display:flex;
 
   flex-direction:column;
@@ -1214,9 +1412,12 @@ body{
   align-items:flex-start;
 
   gap:10px;
+
 }
 
+
 .preset-title{
+
   color:#8b837d;
 
   font-size:10px;
@@ -1224,9 +1425,12 @@ body{
   text-transform:uppercase;
 
   letter-spacing:.6px;
+
 }
 
+
 .color-presets{
+
   display:flex;
 
   gap:8px;
@@ -1234,9 +1438,12 @@ body{
   flex-wrap:wrap;
 
   max-width:130px;
+
 }
 
+
 .color-preset{
+
   width:28px;
   height:28px;
 
@@ -1249,22 +1456,31 @@ body{
   cursor:pointer;
 
   transition:.12s;
+
 }
+
 
 .color-preset:hover{
+
   transform:
     scale(1.1);
+
 }
 
+
 .color-preset.selected{
+
   border-color:#fff;
 
   box-shadow:
     0 0 0 2px
     var(--orange);
+
 }
 
+
 .color-preview{
+
   width:50px;
   height:50px;
 
@@ -1276,6 +1492,7 @@ body{
   box-shadow:
     0 3px 10px
     rgba(0,0,0,.5);
+
 }
 
 
@@ -1284,25 +1501,36 @@ body{
 ===================================================== */
 
 .rgb-title{
+
   margin-top:15px;
 
   color:#948b84;
 
   font-size:12px;
+
 }
 
+
 .rgb-values{
+
   display:flex;
 
   gap:8px;
+
 }
+
 
 .rgb-values > div{
+
   flex:1;
+
 }
 
+
 .rgb-values label{
+
   margin-top:7px;
+
 }
 
 
@@ -1311,14 +1539,18 @@ body{
 ===================================================== */
 
 .size-row{
+
   display:flex;
 
   align-items:center;
 
   gap:12px;
+
 }
 
+
 .size-row input[type=range]{
+
   flex:1;
 
   padding:0;
@@ -1327,9 +1559,12 @@ body{
 
   accent-color:
     var(--orange);
+
 }
 
+
 #pointSizeValue{
+
   min-width:42px;
 
   color:#ddd;
@@ -1337,6 +1572,7 @@ body{
   font-size:12px;
 
   text-align:right;
+
 }
 
 
@@ -1345,6 +1581,7 @@ body{
 ===================================================== */
 
 .modal-actions{
+
   display:flex;
 
   justify-content:flex-end;
@@ -1352,10 +1589,13 @@ body{
   gap:8px;
 
   margin-top:18px;
+
 }
+
 
 .secondary-btn,
 .primary-btn{
+
   border-radius:4px;
 
   padding:10px 14px;
@@ -1365,9 +1605,12 @@ body{
     'Oswald',sans-serif;
 
   cursor:pointer;
+
 }
 
+
 .secondary-btn{
+
   border:
     1px solid
     #3a3330;
@@ -1375,9 +1618,12 @@ body{
   background:#171717;
 
   color:#aaa39d;
+
 }
 
+
 .primary-btn{
+
   border:
     1px solid
     var(--orange);
@@ -1386,15 +1632,22 @@ body{
     var(--orange);
 
   color:#fff;
+
 }
+
 
 .secondary-btn:hover{
+
   background:#202020;
+
 }
 
+
 .primary-btn:hover{
+
   background:
     var(--orange-light);
+
 }
 
 
@@ -1403,6 +1656,7 @@ body{
 ===================================================== */
 
 .point-context-menu{
+
   position:fixed;
 
   z-index:500;
@@ -1422,9 +1676,12 @@ body{
   box-shadow:
     0 12px 30px
     rgba(0,0,0,.6);
+
 }
 
+
 .point-context-menu button{
+
   display:block;
 
   width:100%;
@@ -1446,23 +1703,33 @@ body{
     'Oswald',sans-serif;
 
   cursor:pointer;
+
 }
 
+
 .point-context-menu button:hover{
+
   background:#211814;
+
 }
+
 
 .point-context-menu
 .danger-context{
+
   color:#dc8170;
+
 }
+
 
 .point-context-menu
 .danger-context:hover{
+
   background:
     rgba(160,40,20,.16);
 
   color:#ff9a88;
+
 }
 
 
