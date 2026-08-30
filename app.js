@@ -1468,11 +1468,6 @@ function openPointModal(
     "6 px";
 
 
-  setColor(
-    "#ff3b30"
-  );
-
-
   if (
     categories.length > 0
   ) {
@@ -1588,12 +1583,6 @@ function openEditPoint(
 
   pointSizeValue.textContent =
     `${selectedSize} px`;
-
-
-  setColor(
-    point.color ||
-    "#ff3b30"
-  );
 
 
   pointModal.classList.remove(
@@ -3464,20 +3453,16 @@ function setColor(
     );
 
 
-  redInput.value =
-    rgb.r;
+  if (redInput) redInput.value = rgb.r;
 
 
-  greenInput.value =
-    rgb.g;
+  if (greenInput) greenInput.value = rgb.g;
 
 
-  blueInput.value =
-    rgb.b;
+  if (blueInput) blueInput.value = rgb.b;
 
 
-  colorPreview.style.backgroundColor =
-    selectedColor;
+  if (colorPreview) colorPreview.style.backgroundColor = selectedColor;
 
 
   const hsl =
@@ -3512,6 +3497,8 @@ function setColor(
 ===================================================== */
 
 function updateFromRgb() {
+
+  if (!redInput || !greenInput || !blueInput) return;
 
   const r =
     Math.max(
@@ -3709,16 +3696,13 @@ function pickWheel(
     );
 
 
-  redInput.value =
-    rgb.r;
+  if (redInput) redInput.value = rgb.r;
 
 
-  greenInput.value =
-    rgb.g;
+  if (greenInput) greenInput.value = rgb.g;
 
 
-  blueInput.value =
-    rgb.b;
+  if (blueInput) blueInput.value = rgb.b;
 
 
   colorPreview.style.backgroundColor =
@@ -3973,22 +3957,13 @@ pointCategorySelect.addEventListener(
 );
 
 
-redInput.addEventListener(
-  "input",
-  updateFromRgb
-);
+if (redInput) { redInput.addEventListener("input", updateFromRgb); }
 
 
-greenInput.addEventListener(
-  "input",
-  updateFromRgb
-);
+if (greenInput) { greenInput.addEventListener("input", updateFromRgb); }
 
 
-blueInput.addEventListener(
-  "input",
-  updateFromRgb
-);
+if (blueInput) { blueInput.addEventListener("input", updateFromRgb); }
 
 
 /* =====================================================
@@ -4059,10 +4034,6 @@ renderCategorySelect();
 renderPoints();
 
 renderColorPresets();
-
-setColor(
-  "#ff3b30"
-);
 
 updatePreview();
 
