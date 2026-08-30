@@ -1936,3 +1936,279 @@ body {
   }
 
 }
+
+
+/* =====================================================
+   FINAL STABLE LAYOUT OVERRIDES
+   Actual HTML uses:
+   .sidebar > .brand + .menu + .sidebar-footer
+   .map-area > .map-controls + .map-viewport
+===================================================== */
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+}
+
+body {
+  display: flex;
+  flex-direction: row;
+  width: 100vw;
+  height: 100vh;
+}
+
+
+/* ---------- SIDEBAR ---------- */
+
+.sidebar {
+  position: relative;
+  z-index: 20;
+
+  flex: 0 0 var(--sidebar-width);
+  width: var(--sidebar-width);
+  min-width: var(--sidebar-width);
+  height: 100vh;
+
+  display: flex;
+  flex-direction: column;
+
+  min-height: 0;
+  overflow: hidden;
+}
+
+.brand {
+  flex: 0 0 auto;
+}
+
+.menu {
+  flex: 1 1 auto;
+  min-height: 0;
+  min-width: 0;
+  width: 100%;
+
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  padding: 18px 15px 20px;
+
+  scrollbar-width: thin;
+  scrollbar-color:
+    rgba(183,74,28,.65)
+    rgba(255,255,255,.04);
+}
+
+.menu::-webkit-scrollbar {
+  width: 7px;
+}
+
+.menu::-webkit-scrollbar-track {
+  background: rgba(255,255,255,.035);
+}
+
+.menu::-webkit-scrollbar-thumb {
+  background: rgba(183,74,28,.55);
+  border-radius: 4px;
+}
+
+.menu::-webkit-scrollbar-thumb:hover {
+  background: rgba(215,106,44,.80);
+}
+
+.sidebar-footer {
+  flex: 0 0 auto;
+  margin-top: 0;
+}
+
+
+/* ---------- MAP AREA ---------- */
+
+.map-area {
+  position: relative;
+
+  flex: 1 1 auto;
+
+  width: auto;
+  min-width: 0;
+  height: 100vh;
+
+  overflow: hidden;
+
+  background: #050505;
+}
+
+
+/* ---------- MAP VIEWPORT ---------- */
+
+.map-viewport {
+  position: absolute;
+
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+
+  width: 100%;
+  height: 100%;
+
+  overflow: hidden;
+
+  cursor: grab;
+
+  touch-action: none;
+
+  user-select: none;
+
+  background: #070807;
+}
+
+.map-viewport.is-dragging {
+  cursor: grabbing;
+}
+
+.map-viewport.add-point-mode {
+  cursor: crosshair;
+}
+
+
+/* ---------- MAP CANVAS ---------- */
+
+.map-canvas {
+  position: absolute;
+
+  left: 50%;
+  top: 50%;
+
+  width: min(82vw, 980px);
+  height: auto;
+
+  margin: 0;
+
+  transform:
+    translate3d(-50%,-50%,0)
+    scale(1);
+
+  transform-origin: center center;
+
+  user-select: none;
+
+  will-change: transform;
+
+  backface-visibility: hidden;
+}
+
+.map-canvas > img#mapImage {
+  display: block;
+
+  width: 100%;
+  height: auto;
+
+  max-width: none;
+
+  pointer-events: none;
+
+  user-select: none;
+
+  -webkit-user-drag: none;
+
+  image-rendering: auto;
+}
+
+
+/* ---------- MAP CONTROLS ---------- */
+
+.map-controls {
+  position: absolute;
+
+  right: 20px;
+  top: 20px;
+
+  z-index: 200;
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 6px;
+
+  pointer-events: auto;
+}
+
+.map-controls button {
+  width: 42px;
+  height: 42px;
+
+  border:
+    1px solid
+    rgba(183,74,28,.55);
+
+  border-radius: 4px;
+
+  background:
+    rgba(12,12,12,.88);
+
+  color: var(--text);
+
+  font:
+    600 22px/1
+    'Oswald',
+    sans-serif;
+
+  cursor: pointer;
+
+  transition: .15s ease;
+
+  backdrop-filter: blur(6px);
+}
+
+.map-controls button:hover {
+  border-color: var(--orange-bright);
+
+  background:
+    rgba(34,20,15,.95);
+
+  color: #fff;
+}
+
+
+/* ---------- POINT LAYER ---------- */
+
+.points-layer {
+  position: absolute;
+
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+
+  width: 100%;
+  height: 100%;
+
+  pointer-events: none;
+}
+
+.map-point {
+  pointer-events: auto;
+  overflow: visible;
+}
+
+
+/* ---------- TOOLTIP ---------- */
+
+.point-tooltip {
+  z-index: 1000;
+}
+
+
+/* ---------- MOBILE ---------- */
+
+@media (max-width:760px) {
+  :root {
+    --sidebar-width: 230px;
+  }
+
+  .map-canvas {
+    width: 95vw;
+  }
+}
