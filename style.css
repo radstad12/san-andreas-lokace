@@ -2793,3 +2793,61 @@ body{
       drop-shadow(0 0 10px rgba(255,255,255,.8));
   }
 }
+
+
+/* =====================================================
+   TOOLTIP ÚZEMÍ
+===================================================== */
+
+.territory-tooltip{
+  position:absolute !important;
+
+  left:50%;
+  top:50%;
+
+  transform:translate(-50%, calc(-100% - 14px));
+
+  opacity:0;
+  visibility:hidden;
+
+  pointer-events:none;
+
+  z-index:2000;
+
+  min-width:150px;
+  max-width:280px;
+  width:max-content;
+
+  padding:9px 11px;
+
+  border:1px solid rgba(183,74,28,.70);
+  border-radius:4px;
+
+  background:rgba(8,8,8,.97);
+
+  box-shadow:0 8px 24px rgba(0,0,0,.75);
+
+  color:#eee;
+
+  white-space:normal;
+}
+
+.territory-tooltip::after{
+  content:"";
+
+  position:absolute;
+
+  left:50%;
+  top:100%;
+
+  transform:translateX(-50%);
+
+  border-left:6px solid transparent;
+  border-right:6px solid transparent;
+  border-top:6px solid rgba(183,74,28,.70);
+}
+
+.territory-tooltip.territory-tooltip-visible{
+  opacity:1;
+  visibility:visible;
+}
