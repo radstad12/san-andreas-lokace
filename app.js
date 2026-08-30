@@ -67,6 +67,61 @@ const controlsHelp = document.getElementById("controlsHelp");
 
 
 /* =====================================================
+   FIREBASE / FIRESTORE
+===================================================== */
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDbkQymbqxY6_BnkJCvVHh9NHzCSUtJWgs",
+  authDomain: "p-key-a3w68ys6itda.firebaseapp.com",
+  projectId: "p-key-a3w68ys6itda",
+  storageBucket: "p-key-a3w68ys6itda.firebasestorage.app",
+  messagingSenderId: "1037810531704",
+  appId: "1:1037810531704:web:b405c789f5ee45a6f85c8d",
+  measurementId: "G-67CS1TY4EX"
+};
+
+let firebaseReady = false;
+let firebaseHydrated = false;
+let firebaseSyncInProgress = false;
+let sharedMapDoc = null;
+
+try {
+
+  if (
+    typeof firebase !== "undefined" &&
+    firebase.apps &&
+    firebase.apps.length === 0
+  ) {
+    firebase.initializeApp(firebaseConfig);
+  }
+
+  if (
+    typeof firebase !== "undefined"
+  ) {
+
+    const firestore =
+      firebase.firestore();
+
+    sharedMapDoc =
+      firestore
+        .collection("mapData")
+        .doc("main");
+
+    firebaseReady = true;
+
+  }
+
+} catch (error) {
+
+  console.error(
+    "Firebase se nepodařilo inicializovat:",
+    error
+  );
+
+}
+
+
+/* =====================================================
    MAPA - POZICE
 ===================================================== */
 
@@ -162,10 +217,37 @@ let territories = loadData(
 }));
 
 function saveTerritories() {
+
   localStorage.setItem(
     "verdugosTerritories",
     JSON.stringify(territories)
   );
+
+  if (
+    firebaseReady &&
+    firebaseHydrated &&
+    !firebaseSyncInProgress &&
+    sharedMapDoc
+  ) {
+
+    sharedMapDoc.set(
+      {
+        territories,
+        updatedAt: Date.now()
+      },
+      {
+        merge: true
+      }
+    ).catch(error => {
+
+      console.error(
+        "Chyba při ukládání území do Firebase:",
+        error
+      );
+
+    });
+
+  }
 }
 
 saveTerritories();
@@ -329,6 +411,32 @@ function saveCategories() {
     JSON.stringify(categories)
   );
 
+  if (
+    firebaseReady &&
+    firebaseHydrated &&
+    !firebaseSyncInProgress &&
+    sharedMapDoc
+  ) {
+
+    sharedMapDoc.set(
+      {
+        categories,
+        updatedAt: Date.now()
+      },
+      {
+        merge: true
+      }
+    ).catch(error => {
+
+      console.error(
+        "Chyba při ukládání kategorií do Firebase:",
+        error
+      );
+
+    });
+
+  }
+
 }
 
 
@@ -338,6 +446,32 @@ function savePoints() {
     "verdugosPoints",
     JSON.stringify(points)
   );
+
+  if (
+    firebaseReady &&
+    firebaseHydrated &&
+    !firebaseSyncInProgress &&
+    sharedMapDoc
+  ) {
+
+    sharedMapDoc.set(
+      {
+        points,
+        updatedAt: Date.now()
+      },
+      {
+        merge: true
+      }
+    ).catch(error => {
+
+      console.error(
+        "Chyba při ukládání bodů do Firebase:",
+        error
+      );
+
+    });
+
+  }
 
 }
 
@@ -5334,6 +5468,269 @@ document.addEventListener(
 
   }
 );
+
+
+/* =====================================================
+   FIRESTORE - SPOLEČNÁ DATA PRO VŠECHNY
+===================================================== */
+
+function normalizeRemoteData() {
+
+  categories =
+    (Array.isArray(categories) ? categories : [])
+      .map(
+        category => ({
+          id:
+            category.id ||
+            createId(),
+
+          name:
+            category.name ||
+            "Bez názvu",
+
+          emoji:
+            category.emoji ||
+            "📌",
+
+          visible:
+            category.visible !== false
+        })
+      );
+
+
+  points =
+    (Array.isArray(points) ? points : [])
+      .map(
+        point => ({
+          id:
+            point.id ||
+            createId(),
+
+          x:
+            Number(point.x) || 0,
+
+          y:
+            Number(point.y) || 0,
+
+          name:
+            point.name ||
+            "Bez názvu",
+
+          description:
+            point.description ||
+            "",
+
+          categoryId:
+            point.categoryId ||
+            "",
+
+          color:
+            point.color ||
+            "#ff3b30",
+
+          size:
+            Number(point.size) ||
+            6
+        })
+      );
+
+
+  territories =
+    (Array.isArray(territories) ? territories : [])
+      .map(
+        territory => ({
+          id:
+            territory.id ||
+            createId(),
+
+          points:
+            Array.isArray(territory.points)
+              ? territory.points
+              : [],
+
+          name:
+            territory.name ||
+            "Bez názvu",
+
+          description:
+            territory.description ||
+            "",
+
+          status:
+            territory.status ||
+            "neutral"
+        })
+      );
+
+}
+
+
+function saveAllToFirestore() {
+
+  if (
+    !firebaseReady ||
+    !sharedMapDoc
+  ) {
+    return;
+  }
+
+  firebaseSyncInProgress = true;
+
+  sharedMapDoc.set(
+    {
+      categories,
+      points,
+      territories,
+      updatedAt: Date.now()
+    },
+    {
+      merge: true
+    }
+  )
+    .then(
+      () => {
+        firebaseHydrated = true;
+      }
+    )
+    .catch(
+      error => {
+
+        console.error(
+          "Chyba při prvním ukládání dat do Firebase:",
+          error
+        );
+
+      }
+    )
+    .finally(
+      () => {
+
+        firebaseSyncInProgress =
+          false;
+
+      }
+    );
+
+}
+
+
+function startFirestoreSync() {
+
+  if (
+    !firebaseReady ||
+    !sharedMapDoc
+  ) {
+    return;
+  }
+
+
+  sharedMapDoc.onSnapshot(
+    snapshot => {
+
+      if (
+        !snapshot.exists
+      ) {
+
+        /*
+          Databáze je zatím prázdná.
+          Nahrajeme existující lokální data,
+          aby se neztratily body/kategorie/území,
+          které už máš vytvořené.
+        */
+
+        firebaseHydrated = true;
+
+        normalizeRemoteData();
+
+        saveAllToFirestore();
+
+        renderCategories();
+        renderPoints();
+        ensureTerritoryLayer();
+
+        return;
+      }
+
+
+      const data =
+        snapshot.data() || {};
+
+
+      firebaseSyncInProgress =
+        true;
+
+      if (
+        Array.isArray(data.categories)
+      ) {
+
+        categories =
+          data.categories;
+
+      }
+
+      if (
+        Array.isArray(data.points)
+      ) {
+
+        points =
+          data.points;
+
+      }
+
+      if (
+        Array.isArray(data.territories)
+      ) {
+
+        territories =
+          data.territories;
+
+      }
+
+      normalizeRemoteData();
+
+      localStorage.setItem(
+        "verdugosCategories",
+        JSON.stringify(categories)
+      );
+
+      localStorage.setItem(
+        "verdugosPoints",
+        JSON.stringify(points)
+      );
+
+      localStorage.setItem(
+        "verdugosTerritories",
+        JSON.stringify(territories)
+      );
+
+      firebaseHydrated =
+        true;
+
+      firebaseSyncInProgress =
+        false;
+
+      renderCategories();
+      renderPoints();
+      ensureTerritoryLayer();
+
+    },
+    error => {
+
+      firebaseSyncInProgress =
+        false;
+
+      console.error(
+        "Firebase realtime synchronizace selhala:",
+        error
+      );
+
+    }
+  );
+
+}
+
+
+startFirestoreSync();
 
 
 /* =====================================================
