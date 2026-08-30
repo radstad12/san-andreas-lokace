@@ -2065,7 +2065,7 @@ function renderPoints() {
 
 
       icon.style.fontSize =
-        `${iconSize}px`;
+  `${Math.round(iconSize)}px`;
 
 
       element.appendChild(
