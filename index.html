@@ -3,19 +3,31 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <title>Verdugos Los Santos - Mapa</title>
+
   <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
+  <!-- =====================================================
+       LEVÉ MENU
+  ====================================================== -->
+
   <aside class="sidebar">
 
     <div class="brand">
-      <img src="logo.png" alt="Verdugos Los Santos">
+      <img
+        src="logo.png"
+        alt="Verdugos Los Santos"
+      >
     </div>
 
+
     <div class="menu">
+
+      <!-- PŘIDAT BOD -->
 
       <button
         id="addPointBtn"
@@ -26,12 +38,16 @@
         Přidat bod
       </button>
 
+
       <div
         id="pointModeHint"
         class="point-mode-hint hidden"
       >
         Klikni na místo na mapě
       </div>
+
+
+      <!-- KATEGORIE -->
 
       <div class="category-header">
 
@@ -47,10 +63,14 @@
 
       </div>
 
+
       <div
         id="categoryList"
         class="category-list"
       ></div>
+
+
+      <!-- PŘIDAT KATEGORII -->
 
       <button
         id="addCategoryBtn"
@@ -61,18 +81,27 @@
         Přidat kategorii
       </button>
 
+
+      <!-- NÁPOVĚDA -->
+
       <div class="category-help">
         Levý klik na kategorii = zobrazit / skrýt<br>
-        Klik na podbod = mapa najede a přiblíží<br>
+        Klik na podbod = zvýraznit bod + tooltip<br>
         Pravý klik na kategorii = smazat<br>
-        Pravý klik na bod = editovat / smazat
+        Pravý klik na bod = editovat / smazat<br>
+        WASD = pohyb po mapě
       </div>
 
     </div>
 
+
+    <!-- FOOTER -->
+
     <div class="sidebar-footer">
 
-      <span>VERDUGOS MC</span>
+      <span>
+        VERDUGOS MC
+      </span>
 
       <span class="status-dot"></span>
 
@@ -81,18 +110,44 @@
   </aside>
 
 
+  <!-- =====================================================
+       MAPA
+  ====================================================== -->
+
   <main class="map-area">
+
+    <!-- MAPOVÉ OVLÁDÁNÍ -->
 
     <div class="map-controls">
 
-      <button id="zoomOut" type="button">−</button>
+      <button
+        id="zoomOut"
+        type="button"
+        aria-label="Oddálit"
+      >
+        −
+      </button>
 
-      <button id="resetView" type="button">⌂</button>
+      <button
+        id="resetView"
+        type="button"
+        aria-label="Domů"
+      >
+        ⌂
+      </button>
 
-      <button id="zoomIn" type="button">+</button>
+      <button
+        id="zoomIn"
+        type="button"
+        aria-label="Přiblížit"
+      >
+        +
+      </button>
 
     </div>
 
+
+    <!-- MAP VIEWPORT -->
 
     <div
       id="mapViewport"
@@ -111,6 +166,9 @@
           draggable="false"
         >
 
+
+        <!-- VRSTVA BODŮ -->
+
         <div
           id="pointsLayer"
           class="points-layer"
@@ -121,15 +179,17 @@
     </div>
 
 
+    <!-- NÁPOVĚDA MAPY -->
+
     <div class="map-hint">
-      Tažením mapu posuneš · kolečkem přiblížíš
+      Tažením mapu posuneš · kolečkem přiblížíš · WASD pohyb
     </div>
 
   </main>
 
 
   <!-- =====================================================
-       MODAL KATEGORIE
+       MODAL - KATEGORIE
   ====================================================== -->
 
   <div
@@ -142,21 +202,26 @@
 
       <div class="modal-header">
 
-        <h3>Přidat kategorii</h3>
+        <h3>
+          Přidat kategorii
+        </h3>
 
         <button
           id="closeCategoryBtn"
           class="close-btn"
           type="button"
+          aria-label="Zavřít"
         >
           ×
         </button>
 
       </div>
 
+
       <label for="categoryName">
         Název kategorie
       </label>
+
 
       <input
         id="categoryName"
@@ -165,6 +230,7 @@
         placeholder="Např. Sklady"
         autocomplete="off"
       >
+
 
       <div class="modal-actions">
 
@@ -175,6 +241,7 @@
         >
           Zrušit
         </button>
+
 
         <button
           id="saveCategoryBtn"
@@ -192,7 +259,7 @@
 
 
   <!-- =====================================================
-       MODAL BOD
+       MODAL - BOD
   ====================================================== -->
 
   <div
@@ -216,12 +283,15 @@
           id="closePointBtn"
           class="close-btn"
           type="button"
+          aria-label="Zavřít"
         >
           ×
         </button>
 
       </div>
 
+
+      <!-- NÁZEV -->
 
       <label for="pointName">
         Název
@@ -236,6 +306,8 @@
       >
 
 
+      <!-- POPISEK -->
+
       <label for="pointDescription">
         Popisek
       </label>
@@ -247,18 +319,21 @@
       ></textarea>
 
 
+      <!-- KATEGORIE -->
+
       <label for="pointCategory">
         Kategorie
       </label>
 
-      <select
-        id="pointCategory"
-      ></select>
+      <select id="pointCategory"></select>
 
+
+      <!-- BARVA -->
 
       <label>
         Barva bodu
       </label>
+
 
       <div class="color-layout">
 
@@ -281,10 +356,12 @@
             Přednastavené
           </div>
 
+
           <div
             id="colorPresets"
             class="color-presets"
           ></div>
+
 
           <div
             id="colorPreview"
@@ -296,6 +373,8 @@
       </div>
 
 
+      <!-- RGB -->
+
       <div class="rgb-title">
         RGB
       </div>
@@ -304,7 +383,11 @@
       <div class="rgb-values">
 
         <div>
-          <label for="redInput">R</label>
+
+          <label for="redInput">
+            R
+          </label>
+
           <input
             id="redInput"
             type="number"
@@ -312,10 +395,16 @@
             max="255"
             value="255"
           >
+
         </div>
 
+
         <div>
-          <label for="greenInput">G</label>
+
+          <label for="greenInput">
+            G
+          </label>
+
           <input
             id="greenInput"
             type="number"
@@ -323,10 +412,16 @@
             max="255"
             value="59"
           >
+
         </div>
 
+
         <div>
-          <label for="blueInput">B</label>
+
+          <label for="blueInput">
+            B
+          </label>
+
           <input
             id="blueInput"
             type="number"
@@ -334,14 +429,18 @@
             max="255"
             value="48"
           >
+
         </div>
 
       </div>
 
 
+      <!-- VELIKOST -->
+
       <label for="pointSize">
         Velikost bodu
       </label>
+
 
       <div class="size-row">
 
@@ -353,12 +452,15 @@
           value="6"
         >
 
+
         <span id="pointSizeValue">
           6 px
         </span>
 
       </div>
 
+
+      <!-- TLAČÍTKA -->
 
       <div class="modal-actions">
 
@@ -369,6 +471,7 @@
         >
           Zrušit
         </button>
+
 
         <button
           id="savePointBtn"
@@ -400,6 +503,7 @@
     >
       ✏️ Editovat
     </button>
+
 
     <button
       id="deletePointBtn"
