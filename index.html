@@ -15,7 +15,9 @@
     <section class="menu-section">
       <div class="section-title-row">
         <h2>Kategorie</h2>
-        <button id="toggleAllBtn" class="small-action" type="button">Skrýt vše</button>
+        <button id="toggleAllBtn" class="small-action" type="button">
+          Skrýt vše
+        </button>
       </div>
 
       <div id="categoryList" class="category-list"></div>
@@ -25,7 +27,9 @@
         Přidat kategorii
       </button>
 
-      <p class="menu-help">Pravým tlačítkem na kategorii ji můžeš smazat.</p>
+      <p class="menu-help">
+        Levý klik = zobrazit/skrýt · pravý klik = smazat
+      </p>
     </section>
 
     <div class="sidebar-spacer"></div>
@@ -38,9 +42,9 @@
 
   <main class="map-shell">
     <div class="map-toolbar">
-      <button id="zoomOut" aria-label="Oddálit">−</button>
-      <button id="resetView" aria-label="Resetovat mapu">⌂</button>
-      <button id="zoomIn" aria-label="Přiblížit">+</button>
+      <button id="zoomOut" aria-label="Oddálit" type="button">−</button>
+      <button id="resetView" aria-label="Resetovat mapu" type="button">⌂</button>
+      <button id="zoomIn" aria-label="Přiblížit" type="button">+</button>
     </div>
 
     <div id="mapViewport" class="map-viewport">
@@ -54,19 +58,27 @@
 
   <div id="categoryModal" class="modal hidden" aria-hidden="true">
     <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
-      <h3 id="modalTitle">Přidat kategorii</h3>
+      <div class="modal-header">
+        <h3 id="modalTitle">Přidat kategorii</h3>
+        <button id="closeCategoryBtn" class="close-btn" type="button" aria-label="Zavřít">×</button>
+      </div>
+
       <label for="categoryName">Název kategorie</label>
       <input
         id="categoryName"
         type="text"
         maxlength="40"
-        placeholder="Např. Území"
+        placeholder="Např. Domy"
         autocomplete="off"
       />
 
       <div class="modal-actions">
-        <button id="cancelCategoryBtn" class="secondary-btn" type="button">Zrušit</button>
-        <button id="saveCategoryBtn" class="primary-btn" type="button">Přidat</button>
+        <button id="cancelCategoryBtn" class="secondary-btn" type="button">
+          Zrušit
+        </button>
+        <button id="saveCategoryBtn" class="primary-btn" type="button">
+          Přidat
+        </button>
       </div>
     </div>
   </div>
