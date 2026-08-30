@@ -7,27 +7,49 @@
 
 :root{
   --sidebar-width:310px;
-  --background:#080808;
+
+  --bg:#080808;
+
+  --border:#3a2018;
+
   --orange:#b74a1c;
-  --orange-light:#d76a2c;
+
+  --orange-bright:#d76a2c;
+
   --text:#e7e1da;
-  --border:rgba(183,74,28,.35);
+
+  --muted:#77716c;
+
+  --panel:#111;
+
+  --panel-hover:#1b1715;
 }
+
 
 *{
   box-sizing:border-box;
 }
 
+
 html,
 body{
   width:100%;
   height:100%;
+
   margin:0;
+
   overflow:hidden;
-  background:var(--background);
+
+  background:var(--bg);
+
   color:var(--text);
-  font-family:'Oswald',Arial,sans-serif;
+
+  font-family:
+    'Oswald',
+    Arial,
+    sans-serif;
 }
+
 
 body{
   display:flex;
@@ -40,31 +62,35 @@ body{
 
 .sidebar{
   position:relative;
+
   z-index:20;
 
   width:var(--sidebar-width);
+
   min-width:var(--sidebar-width);
+
   height:100vh;
 
   display:flex;
+
   flex-direction:column;
 
   /*
-    Sidebar samotný se nesmí scrollovat.
-    Scrolluje pouze .menu.
+    Sidebar samotný se nehýbe.
   */
   overflow:hidden;
 
   background:
     radial-gradient(
-      circle at top,
-      rgba(183,74,28,.10),
-      transparent 40%
+      circle at 50% 0%,
+      rgba(180,70,25,.08),
+      transparent 38%
     ),
+
     linear-gradient(
       180deg,
-      #121212 0,
-      #080808 100%
+      #111 0%,
+      #090909 100%
     );
 
   border-right:
@@ -73,7 +99,7 @@ body{
 
   box-shadow:
     8px 0 30px
-    rgba(0,0,0,.5);
+    rgba(0,0,0,.45);
 }
 
 
@@ -84,49 +110,50 @@ body{
 .brand{
   flex-shrink:0;
 
-  padding:20px;
+  padding:
+    22px 24px 18px;
 
   border-bottom:
     1px solid
-    var(--border);
+    rgba(183,74,28,.25);
 }
+
 
 .brand img{
   display:block;
 
   width:100%;
+
   height:auto;
+
+  max-height:250px;
 
   object-fit:contain;
 
   filter:
     drop-shadow(
-      0 8px 15px
-      rgba(0,0,0,.5)
+      0 8px 16px
+      rgba(0,0,0,.45)
     );
 }
 
 
 /* =====================================================
-   MENU - SCROLL
+   MENU
 ===================================================== */
 
 .menu{
+  /*
+    Toto je hlavní oprava scrollu.
+  */
   flex:1;
 
-  /*
-    Velmi důležité pro flex container.
-    Bez min-height:0 se scrollbar často
-    nezapne správně.
-  */
   min-height:0;
 
   width:100%;
 
-  /*
-    Scroll pouze zde.
-  */
   overflow-y:auto;
+
   overflow-x:hidden;
 
   padding:
@@ -134,9 +161,6 @@ body{
 
   scroll-behavior:smooth;
 
-  /*
-    Firefox.
-  */
   scrollbar-width:thin;
 
   scrollbar-color:
@@ -145,13 +169,10 @@ body{
 }
 
 
-/* =====================================================
-   SCROLLBAR - CHROME / EDGE / BRAVE
-===================================================== */
-
 .menu::-webkit-scrollbar{
   width:7px;
 }
+
 
 .menu::-webkit-scrollbar-track{
   background:
@@ -160,20 +181,97 @@ body{
   border-radius:4px;
 }
 
+
 .menu::-webkit-scrollbar-thumb{
   background:
     rgba(183,74,28,.55);
 
   border-radius:4px;
-
-  border:
-    1px solid
-    rgba(0,0,0,.25);
 }
+
 
 .menu::-webkit-scrollbar-thumb:hover{
   background:
     rgba(215,106,44,.75);
+}
+
+
+/* Podpora starší struktury */
+
+.menu-section{
+  padding:
+    0;
+}
+
+
+/* =====================================================
+   HEADER SEKCE
+===================================================== */
+
+.section-title-row{
+  display:flex;
+
+  align-items:center;
+
+  justify-content:space-between;
+
+  gap:10px;
+
+  margin-bottom:12px;
+}
+
+
+.section-title-row h2{
+  margin:0;
+
+  color:#ddd5ce;
+
+  font-size:18px;
+
+  font-weight:600;
+
+  letter-spacing:1.2px;
+
+  text-transform:uppercase;
+}
+
+
+.small-action{
+  border:
+    1px solid
+    rgba(183,74,28,.55);
+
+  border-radius:4px;
+
+  padding:
+    7px 10px;
+
+  background:
+    rgba(18,18,18,.95);
+
+  color:#c8c0ba;
+
+  font:
+    500 11px/1
+    'Oswald',
+    sans-serif;
+
+  letter-spacing:.4px;
+
+  cursor:pointer;
+
+  transition:.15s ease;
+}
+
+
+.small-action:hover{
+  border-color:
+    var(--orange-bright);
+
+  color:#fff;
+
+  background:
+    rgba(39,24,18,.95);
 }
 
 
@@ -199,11 +297,10 @@ body{
 
   color:#f0e9e2;
 
-  font-family:
+  font:
+    500 14px/1
     'Oswald',
     sans-serif;
-
-  font-size:14px;
 
   letter-spacing:.7px;
 
@@ -211,6 +308,7 @@ body{
 
   transition:.15s;
 }
+
 
 .add-point:hover,
 .add-point.active{
@@ -222,6 +320,7 @@ body{
 
   color:#fff;
 }
+
 
 .add-point span{
   margin-right:5px;
@@ -251,8 +350,12 @@ body{
 
   text-align:center;
 
-  font-size:11px;
+  font:
+    11px/1.3
+    Arial,
+    sans-serif;
 }
+
 
 .hidden{
   display:none !important;
@@ -260,7 +363,7 @@ body{
 
 
 /* =====================================================
-   CATEGORY HEADER
+   KATEGORIE HEADER
 ===================================================== */
 
 .category-header{
@@ -275,8 +378,11 @@ body{
   margin-bottom:12px;
 }
 
+
 .category-header h2{
   margin:0;
+
+  color:#ddd5ce;
 
   font-size:19px;
 
@@ -284,6 +390,7 @@ body{
 
   letter-spacing:1.5px;
 }
+
 
 .toggle-all{
   border:
@@ -299,16 +406,16 @@ body{
   padding:
     7px 10px;
 
-  font-family:
+  font:
+    500 11px/1
     'Oswald',
     sans-serif;
-
-  font-size:11px;
 
   cursor:pointer;
 
   transition:.15s;
 }
+
 
 .toggle-all:hover{
   border-color:
@@ -321,7 +428,7 @@ body{
 
 
 /* =====================================================
-   KATEGORIE
+   SEZNAM KATEGORIÍ
 ===================================================== */
 
 .category-list{
@@ -331,18 +438,16 @@ body{
 
   gap:7px;
 
-  /*
-    Obsah se nesmí rozlézt
-    mimo šířku menu.
-  */
   min-width:0;
 }
+
 
 .category-wrap{
   display:block;
 
   min-width:0;
 }
+
 
 .category-item{
   position:relative;
@@ -385,6 +490,7 @@ body{
     transform .15s;
 }
 
+
 .category-item:hover{
   background:#1d1815;
 
@@ -392,9 +498,11 @@ body{
     rgba(183,74,28,.55);
 }
 
+
 .category-item.hidden-category{
   opacity:.42;
 }
+
 
 .category-emoji{
   width:22px;
@@ -405,6 +513,7 @@ body{
 
   font-size:16px;
 }
+
 
 .category-name{
   flex:1;
@@ -419,6 +528,7 @@ body{
 
   font-size:14px;
 }
+
 
 .category-count{
   min-width:23px;
@@ -446,6 +556,7 @@ body{
 
   font-size:10px;
 }
+
 
 .category-state{
   color:#716b66;
@@ -481,6 +592,7 @@ body{
   min-width:0;
 }
 
+
 .category-point{
   display:flex;
 
@@ -510,6 +622,7 @@ body{
     transform .12s;
 }
 
+
 .category-point:hover{
   background:
     rgba(183,74,28,.09);
@@ -519,6 +632,7 @@ body{
   transform:
     translateX(2px);
 }
+
 
 .category-point-dot{
   width:6px;
@@ -538,6 +652,7 @@ body{
     rgba(0,0,0,.6);
 }
 
+
 .category-point-name{
   flex:1;
 
@@ -555,12 +670,14 @@ body{
    PŘIDAT KATEGORII
 ===================================================== */
 
-.add-category{
+.add-category,
+.add-category-btn{
   width:100%;
 
   margin-top:10px;
 
-  padding:11px;
+  padding:
+    11px;
 
   border:
     1px dashed
@@ -572,11 +689,10 @@ body{
 
   color:#cfc7c0;
 
-  font-family:
+  font:
+    500 13px/1
     'Oswald',
     sans-serif;
-
-  font-size:13px;
 
   letter-spacing:.7px;
 
@@ -585,7 +701,9 @@ body{
   transition:.15s;
 }
 
-.add-category:hover{
+
+.add-category:hover,
+.add-category-btn:hover{
   border-color:
     var(--orange-light);
 
@@ -595,7 +713,10 @@ body{
   color:#fff;
 }
 
-.add-category span{
+
+.add-category span,
+.add-category-btn span,
+.plus{
   font-size:17px;
 
   margin-right:5px;
@@ -640,6 +761,7 @@ body{
     color .15s ease;
 }
 
+
 .controls-btn:hover{
   background:#1b1715;
 
@@ -648,6 +770,7 @@ body{
 
   color:#fff;
 }
+
 
 .controls-help{
   margin-top:7px;
@@ -672,10 +795,12 @@ body{
     sans-serif;
 }
 
+
 .controls-help strong{
   display:block;
 
   margin-top:5px;
+
   margin-bottom:3px;
 
   color:#aaa39d;
@@ -686,14 +811,20 @@ body{
     sans-serif;
 }
 
+
 .controls-help strong:first-child{
   margin-top:0;
 }
 
 
 /* =====================================================
-   SIDEBAR FOOTER
+   FOOTER
 ===================================================== */
+
+.sidebar-spacer{
+  display:none;
+}
+
 
 .sidebar-footer{
   flex-shrink:0;
@@ -718,7 +849,11 @@ body{
   align-items:center;
 
   justify-content:space-between;
+
+  background:
+    #090909;
 }
+
 
 .status-dot{
   width:7px;
@@ -736,8 +871,12 @@ body{
 
 
 /* =====================================================
-   MAP
+   MAP AREA
 ===================================================== */
+
+/*
+  Aktuální název.
+*/
 
 .map-area{
   position:relative;
@@ -753,6 +892,30 @@ body{
   background:#050505;
 }
 
+
+/*
+  Kompatibilita se starší verzí.
+*/
+
+.map-shell{
+  position:relative;
+
+  flex:1;
+
+  min-width:0;
+
+  height:100vh;
+
+  overflow:hidden;
+
+  background:#050505;
+}
+
+
+/* =====================================================
+   MAP VIEWPORT
+===================================================== */
+
 .map-viewport{
   position:absolute;
 
@@ -762,18 +925,31 @@ body{
 
   cursor:grab;
 
-  background:#070807;
+  background:
+    radial-gradient(
+      circle at center,
+      rgba(45,54,45,.16),
+      transparent 65%
+    ),
+    #070807;
 
   touch-action:none;
 }
+
 
 .map-viewport.is-dragging{
   cursor:grabbing;
 }
 
+
 .map-viewport.add-point-mode{
   cursor:crosshair;
 }
+
+
+/* =====================================================
+   MAP CANVAS
+===================================================== */
 
 .map-canvas{
   position:absolute;
@@ -790,10 +966,13 @@ body{
 
   user-select:none;
 
-  will-change:transform;
+  will-change:
+    transform;
 
-  backface-visibility:hidden;
+  backface-visibility:
+    hidden;
 }
+
 
 .map-canvas img{
   display:block;
@@ -813,7 +992,135 @@ body{
 
 
 /* =====================================================
-   BODY
+   MAP CONTROLS
+===================================================== */
+
+/*
+  Aktuální verze.
+*/
+
+.map-controls{
+  position:absolute;
+
+  z-index:25;
+
+  top:20px;
+
+  right:20px;
+
+  display:flex;
+
+  flex-direction:column;
+
+  gap:6px;
+}
+
+
+/*
+  Starší verze.
+*/
+
+.map-toolbar{
+  position:absolute;
+
+  z-index:25;
+
+  top:20px;
+
+  right:20px;
+
+  display:flex;
+
+  flex-direction:column;
+
+  gap:6px;
+}
+
+
+.map-controls button,
+.map-toolbar button{
+  width:42px;
+
+  height:42px;
+
+  border:
+    1px solid
+    rgba(183,74,28,.55);
+
+  border-radius:4px;
+
+  background:
+    rgba(12,12,12,.88);
+
+  color:var(--text);
+
+  font:
+    600 22px/1
+    'Oswald',
+    sans-serif;
+
+  cursor:pointer;
+
+  transition:.15s ease;
+
+  backdrop-filter:
+    blur(6px);
+}
+
+
+.map-controls button:hover,
+.map-toolbar button:hover{
+  border-color:
+    var(--orange-bright);
+
+  background:
+    rgba(34,20,15,.95);
+
+  color:#fff;
+}
+
+
+/* =====================================================
+   MAP HINT
+===================================================== */
+
+.map-hint{
+  position:absolute;
+
+  z-index:25;
+
+  left:50%;
+
+  bottom:16px;
+
+  transform:
+    translateX(-50%);
+
+  padding:
+    7px 12px;
+
+  border:
+    1px solid
+    rgba(255,255,255,.08);
+
+  border-radius:3px;
+
+  background:
+    rgba(8,8,8,.72);
+
+  color:#777;
+
+  font-size:11px;
+
+  pointer-events:none;
+
+  backdrop-filter:
+    blur(5px);
+}
+
+
+/* =====================================================
+   VRSTVA BODŮ
 ===================================================== */
 
 .points-layer{
@@ -822,7 +1129,16 @@ body{
   inset:0;
 
   pointer-events:none;
+
+  width:100%;
+
+  height:100%;
 }
+
+
+/* =====================================================
+   BOD
+===================================================== */
 
 .map-point{
   position:absolute;
@@ -834,8 +1150,10 @@ body{
   justify-content:center;
 
   /*
-    TOOLTIP NESMÍ BÝT OŘÍZNUTÝ.
+    Nesmí být hidden,
+    protože tooltip je uvnitř.
   */
+
   overflow:visible;
 
   transform:
@@ -861,6 +1179,11 @@ body{
     box-shadow .12s ease;
 }
 
+
+/*
+  Hover přímo na bod.
+*/
+
 .map-point:hover{
   transform:
     translate(-50%,-50%)
@@ -868,6 +1191,12 @@ body{
 
   z-index:80;
 }
+
+
+/*
+  Zvýraznění po kliknutí
+  na podkategorii.
+*/
 
 .map-point.focused-point{
   transform:
@@ -890,6 +1219,12 @@ body{
     infinite;
 }
 
+
+/*
+  Pulsování všech bodů
+  při hoveru na kategorii.
+*/
+
 .map-point.category-hover-point{
   animation:
     pointCategoryPulse
@@ -899,6 +1234,11 @@ body{
 
   z-index:60;
 }
+
+
+/*
+  Live preview.
+*/
 
 .map-point-preview{
   animation:
@@ -917,9 +1257,11 @@ body{
   position:absolute;
 
   left:50%;
+
   top:50%;
 
   width:100%;
+
   height:100%;
 
   display:flex;
@@ -935,9 +1277,6 @@ body{
 
   pointer-events:none;
 
-  /*
-    Ořez pouze emoji.
-  */
   overflow:hidden;
 
   border-radius:50%;
@@ -945,6 +1284,7 @@ body{
   z-index:2;
 
   max-width:100%;
+
   max-height:100%;
 }
 
@@ -1003,6 +1343,9 @@ body{
   white-space:normal;
 }
 
+
+/* šipka */
+
 .point-tooltip::after{
   content:"";
 
@@ -1026,12 +1369,23 @@ body{
     rgba(183,74,28,.65);
 }
 
+
+/*
+  Hover přímo na bod.
+*/
+
 .map-point:hover
 .point-tooltip{
   opacity:1;
 
   visibility:visible;
 }
+
+
+/*
+  Tooltip po kliknutí
+  na podkategorii.
+*/
 
 .map-point.focused-point
 .point-tooltip{
@@ -1040,6 +1394,12 @@ body{
   visibility:visible;
 }
 
+
+/*
+  Tooltip při hoveru
+  na celé kategorii.
+*/
+
 .map-point.category-hover-point
 .point-tooltip{
   opacity:1;
@@ -1047,10 +1407,20 @@ body{
   visibility:visible;
 }
 
+
+/*
+  Preview tooltip nemá.
+*/
+
 .map-point-preview
 .point-tooltip{
   display:none;
 }
+
+
+/* =====================================================
+   TOOLTIP TEXT
+===================================================== */
 
 .point-tooltip-title{
   margin-bottom:3px;
@@ -1059,6 +1429,7 @@ body{
 
   font-weight:600;
 }
+
 
 .point-tooltip-description{
   color:#aaa;
@@ -1079,164 +1450,90 @@ body{
 @keyframes pointPreviewPulse{
 
   0%{
+
     box-shadow:
       0 2px 7px
       rgba(0,0,0,.75);
+
   }
 
   50%{
+
     box-shadow:
       0 0 0 5px
       rgba(215,106,44,.18),
 
       0 2px 7px
       rgba(0,0,0,.75);
+
   }
 
   100%{
+
     box-shadow:
       0 2px 7px
       rgba(0,0,0,.75);
+
   }
+
 }
 
 
 @keyframes pointFocusedPulse{
 
   0%{
+
     transform:
       translate(-50%,-50%)
       scale(1.7);
+
   }
 
   50%{
+
     transform:
       translate(-50%,-50%)
       scale(2.25);
+
   }
 
   100%{
+
     transform:
       translate(-50%,-50%)
       scale(1.7);
+
   }
+
 }
 
 
 @keyframes pointCategoryPulse{
 
   0%{
+
     transform:
       translate(-50%,-50%)
       scale(1);
+
   }
 
   50%{
+
     transform:
       translate(-50%,-50%)
       scale(1.6);
+
   }
 
   100%{
+
     transform:
       translate(-50%,-50%)
       scale(1);
+
   }
-}
 
-
-/* =====================================================
-   MAP CONTROLS
-===================================================== */
-
-.map-controls{
-  position:absolute;
-
-  right:20px;
-
-  top:20px;
-
-  z-index:25;
-
-  display:flex;
-
-  flex-direction:column;
-
-  gap:6px;
-}
-
-.map-controls button{
-  width:42px;
-
-  height:42px;
-
-  border:
-    1px solid
-    rgba(183,74,28,.55);
-
-  border-radius:4px;
-
-  background:
-    rgba(12,12,12,.88);
-
-  color:var(--text);
-
-  font:
-    600 22px/1
-    'Oswald',
-    sans-serif;
-
-  cursor:pointer;
-
-  transition:.15s;
-
-  backdrop-filter:blur(6px);
-}
-
-.map-controls button:hover{
-  border-color:
-    var(--orange-light);
-
-  background:
-    rgba(34,20,15,.95);
-
-  color:#fff;
-}
-
-
-/* =====================================================
-   MAP HINT
-===================================================== */
-
-.map-hint{
-  position:absolute;
-
-  z-index:25;
-
-  left:50%;
-
-  bottom:16px;
-
-  transform:
-    translateX(-50%);
-
-  padding:
-    7px 12px;
-
-  border:
-    1px solid
-    rgba(255,255,255,.08);
-
-  border-radius:3px;
-
-  background:
-    rgba(8,8,8,.72);
-
-  color:#777;
-
-  font-size:11px;
-
-  pointer-events:none;
 }
 
 
@@ -1266,9 +1563,11 @@ body{
     blur(3px);
 }
 
+
 .modal.hidden{
   display:none;
 }
+
 
 .modal-card{
   width:
@@ -1294,6 +1593,7 @@ body{
     rgba(0,0,0,.55);
 }
 
+
 .modal-header{
   display:flex;
 
@@ -1301,10 +1601,11 @@ body{
 
   justify-content:space-between;
 
-  gap:10px;
+  gap:12px;
 
   margin-bottom:14px;
 }
+
 
 .modal-card h3{
   margin:0;
@@ -1315,6 +1616,7 @@ body{
 
   font-weight:600;
 }
+
 
 .close-btn{
   width:30px;
@@ -1331,10 +1633,14 @@ body{
 
   color:#aaa39d;
 
-  font-size:20px;
+  font:
+    500 20px/1
+    Arial,
+    sans-serif;
 
   cursor:pointer;
 }
+
 
 .close-btn:hover{
   color:#fff;
@@ -1363,9 +1669,11 @@ body{
   display:block;
 }
 
+
 .point-modal.hidden{
   display:none;
 }
+
 
 .point-modal
 .point-modal-card{
@@ -1392,6 +1700,7 @@ body{
   letter-spacing:.5px;
 }
 
+
 .modal-card input,
 .modal-card textarea,
 .modal-card select{
@@ -1417,6 +1726,7 @@ body{
     sans-serif;
 }
 
+
 .modal-card textarea{
   min-height:80px;
 
@@ -1429,16 +1739,21 @@ body{
   line-height:1.4;
 }
 
+
 .modal-card input:focus,
 .modal-card textarea:focus,
 .modal-card select:focus{
   border-color:
     var(--orange);
+
+  box-shadow:
+    0 0 0 2px
+    rgba(183,74,28,.1);
 }
 
 
 /* =====================================================
-   COLOR WHEEL
+   BARVY
 ===================================================== */
 
 .color-layout{
@@ -1450,6 +1765,7 @@ body{
 
   margin-top:8px;
 }
+
 
 .color-wheel{
   position:relative;
@@ -1476,6 +1792,7 @@ body{
     );
 }
 
+
 .color-wheel::after{
   content:"";
 
@@ -1492,6 +1809,7 @@ body{
       rgba(255,255,255,0) 72%
     );
 }
+
 
 .color-wheel::before{
   content:"";
@@ -1510,6 +1828,7 @@ body{
       rgba(0,0,0,.2) 100%
     );
 }
+
 
 .color-wheel-cursor{
   position:absolute;
@@ -1539,6 +1858,7 @@ body{
   z-index:10;
 }
 
+
 .preset-side{
   display:flex;
 
@@ -1549,16 +1869,17 @@ body{
   gap:10px;
 }
 
+
 .preset-title{
   color:#8b837d;
 
   font-size:10px;
 
-  text-transform:
-    uppercase;
+  text-transform:uppercase;
 
   letter-spacing:.6px;
 }
+
 
 .color-presets{
   display:flex;
@@ -1569,6 +1890,7 @@ body{
 
   max-width:130px;
 }
+
 
 .color-preset{
   width:28px;
@@ -1586,10 +1908,12 @@ body{
   transition:.12s;
 }
 
+
 .color-preset:hover{
   transform:
     scale(1.1);
 }
+
 
 .color-preset.selected{
   border-color:#fff;
@@ -1598,6 +1922,7 @@ body{
     0 0 0 2px
     var(--orange);
 }
+
 
 .color-preview{
   width:50px;
@@ -1627,15 +1952,18 @@ body{
   font-size:12px;
 }
 
+
 .rgb-values{
   display:flex;
 
   gap:8px;
 }
 
+
 .rgb-values > div{
   flex:1;
 }
+
 
 .rgb-values label{
   margin-top:7px;
@@ -1643,7 +1971,7 @@ body{
 
 
 /* =====================================================
-   SIZE
+   VELIKOST
 ===================================================== */
 
 .size-row{
@@ -1654,7 +1982,8 @@ body{
   gap:12px;
 }
 
-.size-row input[type=range]{
+
+.size-row input[type="range"]{
   flex:1;
 
   padding:0;
@@ -1664,6 +1993,7 @@ body{
   accent-color:
     var(--orange);
 }
+
 
 #pointSizeValue{
   min-width:42px;
@@ -1677,7 +2007,7 @@ body{
 
 
 /* =====================================================
-   MODAL BUTTONS
+   TLAČÍTKA MODALU
 ===================================================== */
 
 .modal-actions{
@@ -1687,14 +2017,16 @@ body{
 
   gap:8px;
 
-  margin-top:18px;
+  margin-top:16px;
 }
+
 
 .secondary-btn,
 .primary-btn{
   border-radius:4px;
 
-  padding:10px 14px;
+  padding:
+    10px 14px;
 
   font:
     500 12px/1
@@ -1703,6 +2035,7 @@ body{
 
   cursor:pointer;
 }
+
 
 .secondary-btn{
   border:
@@ -1713,6 +2046,7 @@ body{
 
   color:#aaa39d;
 }
+
 
 .primary-btn{
   border:
@@ -1725,13 +2059,15 @@ body{
   color:#fff;
 }
 
+
 .secondary-btn:hover{
   background:#202020;
 }
 
+
 .primary-btn:hover{
   background:
-    var(--orange-light);
+    var(--orange-bright);
 }
 
 
@@ -1761,6 +2097,7 @@ body{
     rgba(0,0,0,.6);
 }
 
+
 .point-context-menu button{
   display:block;
 
@@ -1770,7 +2107,8 @@ body{
 
   border-radius:3px;
 
-  padding:9px 11px;
+  padding:
+    9px 11px;
 
   background:transparent;
 
@@ -1786,14 +2124,17 @@ body{
   cursor:pointer;
 }
 
+
 .point-context-menu button:hover{
   background:#211814;
 }
+
 
 .point-context-menu
 .danger-context{
   color:#dc8170;
 }
+
 
 .point-context-menu
 .danger-context:hover{
@@ -1805,26 +2146,36 @@ body{
 
 
 /* =====================================================
-   MOBILE
+   MOBIL
 ===================================================== */
 
 @media (max-width:760px){
 
   :root{
-    --sidebar-width:230px;
+    --sidebar-width:235px;
   }
+
 
   .brand{
     padding:14px;
   }
 
+
+  .menu{
+    padding:
+      14px 10px 16px;
+  }
+
+
   .map-hint{
     display:none;
   }
 
+
   .map-canvas{
     width:95vw;
   }
+
 
   .color-wheel{
     width:125px;
