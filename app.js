@@ -295,7 +295,11 @@ let categories =
   loadData(
     "verdugosCategories",
     DEFAULT_CATEGORIES
-  );
+  ).map(category => ({
+    ...category,
+    visible: true
+  }));
+saveCategories();
 
 
 let points =
@@ -4038,3 +4042,33 @@ renderColorPresets();
 updatePreview();
 
 renderMap();
+
+/* =====================================================
+   MAPA - NAČTENÍ PŘED ZOBRAZENÍM
+===================================================== */
+
+if (mapImage) {
+
+  mapImage.decoding = "sync";
+
+  if (mapImage.complete) {
+
+    renderMap();
+
+  } else {
+
+    mapImage.addEventListener(
+      "load",
+      () => {
+
+        renderMap();
+
+      },
+      {
+        once: true
+      }
+    );
+
+  }
+
+}
