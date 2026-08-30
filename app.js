@@ -34,14 +34,7 @@ const pointSizeInput = document.getElementById("pointSize");
 const pointSizeValue = document.getElementById("pointSizeValue");
 
 /* Colors */
-const colorWheel = document.getElementById("colorWheel");
-const colorWheelCursor = document.getElementById("colorWheelCursor");
-const colorPresets = document.getElementById("colorPresets");
-const colorPreview = document.getElementById("colorPreview");
 
-const redInput = document.getElementById("redInput");
-const greenInput = document.getElementById("greenInput");
-const blueInput = document.getElementById("blueInput");
 
 /* Category modal */
 const categoryModal = document.getElementById("categoryModal");
