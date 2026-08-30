@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Verdugos Los Santos — Mapa</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="assets/logo.png" alt="Verdugos Los Santos" />
+    </div>
+
+    <div class="sidebar-content">
+      <!-- Budoucí menu / nástroje přijdou sem -->
+    </div>
+
+    <div class="sidebar-footer">
+      <span>VERDUGOS MC</span>
+      <span class="status-dot"></span>
+    </div>
+  </aside>
+
+  <main class="map-shell">
+    <div class="map-toolbar">
+      <button id="zoomOut" aria-label="Oddálit">−</button>
+      <button id="resetView" aria-label="Resetovat mapu">⌂</button>
+      <button id="zoomIn" aria-label="Přiblížit">+</button>
+    </div>
+
+    <div id="mapViewport" class="map-viewport">
+      <div id="mapCanvas" class="map-canvas">
+        <img id="mapImage" src="assets/mapa.png" alt="Mapa Los Santos" draggable="false" />
+      </div>
+    </div>
+
+    <div class="map-hint">Tažením mapu posuneš · kolečkem přiblížíš</div>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
