@@ -1488,6 +1488,13 @@ function openPointModal(
   );
 
 
+  pointModal.style.pointerEvents =
+    "auto";
+
+  pointModalCard.style.pointerEvents =
+    "auto";
+
+
   pointModal.setAttribute(
     "aria-hidden",
     "false"
@@ -1594,6 +1601,13 @@ function openEditPoint(
   );
 
 
+  pointModal.style.pointerEvents =
+    "auto";
+
+  pointModalCard.style.pointerEvents =
+    "auto";
+
+
   pointModal.setAttribute(
     "aria-hidden",
     "false"
@@ -1630,68 +1644,61 @@ function positionPointModal(
       const gap =
         16;
 
+      const padding =
+        10;
+
+
+      /*
+        Primární pozice je vždy napravo od bodu.
+        Pokud se formulář nevejde, zarovná se
+        k pravému okraji viewportu, ale stále
+        zůstane celý viditelný.
+      */
 
       let left =
-        clientX +
-        gap;
-
+        clientX + gap;
 
       let top =
-        clientY +
-        gap;
+        clientY;
 
 
       if (
-        left +
-        rect.width >
-        window.innerWidth -
-        10
+        left + rect.width >
+        window.innerWidth - padding
       ) {
 
         left =
-          clientX -
+          window.innerWidth -
           rect.width -
-          gap;
+          padding;
 
       }
 
 
       if (
-        top +
-        rect.height >
-        window.innerHeight -
-        10
+        top + rect.height >
+        window.innerHeight - padding
       ) {
 
         top =
-          clientY -
+          window.innerHeight -
           rect.height -
-          gap;
+          padding;
 
       }
 
 
       left =
         Math.max(
-          10,
-          Math.min(
-            left,
-            window.innerWidth -
-            rect.width -
-            10
-          )
+          padding,
+          left
         );
 
 
       top =
         Math.max(
-          10,
-          Math.min(
-            top,
-            window.innerHeight -
-            rect.height -
-            10
-          )
+          padding,
+          top
         );
 
 
@@ -1708,6 +1715,7 @@ function positionPointModal(
 }
 
 
+
 /* =====================================================
    CLOSE POINT MODAL
 ===================================================== */
@@ -1717,6 +1725,10 @@ function closePointModal() {
   pointModal.classList.add(
     "hidden"
   );
+
+
+  pointModal.style.pointerEvents =
+    "none";
 
 
   pointModal.setAttribute(
