@@ -1,448 +1,240 @@
-const viewport =
-  document.getElementById('mapViewport');
+const viewport = document.getElementById('mapViewport');
+const canvas = document.getElementById('mapCanvas');
+const mapImage = document.getElementById('mapImage');
+const pointsLayer = document.getElementById('pointsLayer');
 
-const canvas =
-  document.getElementById('mapCanvas');
+const categoryList = document.getElementById('categoryList');
+const addCategoryBtn = document.getElementById('addCategoryBtn');
+const toggleAllBtn = document.getElementById('toggleAllBtn');
 
-const mapImage =
-  document.getElementById('mapImage');
+const addPointBtn = document.getElementById('addPointBtn');
+const pointModeHint = document.getElementById('pointModeHint');
 
-const pointsLayer =
-  document.getElementById('pointsLayer');
+const pointModal = document.getElementById('pointModal');
+const pointModalCard = document.getElementById('pointModalCard');
+const pointModalTitle = document.getElementById('pointModalTitle');
 
+const closePointBtn = document.getElementById('closePointBtn');
+const cancelPointBtn = document.getElementById('cancelPointBtn');
+const savePointBtn = document.getElementById('savePointBtn');
 
-/* =====================================================
-   KATEGORIE
-===================================================== */
+const pointNameInput = document.getElementById('pointName');
+const pointDescriptionInput = document.getElementById('pointDescription');
+const pointCategorySelect = document.getElementById('pointCategory');
 
-const categoryList =
-  document.getElementById('categoryList');
+const pointSizeInput = document.getElementById('pointSize');
+const pointSizeValue = document.getElementById('pointSizeValue');
 
-const addCategoryBtn =
-  document.getElementById('addCategoryBtn');
+const colorWheel = document.getElementById('colorWheel');
+const colorWheelCursor = document.getElementById('colorWheelCursor');
+const colorPresets = document.getElementById('colorPresets');
+const colorPreview = document.getElementById('colorPreview');
 
-const toggleAllBtn =
-  document.getElementById('toggleAllBtn');
+const redInput = document.getElementById('redInput');
+const greenInput = document.getElementById('greenInput');
+const blueInput = document.getElementById('blueInput');
 
+const categoryModal = document.getElementById('categoryModal');
+const categoryNameInput = document.getElementById('categoryName');
+const closeCategoryBtn = document.getElementById('closeCategoryBtn');
+const cancelCategoryBtn = document.getElementById('cancelCategoryBtn');
+const saveCategoryBtn = document.getElementById('saveCategoryBtn');
 
-/* =====================================================
-   BODY
-===================================================== */
+const pointContextMenu = document.getElementById('pointContextMenu');
+const editPointBtn = document.getElementById('editPointBtn');
+const deletePointBtn = document.getElementById('deletePointBtn');
 
-const addPointBtn =
-  document.getElementById('addPointBtn');
 
-const pointModeHint =
-  document.getElementById('pointModeHint');
+// =====================================================
+// MAPA
+// =====================================================
 
-const pointModal =
-  document.getElementById('pointModal');
+let scale = 1;
+let x = 0;
+let y = 0;
 
-const pointModalCard =
-  document.getElementById('pointModalCard');
+let dragging = false;
 
-const pointModalTitle =
-  document.getElementById('pointModalTitle');
+let startX = 0;
+let startY = 0;
 
-const closePointBtn =
-  document.getElementById('closePointBtn');
+let startMapX = 0;
+let startMapY = 0;
 
-const cancelPointBtn =
-  document.getElementById('cancelPointBtn');
+const MIN_SCALE = 0.45;
+const MAX_SCALE = 10;
 
-const savePointBtn =
-  document.getElementById('savePointBtn');
 
-const pointNameInput =
-  document.getElementById('pointName');
+// =====================================================
+// BODY
+// =====================================================
 
-const pointDescriptionInput =
-  document.getElementById('pointDescription');
+let addingPoint = false;
+let pendingPoint = null;
+let editingPointId = null;
 
-const pointCategorySelect =
-  document.getElementById('pointCategory');
 
-const pointSizeInput =
-  document.getElementById('pointSize');
+// =====================================================
+// FOCUS / HOVER BODU
+// =====================================================
 
-const pointSizeValue =
-  document.getElementById('pointSizeValue');
+let focusedPointId = null;
+let focusedPointTimer = null;
 
 
-/* =====================================================
-   BARVY
-===================================================== */
+// =====================================================
+// CONTEXT MENU
+// =====================================================
 
-const colorWheel =
-  document.getElementById('colorWheel');
+let contextPointId = null;
 
-const colorWheelCursor =
-  document.getElementById('colorWheelCursor');
 
-const colorPresets =
-  document.getElementById('colorPresets');
-
-const colorPreview =
-  document.getElementById('colorPreview');
-
-const redInput =
-  document.getElementById('redInput');
-
-const greenInput =
-  document.getElementById('greenInput');
-
-const blueInput =
-  document.getElementById('blueInput');
-
-
-/* =====================================================
-   MODAL KATEGORIE
-===================================================== */
-
-const categoryModal =
-  document.getElementById('categoryModal');
-
-const categoryNameInput =
-  document.getElementById('categoryName');
-
-const closeCategoryBtn =
-  document.getElementById('closeCategoryBtn');
-
-const cancelCategoryBtn =
-  document.getElementById('cancelCategoryBtn');
-
-const saveCategoryBtn =
-  document.getElementById('saveCategoryBtn');
-
-
-/* =====================================================
-   CONTEXT MENU BODU
-===================================================== */
-
-const pointContextMenu =
-  document.getElementById('pointContextMenu');
-
-const editPointBtn =
-  document.getElementById('editPointBtn');
-
-const deletePointBtn =
-  document.getElementById('deletePointBtn');
-
-
-/* =====================================================
-   MAPA
-===================================================== */
-
-let scale =
-  1;
-
-let x =
-  0;
-
-let y =
-  0;
-
-let dragging =
-  false;
-
-let startX =
-  0;
-
-let startY =
-  0;
-
-let startMapX =
-  0;
-
-let startMapY =
-  0;
-
-
-const MIN_SCALE =
-  0.45;
-
-const MAX_SCALE =
-  10;
-
-
-/* =====================================================
-   BOD
-===================================================== */
-
-let addingPoint =
-  false;
-
-let pendingPoint =
-  null;
-
-let editingPointId =
-  null;
-
-
-/* =====================================================
-   FOCUS
-===================================================== */
-
-let focusedPointId =
-  null;
-
-let focusedPointTimer =
-  null;
-
-
-/* =====================================================
-   BARVA
-===================================================== */
+// =====================================================
+// BARVY
+// =====================================================
 
 const COLOR_PRESETS = [
-
   '#ff3b30',
-
   '#ff9500',
-
   '#ffcc00',
-
   '#34c759',
-
   '#007aff'
-
 ];
 
+let selectedColor = '#ff3b30';
+let selectedSize = 6;
 
-let selectedColor =
-  '#ff3b30';
-
-let selectedSize =
-  6;
-
-let colorWheelDragging =
-  false;
-
-let wheelHue =
-  0;
-
-let wheelSaturation =
-  1;
+let colorWheelDragging = false;
+let wheelHue = 0;
+let wheelSaturation = 1;
 
 
-/* =====================================================
-   CONTEXT MENU
-===================================================== */
+// =====================================================
+// WASD
+// =====================================================
 
-let contextPointId =
-  null;
+const WASD_SPEED = 25;
 
+const pressedKeys = new Set();
 
-/* =====================================================
-   WASD
-===================================================== */
-
-const WASD_SPEED =
-  28;
-
-const pressedKeys =
-  new Set();
-
-let wasdAnimationId =
-  null;
+let wasdAnimationId = null;
 
 
-/* =====================================================
-   ID
-===================================================== */
+// =====================================================
+// ID
+// =====================================================
 
 function createId() {
-
   return (
-
     Date.now().toString(36) +
-
-    Math.random()
-      .toString(36)
-      .slice(2)
-
+    Math.random().toString(36).slice(2)
   );
-
 }
 
 
-/* =====================================================
-   DEFAULT KATEGORIE
-===================================================== */
+// =====================================================
+// DEFAULT KATEGORIE
+// =====================================================
 
 const DEFAULT_CATEGORIES = [
-
   {
-    id:createId(),
-    name:'Území',
-    emoji:'🗺️',
-    visible:true
+    id: createId(),
+    name: 'Území',
+    emoji: '🗺️',
+    visible: true
   },
-
   {
-    id:createId(),
-    name:'Prodej drog',
-    emoji:'💊',
-    visible:true
+    id: createId(),
+    name: 'Prodej drog',
+    emoji: '💊',
+    visible: true
   },
-
   {
-    id:createId(),
-    name:'Záterasy autem',
-    emoji:'🚗',
-    visible:true
+    id: createId(),
+    name: 'Záterasy autem',
+    emoji: '🚗',
+    visible: true
   },
-
   {
-    id:createId(),
-    name:'Ujíždění na motorce',
-    emoji:'🏍️',
-    visible:true
+    id: createId(),
+    name: 'Ujíždění na motorce',
+    emoji: '🏍️',
+    visible: true
   }
-
 ];
 
 
-/* =====================================================
-   LOCAL STORAGE
-===================================================== */
+// =====================================================
+// LOCAL STORAGE
+// =====================================================
 
-function loadJson(
-  key,
-  fallback
-) {
-
+function loadJson(key, fallback) {
   try {
-
-    const raw =
-      localStorage.getItem(
-        key
-      );
-
+    const raw = localStorage.getItem(key);
 
     if (!raw) {
-
       return fallback;
-
     }
 
-
-    const data =
-      JSON.parse(
-        raw
-      );
-
+    const data = JSON.parse(raw);
 
     return Array.isArray(data)
       ? data
       : fallback;
 
-  }
-
-  catch {
-
+  } catch {
     return fallback;
-
   }
-
 }
 
 
 function saveCategories() {
-
   localStorage.setItem(
-
     'verdugosCategories',
-
-    JSON.stringify(
-      categories
-    )
-
+    JSON.stringify(categories)
   );
-
 }
 
 
 function savePoints() {
-
   localStorage.setItem(
-
     'verdugosPoints',
-
-    JSON.stringify(
-      points
-    )
-
+    JSON.stringify(points)
   );
-
 }
 
 
-/* =====================================================
-   NORMALIZACE KATEGORIE
-===================================================== */
+// =====================================================
+// KATEGORIE
+// =====================================================
 
-function normalizeCategory(
-  category
-) {
+function normalizeCategory(category) {
 
-  let name =
-    category.name ||
-    'Bez názvu';
-
-  let emoji =
-    category.emoji ||
-    '📌';
-
+  let name = category.name || 'Bez názvu';
+  let emoji = category.emoji || '📌';
 
   /*
-    Starší verze mohly mít emoji
-    v názvu kategorie.
+    Podpora staršího formátu:
+    emoji přímo v názvu.
   */
 
-  const match =
-    name.match(
-      /^(.{1,2})\s*(.*)$/u
-    );
-
+  const match = name.match(/^(.{1,2})\s*(.*)$/u);
 
   if (
-
     !category.emoji &&
-
     match &&
-
-    /\p{Extended_Pictographic}/u.test(
-      match[1]
-    )
-
+    /\p{Extended_Pictographic}/u.test(match[1])
   ) {
-
-    emoji =
-      match[1];
-
-    name =
-      match[2] ||
-      name;
-
+    emoji = match[1];
+    name = match[2] || name;
   }
 
-
   return {
-
-    id:
-      category.id ||
-      createId(),
-
+    id: category.id || createId(),
     name,
-
     emoji,
-
-    visible:
-      category.visible !== false
-
+    visible: category.visible !== false
   };
-
 }
 
 
@@ -450,10 +242,7 @@ let categories =
   loadJson(
     'verdugosCategories',
     DEFAULT_CATEGORIES
-  )
-  .map(
-    normalizeCategory
-  );
+  ).map(normalizeCategory);
 
 
 let points =
@@ -466,366 +255,317 @@ let points =
 saveCategories();
 
 
-/* =====================================================
-   HELPER
-===================================================== */
+// =====================================================
+// HELPER FUNKCE
+// =====================================================
 
-function getCategory(
-  id
-) {
-
+function getCategory(id) {
   return categories.find(
-    (category) =>
-      category.id === id
+    category => category.id === id
   );
-
 }
 
 
-function countPoints(
-  categoryId
-) {
-
+function countPoints(categoryId) {
   return points.filter(
-    (point) =>
-      point.categoryId ===
-      categoryId
+    point => point.categoryId === categoryId
   ).length;
-
 }
 
 
-function categoryLabel(
-  category
-) {
-
-  return (
-
-    `${category.emoji || '📌'} ${category.name}`
-
-  );
-
+function categoryLabel(category) {
+  return `${category.emoji || '📌'} ${category.name}`;
 }
 
 
-/* =====================================================
-   KATEGORIE - VYKRESLENÍ
-===================================================== */
+// =====================================================
+// KATEGORIE - VYKRESLENÍ
+// =====================================================
 
 function renderCategories() {
 
-  categoryList.innerHTML =
-    '';
+  categoryList.innerHTML = '';
+
+  categories.forEach(category => {
+
+    const wrap =
+      document.createElement('div');
+
+    wrap.className =
+      'category-wrap';
 
 
-  categories.forEach(
-    (category) => {
+    const item =
+      document.createElement('div');
 
-      const wrap =
-        document.createElement(
-          'div'
-        );
+    item.className =
+      'category-item';
 
 
-      wrap.className =
-        'category-wrap';
+    if (!category.visible) {
+      item.classList.add(
+        'hidden-category'
+      );
+    }
 
 
-      const item =
-        document.createElement(
-          'div'
-        );
+    const emoji =
+      document.createElement('span');
+
+    emoji.className =
+      'category-emoji';
+
+    emoji.textContent =
+      category.emoji || '📌';
 
 
-      item.className =
-        'category-item';
+    const name =
+      document.createElement('span');
+
+    name.className =
+      'category-name';
+
+    name.textContent =
+      category.name;
 
 
-      if (
-        !category.visible
-      ) {
+    const count =
+      document.createElement('span');
 
-        item.classList.add(
-          'hidden-category'
-        );
+    count.className =
+      'category-count';
+
+    count.textContent =
+      countPoints(category.id);
+
+
+    const state =
+      document.createElement('span');
+
+    state.className =
+      'category-state';
+
+    state.textContent =
+      category.visible
+        ? 'zobrazeno'
+        : 'skryto';
+
+
+    item.append(
+      emoji,
+      name,
+      count,
+      state
+    );
+
+
+    // LEVÝ KLIK NA KATEGORII
+
+    item.addEventListener(
+      'click',
+      () => {
+
+        category.visible =
+          !category.visible;
+
+        saveCategories();
+
+        renderCategories();
+
+        renderPoints();
 
       }
+    );
 
 
-      const emoji =
-        document.createElement(
-          'span'
-        );
+    // PRAVÝ KLIK NA KATEGORII
 
+    item.addEventListener(
+      'contextmenu',
+      event => {
 
-      emoji.className =
-        'category-emoji';
+        event.preventDefault();
 
-
-      emoji.textContent =
-        category.emoji ||
-        '📌';
-
-
-      const name =
-        document.createElement(
-          'span'
-        );
-
-
-      name.className =
-        'category-name';
-
-
-      name.textContent =
-        category.name;
-
-
-      const count =
-        document.createElement(
-          'span'
-        );
-
-
-      count.className =
-        'category-count';
-
-
-      count.textContent =
-        countPoints(
+        deleteCategory(
           category.id
         );
 
-
-      const state =
-        document.createElement(
-          'span'
-        );
+      }
+    );
 
 
-      state.className =
-        'category-state';
+    wrap.appendChild(
+      item
+    );
 
 
-      state.textContent =
-        category.visible
-          ? 'zobrazeno'
-          : 'skryto';
+    // =================================================
+    // PODBODY
+    // =================================================
+
+    const children =
+      document.createElement('div');
+
+    children.className =
+      'category-points';
 
 
-      item.append(
-        emoji,
-        name,
-        count,
-        state
-      );
+    points
+      .filter(
+        point =>
+          point.categoryId === category.id
+      )
+      .forEach(
+        point => {
+
+          const child =
+            document.createElement('div');
+
+          child.className =
+            'category-point';
 
 
-      /* LEVÝ KLIK */
-
-      item.addEventListener(
-        'click',
-        () => {
-
-          category.visible =
-            !category.visible;
+          child.title =
+            'Najetí = zvýraznit bod · Klik = zobrazit tooltip';
 
 
-          saveCategories();
+          const dot =
+            document.createElement('span');
 
-          renderCategories();
+          dot.className =
+            'category-point-dot';
 
-          renderPoints();
-
-        }
-      );
-
-
-      /* PRAVÝ KLIK */
-
-      item.addEventListener(
-        'contextmenu',
-        (event) => {
-
-          event.preventDefault();
+          dot.style.backgroundColor =
+            point.color ||
+            '#ff3b30';
 
 
-          deleteCategory(
-            category.id
+          const text =
+            document.createElement('span');
+
+          text.className =
+            'category-point-name';
+
+          text.textContent =
+            point.name;
+
+
+          child.append(
+            dot,
+            text
+          );
+
+
+          // -------------------------------------------
+          // HOVER NA PODBOD
+          // -------------------------------------------
+
+          child.addEventListener(
+            'mouseenter',
+            () => {
+
+              highlightPoint(
+                point.id
+              );
+
+            }
+          );
+
+
+          child.addEventListener(
+            'mouseleave',
+            () => {
+
+              unhighlightPoint(
+                point.id
+              );
+
+            }
+          );
+
+
+          // -------------------------------------------
+          // KLIK NA PODBOD
+          // -------------------------------------------
+
+          child.addEventListener(
+            'click',
+            event => {
+
+              event.stopPropagation();
+
+              highlightPoint(
+                point.id,
+                true
+              );
+
+            }
+          );
+
+
+          // -------------------------------------------
+          // PRAVÝ KLIK NA PODBOD
+          // -------------------------------------------
+
+          child.addEventListener(
+            'contextmenu',
+            event => {
+
+              event.preventDefault();
+
+              event.stopPropagation();
+
+              openContextMenu(
+                event.clientX,
+                event.clientY,
+                point.id
+              );
+
+            }
+          );
+
+
+          children.appendChild(
+            child
           );
 
         }
       );
 
 
+    if (
+      children.children.length
+    ) {
+
       wrap.appendChild(
-        item
-      );
-
-
-      /* =================================================
-         PODBODY
-      ================================================= */
-
-      const children =
-        document.createElement(
-          'div'
-        );
-
-
-      children.className =
-        'category-points';
-
-
-      points
-        .filter(
-          (point) =>
-            point.categoryId ===
-            category.id
-        )
-        .forEach(
-          (point) => {
-
-            const child =
-              document.createElement(
-                'div'
-              );
-
-
-            child.className =
-              'category-point';
-
-
-            child.title =
-              'Kliknutí = zvýraznit bod a zobrazit tooltip';
-
-
-            const dot =
-              document.createElement(
-                'span'
-              );
-
-
-            dot.className =
-              'category-point-dot';
-
-
-            dot.style.backgroundColor =
-              point.color ||
-              '#ff3b30';
-
-
-            const text =
-              document.createElement(
-                'span'
-              );
-
-
-            text.className =
-              'category-point-name';
-
-
-            text.textContent =
-              point.name;
-
-
-            child.append(
-              dot,
-              text
-            );
-
-
-            /*
-              KLIK NA PODBOD
-
-              Žádný zoom.
-              Žádný posun mapy.
-
-              Pouze:
-              - zvýrazní bod
-              - zobrazí tooltip
-            */
-
-            child.addEventListener(
-              'click',
-              (event) => {
-
-                event.stopPropagation();
-
-
-                focusPoint(
-                  point.id
-                );
-
-              }
-            );
-
-
-            /*
-              PRAVÝ KLIK NA PODBOD
-            */
-
-            child.addEventListener(
-              'contextmenu',
-              (event) => {
-
-                event.preventDefault();
-
-                event.stopPropagation();
-
-
-                openContextMenu(
-                  event.clientX,
-                  event.clientY,
-                  point.id
-                );
-
-              }
-            );
-
-
-            children.appendChild(
-              child
-            );
-
-          }
-        );
-
-
-      if (
-        children.children.length
-      ) {
-
-        wrap.appendChild(
-          children
-        );
-
-      }
-
-
-      categoryList.appendChild(
-        wrap
+        children
       );
 
     }
-  );
 
 
-  updateToggleButton();
+    categoryList.appendChild(
+      wrap
+    );
+
+  });
+
+
+  updateToggleAllButton();
 
 }
 
 
-/* =====================================================
-   TOGGLE ALL
-===================================================== */
+// =====================================================
+// SKRÝT / ZOBRAZIT VŠE
+// =====================================================
 
-function updateToggleButton() {
+function updateToggleAllButton() {
 
   const allVisible =
     categories.length > 0 &&
     categories.every(
-      (category) =>
+      category =>
         category.visible
     );
 
@@ -843,20 +583,17 @@ function toggleAllCategories() {
   const allVisible =
     categories.length > 0 &&
     categories.every(
-      (category) =>
+      category =>
         category.visible
     );
 
 
   categories =
     categories.map(
-      (category) => ({
-
+      category => ({
         ...category,
-
         visible:
           !allVisible
-
       })
     );
 
@@ -870,70 +607,52 @@ function toggleAllCategories() {
 }
 
 
-/* =====================================================
-   SMAZÁNÍ KATEGORIE
-===================================================== */
+// =====================================================
+// SMAZÁNÍ KATEGORIE
+// =====================================================
 
-function deleteCategory(
-  id
-) {
+function deleteCategory(id) {
 
   const category =
-    getCategory(
-      id
-    );
+    getCategory(id);
 
 
   if (!category) {
-
     return;
-
   }
 
 
   const amount =
-    countPoints(
-      id
-    );
+    countPoints(id);
 
 
   let message =
     `Opravdu chceš smazat kategorii „${category.name}“?`;
 
 
-  if (
-    amount > 0
-  ) {
+  if (amount > 0) {
 
     message +=
-
-      `\n\nKategorie obsahuje ${amount} bodů. ` +
-      `Ty budou také odstraněny.`;
+      `\n\nObsahuje ${amount} bodů. Ty budou také odstraněny.`;
 
   }
 
 
-  if (
-    !confirm(
-      message
-    )
-  ) {
-
+  if (!confirm(message)) {
     return;
-
   }
 
 
   categories =
     categories.filter(
-      (item) =>
-        item.id !== id
+      category =>
+        category.id !== id
     );
 
 
   points =
     points.filter(
-      (point) =>
+      point =>
         point.categoryId !== id
     );
 
@@ -949,11 +668,17 @@ function deleteCategory(
 }
 
 
-/* =====================================================
-   MODAL KATEGORIE
-===================================================== */
+// =====================================================
+// MODAL KATEGORIE
+// =====================================================
 
 function openCategoryModal() {
+
+  closeContextMenu();
+
+  categoryNameInput.value =
+    '';
+
 
   categoryModal.classList.remove(
     'hidden'
@@ -966,16 +691,9 @@ function openCategoryModal() {
   );
 
 
-  categoryNameInput.value =
-    '';
-
-
   setTimeout(
-    () => {
-
-      categoryNameInput.focus();
-
-    },
+    () =>
+      categoryNameInput.focus(),
     50
   );
 
@@ -1014,9 +732,8 @@ function addCategory() {
 
   const exists =
     categories.some(
-      (category) =>
-        category.name
-          .toLowerCase() ===
+      category =>
+        category.name.toLowerCase() ===
         name.toLowerCase()
     );
 
@@ -1057,9 +774,9 @@ function addCategory() {
 }
 
 
-/* =====================================================
-   SELECT KATEGORIÍ
-===================================================== */
+// =====================================================
+// SELECT KATEGORIE
+// =====================================================
 
 function renderCategorySelect() {
 
@@ -1068,7 +785,7 @@ function renderCategorySelect() {
 
 
   categories.forEach(
-    (category) => {
+    category => {
 
       const option =
         document.createElement(
@@ -1096,9 +813,9 @@ function renderCategorySelect() {
 }
 
 
-/* =====================================================
-   START PŘIDÁVÁNÍ BODU
-===================================================== */
+// =====================================================
+// START PŘIDÁVÁNÍ BODU
+// =====================================================
 
 function startPointMode() {
 
@@ -1107,7 +824,7 @@ function startPointMode() {
   ) {
 
     alert(
-      'Nejdříve vytvoř alespoň jednu kategorii.'
+      'Nejdříve vytvoř kategorii.'
     );
 
     return;
@@ -1166,17 +883,14 @@ function stopPointMode() {
 }
 
 
-/* =====================================================
-   OTEVŘENÍ MODALU NOVÉHO BODU
-===================================================== */
+// =====================================================
+// NOVÝ BOD
+// =====================================================
 
 function openPointModalAt(
   clientX,
   clientY
 ) {
-
-  renderCategorySelect();
-
 
   editingPointId =
     null;
@@ -1188,6 +902,9 @@ function openPointModalAt(
 
   savePointBtn.textContent =
     'Přidat bod';
+
+
+  renderCategorySelect();
 
 
   pointNameInput.value =
@@ -1216,8 +933,7 @@ function openPointModalAt(
 
 
   pointCategorySelect.value =
-    categories[0]?.id ||
-    '';
+    categories[0]?.id || '';
 
 
   pointModal.classList.remove(
@@ -1241,20 +957,17 @@ function openPointModalAt(
 
 
   setTimeout(
-    () => {
-
-      pointNameInput.focus();
-
-    },
+    () =>
+      pointNameInput.focus(),
     50
   );
 
 }
 
 
-/* =====================================================
-   EDITACE BODU
-===================================================== */
+// =====================================================
+// EDITACE BODU
+// =====================================================
 
 function openEditPoint(
   id,
@@ -1264,15 +977,13 @@ function openEditPoint(
 
   const point =
     points.find(
-      (item) =>
+      item =>
         item.id === id
     );
 
 
   if (!point) {
-
     return;
-
   }
 
 
@@ -1307,24 +1018,19 @@ function openEditPoint(
 
 
   pointNameInput.value =
-    point.name ||
-    '';
+    point.name || '';
 
 
   pointDescriptionInput.value =
-    point.description ||
-    '';
+    point.description || '';
 
 
   pointCategorySelect.value =
-    point.categoryId ||
-    '';
+    point.categoryId || '';
 
 
   selectedSize =
-    Number(
-      point.size
-    ) || 6;
+    Number(point.size) || 6;
 
 
   pointSizeInput.value =
@@ -1362,20 +1068,17 @@ function openEditPoint(
 
 
   setTimeout(
-    () => {
-
-      pointNameInput.focus();
-
-    },
+    () =>
+      pointNameInput.focus(),
     50
   );
 
 }
 
 
-/* =====================================================
-   POZICE FORMULÁŘE
-===================================================== */
+// =====================================================
+// POZICE MODALU
+// =====================================================
 
 function positionPointModal(
   clientX,
@@ -1411,10 +1114,6 @@ function positionPointModal(
         gap;
 
 
-      /*
-        Není místo vpravo.
-      */
-
       if (
         left +
         rect.width >
@@ -1430,10 +1129,6 @@ function positionPointModal(
       }
 
 
-      /*
-        Není místo dole.
-      */
-
       if (
         top +
         rect.height >
@@ -1448,11 +1143,6 @@ function positionPointModal(
 
       }
 
-
-      /*
-        Formulář zůstane
-        uvnitř obrazovky.
-      */
 
       left =
         Math.max(
@@ -1491,18 +1181,16 @@ function positionPointModal(
 }
 
 
-/* =====================================================
-   UMÍSTĚNÍ BODU
-===================================================== */
+// =====================================================
+// KLIK NA MAPU
+// =====================================================
 
 function placePoint(
   event
 ) {
 
   if (!addingPoint) {
-
     return;
-
   }
 
 
@@ -1531,30 +1219,22 @@ function placePoint(
   }
 
 
-  const mapX =
-    event.clientX -
-    rect.left;
-
-
-  const mapY =
-    event.clientY -
-    rect.top;
-
-
   pendingPoint = {
 
     x:
       (
-        mapX /
-        rect.width
-      ) *
+        event.clientX -
+        rect.left
+      ) /
+      rect.width *
       100,
 
     y:
       (
-        mapY /
-        rect.height
-      ) *
+        event.clientY -
+        rect.top
+      ) /
+      rect.height *
       100,
 
     clientX:
@@ -1568,7 +1248,6 @@ function placePoint(
 
   stopPointMode();
 
-
   renderPoints();
 
 
@@ -1580,16 +1259,14 @@ function placePoint(
 }
 
 
-/* =====================================================
-   ULOŽENÍ / EDITACE
-===================================================== */
+// =====================================================
+// ULOŽIT BOD
+// =====================================================
 
 function savePoint() {
 
   if (!pendingPoint) {
-
     return;
-
   }
 
 
@@ -1631,17 +1308,13 @@ function savePoint() {
       .trim();
 
 
-  /*
-    EDITACE
-  */
-
   if (
     editingPointId
   ) {
 
     const point =
       points.find(
-        (item) =>
+        item =>
           item.id ===
           editingPointId
       );
@@ -1667,11 +1340,6 @@ function savePoint() {
     }
 
   }
-
-
-  /*
-    NOVÝ BOD
-  */
 
   else {
 
@@ -1714,9 +1382,39 @@ function savePoint() {
 }
 
 
-/* =====================================================
-   RENDER BODY
-===================================================== */
+// =====================================================
+// ZAVŘÍT MODAL BODU
+// =====================================================
+
+function closePointModal() {
+
+  pointModal.classList.add(
+    'hidden'
+  );
+
+
+  pointModal.setAttribute(
+    'aria-hidden',
+    'true'
+  );
+
+
+  pendingPoint =
+    null;
+
+
+  editingPointId =
+    null;
+
+
+  renderPoints();
+
+}
+
+
+// =====================================================
+// RENDER BODŮ
+// =====================================================
 
 function renderPoints() {
 
@@ -1726,54 +1424,55 @@ function renderPoints() {
 
   const visiblePoints =
     points.filter(
-      (point) =>
+      point =>
         getCategory(
           point.categoryId
         )?.visible
     );
 
 
-  const list =
-    pendingPoint
+  let list =
+    [...visiblePoints];
 
-      ? [
 
-          ...visiblePoints,
+  /*
+    Náhled při tvorbě/editaci.
+  */
 
-          {
+  if (pendingPoint) {
 
-            ...pendingPoint,
+    list.push({
 
-            id:
-              '__preview__',
+      ...pendingPoint,
 
-            name:
-              pointNameInput.value,
+      id:
+        '__preview__',
 
-            description:
-              pointDescriptionInput.value,
+      name:
+        pointNameInput.value,
 
-            categoryId:
-              pointCategorySelect.value,
+      description:
+        pointDescriptionInput.value,
 
-            color:
-              selectedColor,
+      categoryId:
+        pointCategorySelect.value,
 
-            size:
-              selectedSize,
+      color:
+        selectedColor,
 
-            preview:
-              true
+      size:
+        selectedSize,
 
-          }
+      preview:
+        true
 
-        ]
+    });
 
-      : visiblePoints;
+  }
 
 
   list.forEach(
-    (point) => {
+    point => {
 
       const category =
         getCategory(
@@ -1782,9 +1481,7 @@ function renderPoints() {
 
 
       if (!category) {
-
         return;
-
       }
 
 
@@ -1852,7 +1549,7 @@ function renderPoints() {
 
 
       /*
-        Emoji musí být uvnitř bodu.
+        Emoji se vejde pouze do bodu.
       */
 
       if (
@@ -1873,14 +1570,10 @@ function renderPoints() {
           category.emoji;
 
 
-        /*
-          Nikdy větší než samotný bod.
-        */
-
         const emojiSize =
           Math.min(
             size,
-            12
+            10
           );
 
 
@@ -1967,12 +1660,12 @@ function renderPoints() {
 
 
         /*
-          Pravý klik.
+          Pravý klik na bod.
         */
 
         element.addEventListener(
           'contextmenu',
-          (event) => {
+          event => {
 
             event.preventDefault();
 
@@ -2001,65 +1694,49 @@ function renderPoints() {
 }
 
 
-/* =====================================================
-   KLIK NA PODBOD
-===================================================== */
+// =====================================================
+// HIGHLIGHT BODU
+// =====================================================
 
-function focusPoint(
-  id
+function highlightPoint(
+  id,
+  keepVisible = false
 ) {
 
-  const point =
-    points.find(
-      (item) =>
-        item.id === id
-    );
-
-
-  if (!point) {
-
-    return;
-
-  }
-
-
-  const category =
-    getCategory(
-      point.categoryId
-    );
-
-
   /*
-    Pokud je kategorie schovaná,
-    zobrazíme ji.
+    Nejprve odstraníme zvýraznění
+    ze všech bodů.
   */
 
-  if (
-    category &&
-    !category.visible
-  ) {
+  pointsLayer
+    .querySelectorAll(
+      '.map-point.focused-point'
+    )
+    .forEach(
+      element =>
+        element.classList.remove(
+          'focused-point'
+        )
+    );
 
-    category.visible =
-      true;
-
-
-    saveCategories();
-
-
-    renderCategories();
-
-  }
-
-
-  /*
-    ŽÁDNÝ POSUN MAPY.
-    ŽÁDNÝ ZOOM.
-
-    Pouze zvýraznění bodu.
-  */
 
   focusedPointId =
     id;
+
+
+  const element =
+    pointsLayer.querySelector(
+      `[data-point-id="${id}"]`
+    );
+
+
+  if (element) {
+
+    element.classList.add(
+      'focused-point'
+    );
+
+  }
 
 
   clearTimeout(
@@ -2067,29 +1744,84 @@ function focusPoint(
   );
 
 
-  renderPoints();
+  if (!keepVisible) {
 
+    focusedPointTimer =
+      setTimeout(
+        () => {
 
-  focusedPointTimer =
-    setTimeout(
-      () => {
+          unhighlightPoint(
+            id
+          );
 
-        focusedPointId =
-          null;
+        },
+        250
+      );
 
+  }
 
-        renderPoints();
+  else {
 
-      },
-      3000
-    );
+    focusedPointTimer =
+      setTimeout(
+        () => {
+
+          unhighlightPoint(
+            id
+          );
+
+        },
+        3000
+      );
+
+  }
 
 }
 
 
-/* =====================================================
-   CONTEXT MENU
-===================================================== */
+// =====================================================
+// ZRUŠENÍ HIGHLIGHTU
+// =====================================================
+
+function unhighlightPoint(
+  id
+) {
+
+  /*
+    Když je právě tento bod
+    stále vybraný, odstraníme ho.
+  */
+
+  const element =
+    pointsLayer.querySelector(
+      `[data-point-id="${id}"]`
+    );
+
+
+  if (element) {
+
+    element.classList.remove(
+      'focused-point'
+    );
+
+  }
+
+
+  if (
+    focusedPointId === id
+  ) {
+
+    focusedPointId =
+      null;
+
+  }
+
+}
+
+
+// =====================================================
+// CONTEXT MENU
+// =====================================================
 
 function openContextMenu(
   clientX,
@@ -2177,18 +1909,16 @@ function closeContextMenu() {
 }
 
 
-/* =====================================================
-   EDITACE
-===================================================== */
+// =====================================================
+// EDITACE Z CONTEXT MENU
+// =====================================================
 
 editPointBtn.addEventListener(
   'click',
   () => {
 
     if (!contextPointId) {
-
       return;
-
     }
 
 
@@ -2198,49 +1928,39 @@ editPointBtn.addEventListener(
 
     const point =
       points.find(
-        (item) =>
+        item =>
           item.id === id
       );
-
-
-    if (!point) {
-
-      closeContextMenu();
-
-      return;
-
-    }
 
 
     closeContextMenu();
 
 
+    if (!point) {
+      return;
+    }
+
+
     openEditPoint(
-
       id,
-
       window.innerWidth / 2,
-
       window.innerHeight / 2
-
     );
 
   }
 );
 
 
-/* =====================================================
-   SMAZÁNÍ
-===================================================== */
+// =====================================================
+// SMAZÁNÍ Z CONTEXT MENU
+// =====================================================
 
 deletePointBtn.addEventListener(
   'click',
   () => {
 
     if (!contextPointId) {
-
       return;
-
     }
 
 
@@ -2265,15 +1985,13 @@ function deletePoint(
 
   const point =
     points.find(
-      (item) =>
+      item =>
         item.id === id
     );
 
 
   if (!point) {
-
     return;
-
   }
 
 
@@ -2290,7 +2008,7 @@ function deletePoint(
 
   points =
     points.filter(
-      (item) =>
+      item =>
         item.id !== id
     );
 
@@ -2304,13 +2022,13 @@ function deletePoint(
 }
 
 
-/* =====================================================
-   KLIK MIMO CONTEXT MENU
-===================================================== */
+// =====================================================
+// CONTEXT MENU - ZAVŘÍT
+// =====================================================
 
 document.addEventListener(
   'click',
-  (event) => {
+  event => {
 
     if (
       !pointContextMenu.contains(
@@ -2326,9 +2044,9 @@ document.addEventListener(
 );
 
 
-/* =====================================================
-   RGB
-===================================================== */
+// =====================================================
+// BARVY
+// =====================================================
 
 function hexToRgb(
   hex
@@ -2386,9 +2104,9 @@ function rgbToHex(
     '#' +
 
     [r,g,b]
-      .map(
-        (value) =>
 
+      .map(
+        value =>
           Math.round(
             value
           )
@@ -2398,16 +2116,13 @@ function rgbToHex(
             '0'
           )
       )
+
       .join('')
 
   );
 
 }
 
-
-/* =====================================================
-   HSL -> RGB
-===================================================== */
 
 function hslToRgb(
   h,
@@ -2451,39 +2166,27 @@ function hslToRgb(
         if (
           t < 0
         ) {
-
           t += 1;
-
         }
-
 
         if (
           t > 1
         ) {
-
           t -= 1;
-
         }
-
 
         if (
           t < 1/6
         ) {
 
           return (
-
             p +
-
-            (
-              q-p
-            ) *
+            (q-p) *
             6 *
             t
-
           );
 
         }
-
 
         if (
           t < 1/2
@@ -2493,31 +2196,20 @@ function hslToRgb(
 
         }
 
-
         if (
           t < 2/3
         ) {
 
           return (
-
             p +
-
-            (
-              q-p
-            ) *
-
+            (q-p) *
             (
               2/3-t
             ) *
-
-            6 *
-
-            1
-
+            6
           );
 
         }
-
 
         return p;
 
@@ -2526,18 +2218,12 @@ function hslToRgb(
 
     const q =
       l < .5
-
-        ? l *
-          (1+s)
-
-        : l +
-          s -
-          l*s;
+        ? l*(1+s)
+        : l+s-l*s;
 
 
     const p =
-      2*l -
-      q;
+      2*l-q;
 
 
     r =
@@ -2588,10 +2274,6 @@ function hslToRgb(
 }
 
 
-/* =====================================================
-   RGB -> HSL
-===================================================== */
-
 function rgbToHsl(
   r,
   g,
@@ -2631,11 +2313,9 @@ function rgbToHsl(
     ) / 2;
 
 
-  let hue =
-    0;
+  let hue = 0;
 
-  let saturation =
-    0;
+  let saturation = 0;
 
 
   if (
@@ -2732,10 +2412,6 @@ function rgbToHsl(
 }
 
 
-/* =====================================================
-   SET COLOR
-===================================================== */
-
 function setColor(
   hex
 ) {
@@ -2757,10 +2433,8 @@ function setColor(
   redInput.value =
     rgb.r;
 
-
   greenInput.value =
     rgb.g;
-
 
   blueInput.value =
     rgb.b;
@@ -2781,25 +2455,18 @@ function setColor(
   wheelHue =
     hsl.h;
 
-
   wheelSaturation =
     hsl.s;
 
 
   updateWheelCursor();
 
-
   renderColorPresets();
-
 
   renderPoints();
 
 }
 
-
-/* =====================================================
-   RGB INPUT
-===================================================== */
 
 function updateFromRgb() {
 
@@ -2839,16 +2506,6 @@ function updateFromRgb() {
     );
 
 
-  redInput.value =
-    r;
-
-  greenInput.value =
-    g;
-
-  blueInput.value =
-    b;
-
-
   setColor(
     rgbToHex(
       r,
@@ -2860,9 +2517,9 @@ function updateFromRgb() {
 }
 
 
-/* =====================================================
-   COLOR WHEEL
-===================================================== */
+// =====================================================
+// COLOR WHEEL
+// =====================================================
 
 function updateWheelCursor() {
 
@@ -2890,7 +2547,6 @@ function updateWheelCursor() {
 
 
   colorWheelCursor.style.left =
-
     `${
       radius +
       Math.cos(angle) *
@@ -2899,7 +2555,6 @@ function updateWheelCursor() {
 
 
   colorWheelCursor.style.top =
-
     `${
       radius +
       Math.sin(angle) *
@@ -3030,15 +2685,75 @@ function pickWheel(
 
   renderColorPresets();
 
-
   renderPoints();
 
 }
 
 
-/* =====================================================
-   PRESETY
-===================================================== */
+colorWheel.addEventListener(
+  'pointerdown',
+  event => {
+
+    colorWheelDragging =
+      true;
+
+
+    colorWheel.setPointerCapture(
+      event.pointerId
+    );
+
+
+    pickWheel(
+      event
+    );
+
+  }
+);
+
+
+colorWheel.addEventListener(
+  'pointermove',
+  event => {
+
+    if (
+      colorWheelDragging
+    ) {
+
+      pickWheel(
+        event
+      );
+
+    }
+
+  }
+);
+
+
+colorWheel.addEventListener(
+  'pointerup',
+  () => {
+
+    colorWheelDragging =
+      false;
+
+  }
+);
+
+
+colorWheel.addEventListener(
+  'pointercancel',
+  () => {
+
+    colorWheelDragging =
+      false;
+
+  }
+);
+
+
+// =====================================================
+// PRESET BARVY
+// =====================================================
 
 function renderColorPresets() {
 
@@ -3047,7 +2762,7 @@ function renderColorPresets() {
 
 
   COLOR_PRESETS.forEach(
-    (color) => {
+    color => {
 
       const button =
         document.createElement(
@@ -3101,6 +2816,59 @@ function renderColorPresets() {
 }
 
 
+// =====================================================
+// LIVE VELIKOST
+// =====================================================
+
+function updatePreview() {
+
+  selectedSize =
+    Number(
+      pointSizeInput.value
+    ) || 6;
+
+
+  pointSizeValue.textContent =
+    `${selectedSize} px`;
+
+
+  renderPoints();
+
+}
+
+
+// =====================================================
+// KLIK Z BODU V MENU
+// =====================================================
+
+function focusPoint(
+  id
+) {
+
+  highlightPoint(
+    id,
+    true
+  );
+
+}
+
+
+/* =====================================================
+   MAPA - RENDER
+===================================================== */
+
+function renderMap() {
+
+  canvas.style.transform =
+    `translate3d(
+      calc(-50% + ${x}px),
+      calc(-50% + ${y}px),
+      0
+    ) scale(${scale})`;
+
+}
+
+
 /* =====================================================
    WASD
 ===================================================== */
@@ -3108,8 +2876,7 @@ function renderColorPresets() {
 function startWASD() {
 
   if (
-    wasdAnimationId !==
-    null
+    wasdAnimationId !== null
   ) {
 
     return;
@@ -3183,7 +2950,7 @@ function startWASD() {
 
 
     if (
-      pressedKeys.size > 0
+      pressedKeys.size
     ) {
 
       wasdAnimationId =
@@ -3213,27 +2980,16 @@ function startWASD() {
 
 document.addEventListener(
   'keydown',
-  (event) => {
+  event => {
 
     const tag =
-      document.activeElement
-        ?.tagName
-        ?.toLowerCase();
+      document.activeElement?.tagName?.toLowerCase();
 
-
-    /*
-      Když píšeme do formuláře,
-      WASD nepohybuje mapou.
-    */
 
     if (
-
       tag === 'input' ||
-
       tag === 'textarea' ||
-
       tag === 'select'
-
     ) {
 
       return;
@@ -3246,12 +3002,9 @@ document.addEventListener(
 
 
     if (
-      ![
-        'w',
-        'a',
-        's',
-        'd'
-      ].includes(key)
+      !['w','a','s','d'].includes(
+        key
+      )
     ) {
 
       return;
@@ -3275,370 +3028,19 @@ document.addEventListener(
 
 document.addEventListener(
   'keyup',
-  (event) => {
-
-    const key =
-      event.key.toLowerCase();
-
+  event => {
 
     pressedKeys.delete(
-      key
+      event.key.toLowerCase()
     );
 
   }
 );
 
 
-/* =====================================================
-   EVENTY
-===================================================== */
-
-addCategoryBtn.addEventListener(
-  'click',
-  openCategoryModal
-);
-
-
-toggleAllBtn.addEventListener(
-  'click',
-  toggleAllCategories
-);
-
-
-saveCategoryBtn.addEventListener(
-  'click',
-  addCategory
-);
-
-
-cancelCategoryBtn.addEventListener(
-  'click',
-  closeCategoryModal
-);
-
-
-closeCategoryBtn.addEventListener(
-  'click',
-  closeCategoryModal
-);
-
-
-addPointBtn.addEventListener(
-  'click',
-  startPointMode
-);
-
-
-savePointBtn.addEventListener(
-  'click',
-  savePoint
-);
-
-
-cancelPointBtn.addEventListener(
-  'click',
-  closePointModal
-);
-
-
-closePointBtn.addEventListener(
-  'click',
-  closePointModal
-);
-
-
-pointSizeInput.addEventListener(
-  'input',
-  updatePreview
-);
-
-
-redInput.addEventListener(
-  'input',
-  updateFromRgb
-);
-
-
-greenInput.addEventListener(
-  'input',
-  updateFromRgb
-);
-
-
-blueInput.addEventListener(
-  'input',
-  updateFromRgb
-);
-
-
-pointNameInput.addEventListener(
-  'input',
-  renderPoints
-);
-
-
-pointDescriptionInput.addEventListener(
-  'input',
-  renderPoints
-);
-
-
-pointCategorySelect.addEventListener(
-  'change',
-  renderPoints
-);
-
-
-/* =====================================================
-   COLOR WHEEL EVENTS
-===================================================== */
-
-colorWheel.addEventListener(
-  'pointerdown',
-  (event) => {
-
-    colorWheelDragging =
-      true;
-
-
-    colorWheel.setPointerCapture(
-      event.pointerId
-    );
-
-
-    pickWheel(
-      event
-    );
-
-  }
-);
-
-
-colorWheel.addEventListener(
-  'pointermove',
-  (event) => {
-
-    if (
-      colorWheelDragging
-    ) {
-
-      pickWheel(
-        event
-      );
-
-    }
-
-  }
-);
-
-
-colorWheel.addEventListener(
-  'pointerup',
-  () => {
-
-    colorWheelDragging =
-      false;
-
-  }
-);
-
-
-colorWheel.addEventListener(
-  'pointercancel',
-  () => {
-
-    colorWheelDragging =
-      false;
-
-  }
-);
-
-
-/* =====================================================
-   KLIK NA MAPU
-===================================================== */
-
-viewport.addEventListener(
-  'click',
-  (event) => {
-
-    if (
-      addingPoint
-    ) {
-
-      placePoint(
-        event
-      );
-
-    }
-
-  }
-);
-
-
-/* =====================================================
-   DRAG MAPY
-===================================================== */
-
-viewport.addEventListener(
-  'pointerdown',
-  (event) => {
-
-    if (
-      addingPoint
-    ) {
-
-      return;
-
-    }
-
-
-    dragging =
-      true;
-
-
-    viewport.classList.add(
-      'is-dragging'
-    );
-
-
-    startX =
-      event.clientX;
-
-
-    startY =
-      event.clientY;
-
-
-    startMapX =
-      x;
-
-
-    startMapY =
-      y;
-
-
-    viewport.setPointerCapture(
-      event.pointerId
-    );
-
-  }
-);
-
-
-viewport.addEventListener(
-  'pointermove',
-  (event) => {
-
-    if (
-      !dragging
-    ) {
-
-      return;
-
-    }
-
-
-    x =
-      startMapX +
-      (
-        event.clientX -
-        startX
-      );
-
-
-    y =
-      startMapY +
-      (
-        event.clientY -
-        startY
-      );
-
-
-    renderMap();
-
-  }
-);
-
-
-viewport.addEventListener(
-  'pointerup',
-  stopDragging
-);
-
-
-viewport.addEventListener(
-  'pointercancel',
-  stopDragging
-);
-
-
-function stopDragging(
-  event
-) {
-
-  dragging =
-    false;
-
-
-  viewport.classList.remove(
-    'is-dragging'
-  );
-
-
-  if (
-
-    event &&
-
-    viewport.hasPointerCapture(
-      event.pointerId
-    )
-
-  ) {
-
-    viewport.releasePointerCapture(
-      event.pointerId
-    );
-
-  }
-
-}
-
-
-/* =====================================================
-   ZOOM KOLEČKEM
-===================================================== */
-
-viewport.addEventListener(
-  'wheel',
-  (event) => {
-
-    event.preventDefault();
-
-
-    const factor =
-      event.deltaY < 0
-        ? 1.12
-        : 1 / 1.12;
-
-
-    zoomAt(
-
-      scale *
-      factor,
-
-      event.clientX,
-
-      event.clientY
-
-    );
-
-  },
-  {
-    passive:false
-  }
-);
-
+// =====================================================
+// MAPA - ZOOM
+// =====================================================
 
 function zoomAt(
   nextScale,
@@ -3706,9 +3108,189 @@ function zoomAt(
 }
 
 
-/* =====================================================
-   TLAČÍTKA ZOOMU
-===================================================== */
+// =====================================================
+// MAPA - KOLEČKO
+// =====================================================
+
+viewport.addEventListener(
+  'wheel',
+  event => {
+
+    event.preventDefault();
+
+
+    const factor =
+      event.deltaY < 0
+        ? 1.12
+        : 1 / 1.12;
+
+
+    zoomAt(
+      scale *
+      factor,
+
+      event.clientX,
+
+      event.clientY
+    );
+
+  },
+  {
+    passive:false
+  }
+);
+
+
+// =====================================================
+// MAPA - MYŠÍ POSUN
+// =====================================================
+
+viewport.addEventListener(
+  'pointerdown',
+  event => {
+
+    /*
+      Při přidávání bodu
+      se mapa NESMÍ začít tahat.
+    */
+
+    if (
+      addingPoint
+    ) {
+
+      return;
+
+    }
+
+
+    /*
+      Kliknutí na samotný bod
+      nesmí začít drag mapy.
+    */
+
+    if (
+      event.target.closest(
+        '.map-point'
+      )
+    ) {
+
+      return;
+
+    }
+
+
+    dragging =
+      true;
+
+
+    viewport.classList.add(
+      'is-dragging'
+    );
+
+
+    startX =
+      event.clientX;
+
+
+    startY =
+      event.clientY;
+
+
+    startMapX =
+      x;
+
+
+    startMapY =
+      y;
+
+
+    viewport.setPointerCapture(
+      event.pointerId
+    );
+
+  }
+);
+
+
+viewport.addEventListener(
+  'pointermove',
+  event => {
+
+    if (
+      !dragging
+    ) {
+
+      return;
+
+    }
+
+
+    x =
+      startMapX +
+      (
+        event.clientX -
+        startX
+      );
+
+
+    y =
+      startMapY +
+      (
+        event.clientY -
+        startY
+      );
+
+
+    renderMap();
+
+  }
+);
+
+
+function stopDragging(
+  event
+) {
+
+  dragging =
+    false;
+
+
+  viewport.classList.remove(
+    'is-dragging'
+  );
+
+
+  if (
+    event &&
+    viewport.hasPointerCapture(
+      event.pointerId
+    )
+  ) {
+
+    viewport.releasePointerCapture(
+      event.pointerId
+    );
+
+  }
+
+}
+
+
+viewport.addEventListener(
+  'pointerup',
+  stopDragging
+);
+
+
+viewport.addEventListener(
+  'pointercancel',
+  stopDragging
+);
+
+
+// =====================================================
+// MAPA - TLAČÍTKA
+// =====================================================
 
 document
   .getElementById(
@@ -3724,8 +3306,7 @@ document
 
       zoomAt(
 
-        scale *
-        1.2,
+        scale * 1.2,
 
         rect.left +
         rect.width /
@@ -3755,8 +3336,7 @@ document
 
       zoomAt(
 
-        scale /
-        1.2,
+        scale / 1.2,
 
         rect.left +
         rect.width /
@@ -3795,13 +3375,35 @@ document
   );
 
 
-/* =====================================================
-   ESC
-===================================================== */
+// =====================================================
+// KLIK NA MAPU = NOVÝ BOD
+// =====================================================
+
+viewport.addEventListener(
+  'click',
+  event => {
+
+    if (
+      addingPoint
+    ) {
+
+      placePoint(
+        event
+      );
+
+    }
+
+  }
+);
+
+
+// =====================================================
+// ESC
+// =====================================================
 
 document.addEventListener(
   'keydown',
-  (event) => {
+  event => {
 
     if (
       event.key !==
@@ -3811,6 +3413,9 @@ document.addEventListener(
       return;
 
     }
+
+
+    closeContextMenu();
 
 
     if (
@@ -3843,34 +3448,95 @@ document.addEventListener(
 
     }
 
-
-    closeContextMenu();
-
   }
 );
 
 
-/* =====================================================
-   RENDER MAP
-===================================================== */
+// =====================================================
+// START
+// =====================================================
 
-function renderMap() {
-
-  canvas.style.transform =
-
-    `translate3d(
-      calc(-50% + ${x}px),
-      calc(-50% + ${y}px),
-      0
-    )
-    scale(${scale})`;
-
-}
+addPointBtn.addEventListener(
+  'click',
+  startPointMode
+);
 
 
-/* =====================================================
-   START
-===================================================== */
+addCategoryBtn.addEventListener(
+  'click',
+  openCategoryModal
+);
+
+
+toggleAllBtn.addEventListener(
+  'click',
+  toggleAllCategories
+);
+
+
+saveCategoryBtn.addEventListener(
+  'click',
+  addCategory
+);
+
+
+cancelCategoryBtn.addEventListener(
+  'click',
+  closeCategoryModal
+);
+
+
+closeCategoryBtn.addEventListener(
+  'click',
+  closeCategoryModal
+);
+
+
+savePointBtn.addEventListener(
+  'click',
+  savePoint
+);
+
+
+cancelPointBtn.addEventListener(
+  'click',
+  closePointModal
+);
+
+
+closePointBtn.addEventListener(
+  'click',
+  closePointModal
+);
+
+
+pointSizeInput.addEventListener(
+  'input',
+  updatePreview
+);
+
+
+pointNameInput.addEventListener(
+  'input',
+  renderPoints
+);
+
+
+pointDescriptionInput.addEventListener(
+  'input',
+  renderPoints
+);
+
+
+pointCategorySelect.addEventListener(
+  'change',
+  renderPoints
+);
+
+
+// =====================================================
+// START
+// =====================================================
 
 renderCategories();
 
