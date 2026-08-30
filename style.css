@@ -28,6 +28,11 @@ body{
   display:flex
 }
 
+
+/* =========================================
+   SIDEBAR
+========================================= */
+
 .sidebar{
   position:relative;
   z-index:20;
@@ -60,6 +65,11 @@ body{
   padding:18px 15px;
   overflow:auto
 }
+
+
+/* =========================================
+   BUTTONS
+========================================= */
 
 .add-point,
 .add-category,
@@ -106,6 +116,11 @@ body{
 .hidden{
   display:none!important
 }
+
+
+/* =========================================
+   CATEGORY
+========================================= */
 
 .category-header{
   display:flex;
@@ -210,6 +225,11 @@ body{
   letter-spacing:.4px
 }
 
+
+/* =========================================
+   PODBODY
+========================================= */
+
 .category-points{
   margin:2px 0 1px 28px;
   padding-left:8px;
@@ -227,7 +247,8 @@ body{
   border-radius:3px;
   color:#aaa39d;
   font:11px/1.2 Arial,sans-serif;
-  cursor:pointer
+  cursor:pointer;
+  transition:.12s
 }
 
 .category-point:hover{
@@ -249,6 +270,11 @@ body{
   text-overflow:ellipsis;
   white-space:nowrap
 }
+
+
+/* =========================================
+   ADD CATEGORY
+========================================= */
 
 .add-category{
   width:100%;
@@ -274,6 +300,11 @@ body{
   font:10px/1.5 Arial,sans-serif
 }
 
+
+/* =========================================
+   FOOTER
+========================================= */
+
 .sidebar-footer{
   margin-top:auto;
   padding:15px 20px;
@@ -293,6 +324,11 @@ body{
   background:#7d9a48;
   box-shadow:0 0 9px rgba(125,154,72,.7)
 }
+
+
+/* =========================================
+   MAP
+========================================= */
 
 .map-area{
   position:relative;
@@ -339,6 +375,11 @@ body{
   image-rendering:auto
 }
 
+
+/* =========================================
+   POINTS
+========================================= */
+
 .points-layer{
   position:absolute;
   inset:0;
@@ -347,8 +388,6 @@ body{
 
 .map-point{
   position:absolute;
-  width:6px;
-  height:6px;
   transform:translate(-50%,-50%);
   border:1px solid #fff;
   border-radius:50%;
@@ -373,15 +412,11 @@ body{
   left:50%;
   top:50%;
   transform:translate(-50%,-50%);
-  font-size:10px;
   line-height:1;
   pointer-events:none;
   filter:drop-shadow(0 1px 1px rgba(0,0,0,.8));
-  z-index:2
-}
-
-.map-point.has-emoji{
-  border-color:rgba(255,255,255,.95)
+  z-index:2;
+  overflow:hidden
 }
 
 .point-tooltip{
@@ -433,6 +468,11 @@ body{
   }
 }
 
+
+/* =========================================
+   MAP CONTROLS
+========================================= */
+
 .map-controls{
   position:absolute;
   right:20px;
@@ -476,6 +516,11 @@ body{
   font-size:11px;
   pointer-events:none
 }
+
+
+/* =========================================
+   MODAL
+========================================= */
 
 .modal{
   position:fixed;
@@ -569,6 +614,11 @@ body{
   border-color:var(--orange)
 }
 
+
+/* =========================================
+   POINT MODAL
+========================================= */
+
 .point-modal{
   position:fixed;
   inset:0;
@@ -586,6 +636,11 @@ body{
   position:fixed;
   pointer-events:auto
 }
+
+
+/* =========================================
+   COLOR
+========================================= */
 
 .color-layout{
   display:flex;
@@ -648,8 +703,7 @@ body{
   height:15px;
   border:2px solid #fff;
   border-radius:50%;
-  box-shadow:
-    0 0 0 1px rgba(0,0,0,.8);
+  box-shadow:0 0 0 1px rgba(0,0,0,.8);
   transform:translate(-50%,-50%);
   pointer-events:none;
   z-index:10
@@ -702,6 +756,11 @@ body{
   box-shadow:0 3px 10px rgba(0,0,0,.5)
 }
 
+
+/* =========================================
+   RGB
+========================================= */
+
 .rgb-title{
   margin-top:15px;
   color:#948b84;
@@ -720,6 +779,11 @@ body{
 .rgb-values label{
   margin-top:7px
 }
+
+
+/* =========================================
+   SIZE
+========================================= */
 
 .size-row{
   display:flex;
@@ -740,6 +804,11 @@ body{
   font-size:12px;
   text-align:right
 }
+
+
+/* =========================================
+   MODAL BUTTONS
+========================================= */
 
 .modal-actions{
   display:flex;
@@ -775,6 +844,53 @@ body{
 .primary-btn:hover{
   background:var(--orange-light)
 }
+
+
+/* =========================================
+   PRAVÉ MENU BODU
+========================================= */
+
+.point-context-menu{
+  position:fixed;
+  z-index:500;
+  min-width:150px;
+  padding:5px;
+  border:1px solid rgba(183,74,28,.55);
+  border-radius:5px;
+  background:#111;
+  box-shadow:0 12px 30px rgba(0,0,0,.6)
+}
+
+.point-context-menu button{
+  display:block;
+  width:100%;
+  border:0;
+  border-radius:3px;
+  padding:9px 11px;
+  background:transparent;
+  color:#ddd;
+  text-align:left;
+  font:12px 'Oswald',sans-serif;
+  cursor:pointer
+}
+
+.point-context-menu button:hover{
+  background:#211814
+}
+
+.point-context-menu .danger-context{
+  color:#dc8170
+}
+
+.point-context-menu .danger-context:hover{
+  background:rgba(160,40,20,.16);
+  color:#ff9a88
+}
+
+
+/* =========================================
+   MOBILE
+========================================= */
 
 @media (max-width:760px){
 
