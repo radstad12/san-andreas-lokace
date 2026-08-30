@@ -1610,6 +1610,81 @@ function svgElement(name) {
 }
 
 
+function getTerritoryCenter(territory) {
+  if (!Array.isArray(territory.points) || !territory.points.length) {
+    return { x: 50, y: 50 };
+  }
+
+  const center = territory.points.reduce(
+    (acc, point) => ({
+      x: acc.x + Number(point.x || 0),
+      y: acc.y + Number(point.y || 0)
+    }),
+    { x: 0, y: 0 }
+  );
+
+  center.x /= territory.points.length;
+  center.y /= territory.points.length;
+
+  return center;
+}
+
+
+function getOrCreateTerritoryTooltip() {
+  if (!canvas) {
+    return null;
+  }
+
+  let tooltip = canvas.querySelector(".territory-tooltip");
+
+  if (!tooltip) {
+    tooltip = document.createElement("div");
+    tooltip.className = "point-tooltip territory-tooltip";
+    canvas.appendChild(tooltip);
+  }
+
+  return tooltip;
+}
+
+
+function showTerritoryTooltip(territory) {
+  const tooltip = getOrCreateTerritoryTooltip();
+
+  if (!tooltip) {
+    return;
+  }
+
+  tooltip.innerHTML = "";
+
+  const title = document.createElement("div");
+  title.className = "point-tooltip-title";
+  title.textContent = territory.name || "Bez názvu";
+  tooltip.appendChild(title);
+
+  if (territory.description) {
+    const description = document.createElement("div");
+    description.className = "point-tooltip-description";
+    description.textContent = territory.description;
+    tooltip.appendChild(description);
+  }
+
+  const center = getTerritoryCenter(territory);
+
+  tooltip.style.left = `${center.x}%`;
+  tooltip.style.top = `${center.y}%`;
+  tooltip.classList.add("territory-tooltip-visible");
+}
+
+
+function hideTerritoryTooltip() {
+  const tooltip = canvas?.querySelector(".territory-tooltip");
+
+  if (tooltip) {
+    tooltip.classList.remove("territory-tooltip-visible");
+  }
+}
+
+
 function drawTerritory(territory) {
   if (
     !territoryLayer ||
@@ -1673,6 +1748,22 @@ function drawTerritory(territory) {
       focusTerritory(
         territory.id
       );
+    }
+  );
+
+  polygon.addEventListener(
+    "mouseenter",
+    () => {
+      showTerritoryTooltip(territory);
+    }
+  );
+
+  polygon.addEventListener(
+    "mouseleave",
+    () => {
+      if (!polygon.classList.contains("territory-focused")) {
+        hideTerritoryTooltip();
+      }
     }
   );
 
@@ -2635,7 +2726,12 @@ function focusTerritory(
       `[data-territory-id="${id}"]`
     );
 
-  if (!element) {
+  const territory =
+    territories.find(
+      item => item.id === id
+    );
+
+  if (!element || !territory) {
     return;
   }
 
@@ -2643,17 +2739,21 @@ function focusTerritory(
     "territory-focused"
   );
 
-  void element.offsetWidth;
+  void element.getBoundingClientRect();
 
   element.classList.add(
     "territory-focused"
   );
+
+  showTerritoryTooltip(territory);
 
   setTimeout(
     () => {
       element.classList.remove(
         "territory-focused"
       );
+
+      hideTerritoryTooltip();
     },
     2500
   );
@@ -2685,6 +2785,8 @@ function deleteTerritory(
     territories.filter(
       item => item.id !== id
     );
+
+  hideTerritoryTooltip();
 
   saveTerritories();
 
