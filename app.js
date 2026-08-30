@@ -25,37 +25,53 @@ const MAX_SCALE = 10;
 
 
 // ========================================
-// KATEGORIE
+// ID PRO KATEGORII
+// ========================================
+
+function createId() {
+  return Date.now().toString() + Math.random().toString(36).slice(2);
+}
+
+
+// ========================================
+// VÝCHOZÍ KATEGORIE
 // ========================================
 
 const DEFAULT_CATEGORIES = [
   {
-    id: crypto.randomUUID(),
-    name: 'Území',
+    id: createId(),
+    name: '🗺️ Území',
     visible: true
   },
   {
-    id: crypto.randomUUID(),
-    name: 'Prodej drog',
+    id: createId(),
+    name: '💊 Prodej drog',
     visible: true
   },
   {
-    id: crypto.randomUUID(),
-    name: 'Záterasy autem',
+    id: createId(),
+    name: '🚗 Záterasy autem',
     visible: true
   },
   {
-    id: crypto.randomUUID(),
-    name: 'Ujíždění na motorce',
+    id: createId(),
+    name: '🏍️ Ujíždění na motorce',
     visible: true
   }
 ];
 
-let categories = loadCategories();
+
+// ========================================
+// NAČTENÍ KATEGORIÍ
+// ========================================
 
 function loadCategories() {
+
   try {
-    const saved = localStorage.getItem('verdugosCategories');
+
+    const saved = localStorage.getItem(
+      'verdugosCategories'
+    );
 
     if (!saved) {
       return DEFAULT_CATEGORIES;
@@ -70,16 +86,31 @@ function loadCategories() {
     return parsed;
 
   } catch (error) {
-    console.error('Nepodařilo se načíst kategorie:', error);
+
+    console.error(
+      'Chyba při načítání kategorií:',
+      error
+    );
+
     return DEFAULT_CATEGORIES;
   }
 }
 
+
+let categories = loadCategories();
+
+
+// ========================================
+// ULOŽENÍ KATEGORIÍ
+// ========================================
+
 function saveCategories() {
+
   localStorage.setItem(
     'verdugosCategories',
     JSON.stringify(categories)
   );
+
 }
 
 
@@ -93,38 +124,52 @@ function renderCategories() {
 
   categories.forEach((category) => {
 
-    const item = document.createElement('div');
+    const item =
+      document.createElement('div');
 
-    item.className = 'category-item';
+    item.className =
+      'category-item';
 
     if (!category.visible) {
-      item.classList.add('hidden-category');
+
+      item.classList.add(
+        'hidden-category'
+      );
+
     }
 
-    item.dataset.id = category.id;
+    item.dataset.id =
+      category.id;
 
     item.title =
-      'Levý klik = zobrazit/skrýt · Pravý klik = smazat';
+      'Levý klik = zobrazit/skrýt • Pravý klik = smazat';
 
 
-    // ikonka
-    const icon = document.createElement('span');
+    // IKONA / EMOJI
+    const icon =
+      document.createElement('span');
 
-    icon.className = 'category-icon';
-
-
-    // název
-    const name = document.createElement('span');
-
-    name.className = 'category-name';
-
-    name.textContent = category.name;
+    icon.className =
+      'category-icon';
 
 
-    // stav
-    const state = document.createElement('span');
+    // NÁZEV
+    const name =
+      document.createElement('span');
 
-    state.className = 'category-state';
+    name.className =
+      'category-name';
+
+    name.textContent =
+      category.name;
+
+
+    // STAV
+    const state =
+      document.createElement('span');
+
+    state.className =
+      'category-state';
 
     state.textContent =
       category.visible
@@ -138,21 +183,31 @@ function renderCategories() {
 
 
     // LEVÝ KLIK
-    item.addEventListener('click', () => {
+    item.addEventListener(
+      'click',
+      () => {
 
-      toggleCategory(category.id);
+        toggleCategory(
+          category.id
+        );
 
-    });
+      }
+    );
 
 
     // PRAVÝ KLIK
-    item.addEventListener('contextmenu', (event) => {
+    item.addEventListener(
+      'contextmenu',
+      (event) => {
 
-      event.preventDefault();
+        event.preventDefault();
 
-      confirmDeleteCategory(category.id);
+        confirmDeleteCategory(
+          category.id
+        );
 
-    });
+      }
+    );
 
 
     categoryList.appendChild(item);
@@ -161,36 +216,40 @@ function renderCategories() {
 
 
   updateToggleAllButton();
+
 }
 
 
 // ========================================
-// ZOBRAZIT / SKRÝT KATEGORII
+// SKRÝT / ZOBRAZIT JEDNU KATEGORII
 // ========================================
 
 function toggleCategory(id) {
 
-  categories = categories.map((category) => {
+  categories =
+    categories.map((category) => {
 
-    if (category.id !== id) {
-      return category;
-    }
+      if (category.id !== id) {
+        return category;
+      }
 
-    return {
-      ...category,
-      visible: !category.visible
-    };
+      return {
+        ...category,
+        visible: !category.visible
+      };
 
-  });
+    });
+
 
   saveCategories();
 
   renderCategories();
+
 }
 
 
 // ========================================
-// ZOBRAZIT / SKRÝT VŠE
+// SKRÝT / ZOBRAZIT VŠE
 // ========================================
 
 function toggleAllCategories() {
@@ -198,38 +257,48 @@ function toggleAllCategories() {
   const allVisible =
     categories.length > 0 &&
     categories.every(
-      (category) => category.visible
+      (category) =>
+        category.visible
     );
 
 
-  categories = categories.map((category) => {
+  categories =
+    categories.map((category) => {
 
-    return {
-      ...category,
-      visible: !allVisible
-    };
+      return {
+        ...category,
+        visible: !allVisible
+      };
 
-  });
+    });
 
 
   saveCategories();
 
   renderCategories();
+
 }
 
+
+// ========================================
+// TEXT TLAČÍTKA SKRÝT / ZOBRAZIT VŠE
+// ========================================
 
 function updateToggleAllButton() {
 
   const allVisible =
     categories.length > 0 &&
     categories.every(
-      (category) => category.visible
+      (category) =>
+        category.visible
     );
+
 
   toggleAllBtn.textContent =
     allVisible
       ? 'Skrýt vše'
       : 'Zobrazit vše';
+
 }
 
 
@@ -241,7 +310,8 @@ function confirmDeleteCategory(id) {
 
   const category =
     categories.find(
-      (item) => item.id === id
+      (item) =>
+        item.id === id
     );
 
 
@@ -250,9 +320,10 @@ function confirmDeleteCategory(id) {
   }
 
 
-  const confirmed = window.confirm(
-    `Opravdu chceš smazat kategorii „${category.name}“?`
-  );
+  const confirmed =
+    window.confirm(
+      `Opravdu chceš smazat kategorii „${category.name}“?`
+    );
 
 
   if (!confirmed) {
@@ -262,46 +333,61 @@ function confirmDeleteCategory(id) {
 
   categories =
     categories.filter(
-      (item) => item.id !== id
+      (item) =>
+        item.id !== id
     );
 
 
   saveCategories();
 
   renderCategories();
+
 }
 
 
 // ========================================
-// PŘIDÁNÍ KATEGORIE
+// OTEVŘENÍ OKNA PRO NOVOU KATEGORII
 // ========================================
 
 function openCategoryModal() {
 
-  categoryModal.classList.remove('hidden');
+  categoryModal.classList.remove(
+    'hidden'
+  );
 
   categoryModal.setAttribute(
     'aria-hidden',
     'false'
   );
 
-
   categoryNameInput.value = '';
 
   categoryNameInput.focus();
+
 }
 
 
+// ========================================
+// ZAVŘENÍ OKNA
+// ========================================
+
 function closeCategoryModal() {
 
-  categoryModal.classList.add('hidden');
+  categoryModal.classList.add(
+    'hidden'
+  );
 
   categoryModal.setAttribute(
     'aria-hidden',
     'true'
   );
+
 }
 
+
+// ========================================
+// PŘIDÁNÍ NOVÉ KATEGORIE
+// ========================================
 
 function addCategory() {
 
@@ -337,7 +423,7 @@ function addCategory() {
 
   categories.push({
 
-    id: crypto.randomUUID(),
+    id: createId(),
 
     name: name,
 
@@ -351,11 +437,12 @@ function addCategory() {
   renderCategories();
 
   closeCategoryModal();
+
 }
 
 
 // ========================================
-// EVENTY KATEGORIÍ
+// TLAČÍTKA KATEGORIÍ
 // ========================================
 
 addCategoryBtn.addEventListener(
@@ -382,12 +469,18 @@ saveCategoryBtn.addEventListener(
 );
 
 
-// kliknutí mimo okno
+// ========================================
+// KLIK MIMO OKNO
+// ========================================
+
 categoryModal.addEventListener(
   'click',
   (event) => {
 
-    if (event.target === categoryModal) {
+    if (
+      event.target ===
+      categoryModal
+    ) {
 
       closeCategoryModal();
 
@@ -397,7 +490,10 @@ categoryModal.addEventListener(
 );
 
 
-// ENTER / ESC
+// ========================================
+// ENTER / ESC V OKNĚ
+// ========================================
+
 categoryNameInput.addEventListener(
   'keydown',
   (event) => {
@@ -460,7 +556,8 @@ function zoomAt(
     rect.height / 2;
 
 
-  const oldScale = scale;
+  const oldScale =
+    scale;
 
 
   scale =
@@ -490,61 +587,72 @@ function zoomAt(
 
 
   renderMap();
+
 }
 
 
 // ========================================
-// ZOOM TLAČÍTKA
+// PLUS
 // ========================================
 
 document
   .getElementById('zoomIn')
-  .addEventListener('click', () => {
+  .addEventListener(
+    'click',
+    () => {
 
-    const rect =
-      viewport.getBoundingClientRect();
-
-
-    zoomAt(
-
-      scale * 1.2,
-
-      rect.left +
-      rect.width / 2,
-
-      rect.top +
-      rect.height / 2
-
-    );
-
-  });
+      const rect =
+        viewport.getBoundingClientRect();
 
 
-document
-  .getElementById('zoomOut')
-  .addEventListener('click', () => {
+      zoomAt(
 
-    const rect =
-      viewport.getBoundingClientRect();
+        scale * 1.2,
 
+        rect.left +
+        rect.width / 2,
 
-    zoomAt(
+        rect.top +
+        rect.height / 2
 
-      scale / 1.2,
+      );
 
-      rect.left +
-      rect.width / 2,
-
-      rect.top +
-      rect.height / 2
-
-    );
-
-  });
+    }
+  );
 
 
 // ========================================
-// RESET MAPY
+// MÍNUS
+// ========================================
+
+document
+  .getElementById('zoomOut')
+  .addEventListener(
+    'click',
+    () => {
+
+      const rect =
+        viewport.getBoundingClientRect();
+
+
+      zoomAt(
+
+        scale / 1.2,
+
+        rect.left +
+        rect.width / 2,
+
+        rect.top +
+        rect.height / 2
+
+      );
+
+    }
+  );
+
+
+// ========================================
+// DOMŮ / RESET
 // ========================================
 
 document
@@ -566,7 +674,7 @@ document
 
 
 // ========================================
-// KOLEČKO MYŠI = ZOOM
+// KOLEČKO MYŠI
 // ========================================
 
 viewport.addEventListener(
@@ -621,9 +729,11 @@ viewport.addEventListener(
       event.clientY;
 
 
-    startMapX = x;
+    startMapX =
+      x;
 
-    startMapY = y;
+    startMapY =
+      y;
 
 
     viewport.setPointerCapture(
@@ -658,6 +768,10 @@ viewport.addEventListener(
   }
 );
 
+
+// ========================================
+// UKONČENÍ TAŽENÍ
+// ========================================
 
 function stopDragging(event) {
 
@@ -698,7 +812,7 @@ viewport.addEventListener(
 
 
 // ========================================
-// START
+// SPUŠTĚNÍ
 // ========================================
 
 renderCategories();
