@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+
 <html lang="cs">
 <head>
   <meta charset="UTF-8">
@@ -84,6 +84,14 @@
       >
         <span>＋</span>
         Přidat bod
+      </button>
+
+      <button
+        id="cancelPointModeBtn"
+        class="cancel-point-mode hidden"
+        type="button"
+      >
+        ✕ Zrušit přidávání
       </button>
 
 
@@ -338,113 +346,6 @@
         <span id="pointSizeValue">
           6 px
         </span>
-
-      </div>
-
-
-      <!-- BARVA -->
-
-      <label>
-        Barva bodu
-      </label>
-
-
-      <div class="color-layout">
-
-        <div
-          id="colorWheel"
-          class="color-wheel"
-        >
-
-          <span
-            id="colorWheelCursor"
-            class="color-wheel-cursor"
-          ></span>
-
-        </div>
-
-
-        <div class="preset-side">
-
-          <div class="preset-title">
-            Přednastavené
-          </div>
-
-
-          <div
-            id="colorPresets"
-            class="color-presets"
-          ></div>
-
-
-          <div
-            id="colorPreview"
-            class="color-preview"
-          ></div>
-
-        </div>
-
-      </div>
-
-
-      <!-- RGB -->
-
-      <div class="rgb-title">
-        RGB
-      </div>
-
-
-      <div class="rgb-values">
-
-        <div>
-
-          <label for="redInput">
-            R
-          </label>
-
-          <input
-            id="redInput"
-            type="number"
-            min="0"
-            max="255"
-            value="255"
-          >
-
-        </div>
-
-
-        <div>
-
-          <label for="greenInput">
-            G
-          </label>
-
-          <input
-            id="greenInput"
-            type="number"
-            min="0"
-            max="255"
-            value="59"
-          >
-
-        </div>
-
-
-        <div>
-
-          <label for="blueInput">
-            B
-          </label>
-
-          <input
-            id="blueInput"
-            type="number"
-            min="0"
-            max="255"
-            value="48"
-          >
-
-        </div>
 
       </div>
 
