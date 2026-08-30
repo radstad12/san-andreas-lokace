@@ -1,0 +1,2106 @@
+@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&display=swap');
+
+
+/* =====================================================
+   ZÁKLAD
+===================================================== */
+
+:root {
+  --sidebar-width: 310px;
+
+  --bg: #080808;
+  --border: #3a2018;
+
+  --orange: #b74a1c;
+  --orange-bright: #d76a2c;
+
+  --text: #e7e1da;
+  --muted: #77716c;
+
+  --panel: #111;
+  --panel-hover: #1b1715;
+}
+
+
+* {
+  box-sizing: border-box;
+}
+
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+
+  overflow: hidden;
+
+  background: var(--bg);
+  color: var(--text);
+
+  font-family:
+    'Oswald',
+    Arial,
+    sans-serif;
+}
+
+
+body {
+  display: flex;
+}
+
+
+/* =====================================================
+   SIDEBAR
+===================================================== */
+
+.sidebar {
+  position: relative;
+
+  z-index: 20;
+
+  width: var(--sidebar-width);
+  min-width: var(--sidebar-width);
+
+  height: 100vh;
+
+  display: flex;
+  flex-direction: column;
+
+  background:
+    radial-gradient(
+      circle at 50% 0%,
+      rgba(180, 70, 25, 0.08),
+      transparent 38%
+    ),
+    linear-gradient(
+      180deg,
+      #111 0%,
+      #090909 100%
+    );
+
+  border-right:
+    1px solid var(--border);
+
+  box-shadow:
+    8px 0 30px
+    rgba(0, 0, 0, 0.45);
+}
+
+
+/* =====================================================
+   LOGO
+===================================================== */
+
+.brand {
+  padding:
+    22px 24px 18px;
+
+  border-bottom:
+    1px solid
+    rgba(183, 74, 28, 0.25);
+}
+
+
+.brand img {
+  display: block;
+
+  width: 100%;
+  height: auto;
+
+  max-height: 250px;
+
+  object-fit: contain;
+
+  filter:
+    drop-shadow(
+      0 8px 16px
+      rgba(0, 0, 0, 0.45)
+    );
+}
+
+
+/* =====================================================
+   MENU
+===================================================== */
+
+.menu-section {
+  padding:
+    18px 16px 10px;
+}
+
+
+.section-title-row {
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  gap: 10px;
+
+  margin-bottom: 12px;
+}
+
+
+.section-title-row h2 {
+  margin: 0;
+
+  color: #ddd5ce;
+
+  font-size: 18px;
+  font-weight: 600;
+
+  letter-spacing: 1.2px;
+
+  text-transform: uppercase;
+}
+
+
+.small-action {
+  border:
+    1px solid
+    rgba(183, 74, 28, 0.55);
+
+  border-radius: 4px;
+
+  padding: 7px 10px;
+
+  background:
+    rgba(18, 18, 18, 0.95);
+
+  color: #c8c0ba;
+
+  font:
+    500 11px/1
+    'Oswald',
+    sans-serif;
+
+  letter-spacing: 0.4px;
+
+  cursor: pointer;
+
+  transition: 0.15s ease;
+}
+
+
+.small-action:hover {
+  border-color:
+    var(--orange-bright);
+
+  color: #fff;
+
+  background:
+    rgba(39, 24, 18, 0.95);
+}
+
+
+/* =====================================================
+   KATEGORIE
+===================================================== */
+
+.category-list {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 7px;
+}
+
+
+.category-wrap {
+  display: block;
+}
+
+
+.category-item {
+  position: relative;
+
+  width: 100%;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 10px;
+
+  padding:
+    10px 11px;
+
+  border:
+    1px solid
+    rgba(255, 255, 255, 0.07);
+
+  border-left:
+    3px solid
+    var(--orange);
+
+  border-radius: 4px;
+
+  background:
+    rgba(17, 17, 17, 0.94);
+
+  color:
+    #d8d1cb;
+
+  cursor: pointer;
+
+  user-select: none;
+
+  transition:
+    0.15s ease;
+}
+
+
+.category-item:hover {
+  background:
+    var(--panel-hover);
+
+  border-color:
+    rgba(183, 74, 28, 0.38);
+}
+
+
+.category-item.hidden-category {
+  opacity: 0.48;
+}
+
+
+.category-emoji {
+  width: 24px;
+
+  flex: 0 0 24px;
+
+  font-size: 17px;
+
+  text-align: center;
+}
+
+
+.category-name {
+  flex: 1;
+
+  min-width: 0;
+
+  overflow: hidden;
+
+  text-overflow: ellipsis;
+
+  white-space: nowrap;
+
+  font-size: 14px;
+
+  letter-spacing: 0.4px;
+}
+
+
+.category-state {
+  font-size: 9px;
+
+  text-transform: uppercase;
+
+  color: #756e69;
+
+  letter-spacing: 0.6px;
+}
+
+
+/* =====================================================
+   POČET BODŮ
+===================================================== */
+
+.category-count {
+  min-width: 23px;
+
+  height: 23px;
+
+  padding: 0 5px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  border:
+    1px solid
+    rgba(183, 74, 28, 0.35);
+
+  border-radius: 50%;
+
+  background:
+    #211814;
+
+  color:
+    #ddd2cb;
+
+  font-size: 10px;
+}
+
+
+/* =====================================================
+   PODKATEGORIE / BODY
+===================================================== */
+
+.category-points {
+  margin:
+    2px 0 1px 28px;
+
+  padding-left: 8px;
+
+  border-left:
+    1px solid
+    rgba(183, 74, 28, 0.25);
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 2px;
+}
+
+
+.category-point {
+  display: flex;
+
+  align-items: center;
+
+  gap: 7px;
+
+  padding:
+    6px 7px;
+
+  border-radius: 3px;
+
+  color:
+    #aaa39d;
+
+  font:
+    11px/1.2
+    Arial,
+    sans-serif;
+
+  cursor: pointer;
+
+  transition:
+    background 0.12s,
+    color 0.12s,
+    transform 0.12s;
+}
+
+
+.category-point:hover {
+  background:
+    rgba(183, 74, 28, 0.09);
+
+  color:
+    #eee;
+
+  transform:
+    translateX(2px);
+}
+
+
+.category-point-dot {
+  width: 6px;
+
+  height: 6px;
+
+  min-width: 6px;
+
+  border:
+    1px solid #fff;
+
+  border-radius: 50%;
+
+  box-shadow:
+    0 1px 3px
+    rgba(0, 0, 0, 0.6);
+}
+
+
+.category-point-name {
+  overflow:
+    hidden;
+
+  text-overflow:
+    ellipsis;
+
+  white-space:
+    nowrap;
+}
+
+
+/* =====================================================
+   PŘIDAT KATEGORII
+===================================================== */
+
+.add-category-btn {
+  width: 100%;
+
+  margin-top: 10px;
+
+  border:
+    1px dashed
+    rgba(183, 74, 28, 0.55);
+
+  border-radius: 4px;
+
+  padding:
+    11px 12px;
+
+  background:
+    transparent;
+
+  color:
+    #c7beb7;
+
+  font:
+    500 13px/1
+    'Oswald',
+    sans-serif;
+
+  letter-spacing:
+    0.8px;
+
+  cursor:
+    pointer;
+
+  transition:
+    0.15s ease;
+}
+
+
+.add-category-btn:hover {
+  border-color:
+    var(--orange-bright);
+
+  background:
+    rgba(183, 74, 28, 0.08);
+
+  color:
+    #fff;
+}
+
+
+.plus {
+  margin-right: 6px;
+
+  font-size: 16px;
+}
+
+
+/* =====================================================
+   NÁPOVĚDA
+===================================================== */
+
+.menu-help {
+  margin:
+    10px 2px 0;
+
+  color:
+    #5e5955;
+
+  font:
+    400 10px/1.45
+    Arial,
+    sans-serif;
+}
+
+
+/* =====================================================
+   SIDEBAR FOOTER
+===================================================== */
+
+.sidebar-spacer {
+  flex: 1;
+}
+
+
+.sidebar-footer {
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  padding:
+    15px 22px;
+
+  color:
+    #5e5955;
+
+  font-size:
+    12px;
+
+  letter-spacing:
+    2px;
+
+  border-top:
+    1px solid
+    rgba(183, 74, 28, 0.18);
+}
+
+
+.status-dot {
+  width: 7px;
+
+  height: 7px;
+
+  border-radius: 50%;
+
+  background:
+    #7d9a48;
+
+  box-shadow:
+    0 0 9px
+    rgba(125, 154, 72, 0.7);
+}
+
+
+/* =====================================================
+   MAP SHELL
+===================================================== */
+
+.map-shell {
+  position: relative;
+
+  flex: 1;
+
+  min-width: 0;
+
+  height: 100vh;
+
+  background:
+    #060706;
+}
+
+
+/* =====================================================
+   MAP VIEWPORT
+===================================================== */
+
+.map-viewport {
+  position: absolute;
+
+  inset: 0;
+
+  overflow: hidden;
+
+  cursor: grab;
+
+  background:
+    radial-gradient(
+      circle at center,
+      rgba(45, 54, 45, 0.16),
+      transparent 65%
+    ),
+    #070807;
+
+  touch-action: none;
+}
+
+
+.map-viewport.is-dragging {
+  cursor:
+    grabbing;
+}
+
+
+.map-viewport.add-point-mode {
+  cursor:
+    crosshair;
+}
+
+
+/* =====================================================
+   MAP CANVAS
+===================================================== */
+
+.map-canvas {
+  position: absolute;
+
+  left: 50%;
+  top: 50%;
+
+  width:
+    min(82vw, 980px);
+
+  transform-origin:
+    center center;
+
+  user-select: none;
+
+  will-change:
+    transform;
+
+  backface-visibility:
+    hidden;
+}
+
+
+.map-canvas img {
+  display: block;
+
+  width: 100%;
+
+  height: auto;
+
+  user-select: none;
+
+  -webkit-user-drag: none;
+
+  pointer-events: none;
+
+  image-rendering: auto;
+}
+
+
+/* =====================================================
+   VRSTVA BODŮ
+===================================================== */
+
+.points-layer {
+  position: absolute;
+
+  inset: 0;
+
+  /*
+    Vrstva sama neblokuje mapu.
+  */
+  pointer-events: none;
+}
+
+
+/* =====================================================
+   BOD
+===================================================== */
+
+.map-point {
+  position: absolute;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  /*
+    Tooltip je uvnitř elementu bodu,
+    proto NIKDY nesmí být hidden.
+  */
+  overflow: visible;
+
+  transform:
+    translate(-50%, -50%);
+
+  border:
+    1px solid #fff;
+
+  border-radius: 50%;
+
+  box-shadow:
+    0 2px 7px
+    rgba(0, 0, 0, 0.75);
+
+  pointer-events: auto;
+
+  cursor: pointer;
+
+  z-index: 10;
+
+  transition:
+    transform 0.12s ease,
+    box-shadow 0.12s ease;
+}
+
+
+/* =====================================================
+   HOVER PŘÍMO NA BOD
+===================================================== */
+
+.map-point:hover {
+  transform:
+    translate(-50%, -50%)
+    scale(1.35);
+
+  z-index: 80;
+}
+
+
+/* =====================================================
+   BOD ZVÝRAZNĚNÝ Z MENU
+===================================================== */
+
+.map-point.focused-point {
+  transform:
+    translate(-50%, -50%)
+    scale(1.9);
+
+  z-index: 100;
+
+  box-shadow:
+    0 0 0 4px
+    rgba(255, 255, 255, 0.18),
+
+    0 0 14px
+    rgba(255, 255, 255, 0.55);
+
+  animation:
+    pointFocusedPulse
+    0.7s
+    ease-in-out
+    infinite;
+}
+
+
+/* =====================================================
+   CELÁ KATEGORIE
+===================================================== */
+
+.map-point.category-hover-point {
+  animation:
+    pointCategoryPulse
+    0.8s
+    ease-in-out
+    infinite;
+
+  z-index: 60;
+}
+
+
+/* =====================================================
+   NÁHLED BODU
+===================================================== */
+
+.map-point-preview {
+  animation:
+    pointPreviewPulse
+    1s
+    ease-in-out
+    infinite;
+}
+
+
+/* =====================================================
+   EMOJI
+===================================================== */
+
+.map-point-emoji {
+  position: absolute;
+
+  left: 50%;
+  top: 50%;
+
+  width: 100%;
+  height: 100%;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  transform:
+    translate(-50%, -50%);
+
+  line-height: 1;
+
+  pointer-events: none;
+
+  overflow: hidden;
+
+  border-radius: 50%;
+
+  z-index: 2;
+
+  max-width: 100%;
+  max-height: 100%;
+}
+
+
+/* =====================================================
+   TOOLTIP
+===================================================== */
+
+.point-tooltip {
+  position: absolute;
+
+  left: 50%;
+
+  bottom:
+    calc(100% + 10px);
+
+  transform:
+    translateX(-50%);
+
+  width: max-content;
+
+  min-width: 150px;
+
+  max-width: 280px;
+
+  padding:
+    9px 11px;
+
+  border:
+    1px solid
+    rgba(183, 74, 28, 0.65);
+
+  border-radius:
+    4px;
+
+  background:
+    rgba(8, 8, 8, 0.97);
+
+  box-shadow:
+    0 8px 24px
+    rgba(0, 0, 0, 0.70);
+
+  color:
+    #eee;
+
+  opacity:
+    0;
+
+  visibility:
+    hidden;
+
+  pointer-events:
+    none;
+
+  transition:
+    opacity 0.12s ease,
+    visibility 0.12s ease;
+
+  z-index:
+    1000;
+
+  white-space:
+    normal;
+}
+
+
+/* =====================================================
+   TOOLTIP ŠIPKA
+===================================================== */
+
+.point-tooltip::after {
+  content: "";
+
+  position: absolute;
+
+  left: 50%;
+  top: 100%;
+
+  transform:
+    translateX(-50%);
+
+  border-left:
+    6px solid transparent;
+
+  border-right:
+    6px solid transparent;
+
+  border-top:
+    6px solid
+    rgba(183, 74, 28, 0.65);
+}
+
+
+/* =====================================================
+   TOOLTIP - HOVER BOD
+===================================================== */
+
+.map-point:hover .point-tooltip {
+  opacity: 1;
+
+  visibility: visible;
+}
+
+
+/* =====================================================
+   TOOLTIP - FOCUS
+===================================================== */
+
+.map-point.focused-point .point-tooltip {
+  opacity: 1;
+
+  visibility: visible;
+}
+
+
+/* =====================================================
+   TOOLTIP - KATEGORIE
+===================================================== */
+
+.map-point.category-hover-point .point-tooltip {
+  opacity: 1;
+
+  visibility: visible;
+}
+
+
+/* =====================================================
+   PREVIEW BEZ TOOLTIPU
+===================================================== */
+
+.map-point-preview .point-tooltip {
+  display:
+    none;
+}
+
+
+/* =====================================================
+   TOOLTIP TEXT
+===================================================== */
+
+.point-tooltip-title {
+  margin-bottom:
+    3px;
+
+  font-size:
+    14px;
+
+  font-weight:
+    600;
+}
+
+
+.point-tooltip-description {
+  color:
+    #aaa;
+
+  font:
+    10px/1.4
+    Arial,
+    sans-serif;
+
+  white-space:
+    normal;
+}
+
+
+/* =====================================================
+   ANIMACE
+===================================================== */
+
+@keyframes pointPreviewPulse {
+
+  0% {
+    box-shadow:
+      0 2px 7px
+      rgba(0, 0, 0, 0.75);
+  }
+
+  50% {
+    box-shadow:
+      0 0 0 5px
+      rgba(215, 106, 44, 0.18),
+
+      0 2px 7px
+      rgba(0, 0, 0, 0.75);
+  }
+
+  100% {
+    box-shadow:
+      0 2px 7px
+      rgba(0, 0, 0, 0.75);
+  }
+
+}
+
+
+@keyframes pointFocusedPulse {
+
+  0% {
+    transform:
+      translate(-50%, -50%)
+      scale(1.7);
+  }
+
+  50% {
+    transform:
+      translate(-50%, -50%)
+      scale(2.25);
+  }
+
+  100% {
+    transform:
+      translate(-50%, -50%)
+      scale(1.7);
+  }
+
+}
+
+
+@keyframes pointCategoryPulse {
+
+  0% {
+    transform:
+      translate(-50%, -50%)
+      scale(1);
+  }
+
+  50% {
+    transform:
+      translate(-50%, -50%)
+      scale(1.6);
+  }
+
+  100% {
+    transform:
+      translate(-50%, -50%)
+      scale(1);
+  }
+
+}
+
+
+/* =====================================================
+   MAP TOOLBAR
+===================================================== */
+
+.map-toolbar {
+  position: absolute;
+
+  z-index: 25;
+
+  top: 20px;
+  right: 20px;
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 6px;
+}
+
+
+.map-toolbar button {
+  width: 42px;
+
+  height: 42px;
+
+  border:
+    1px solid
+    rgba(183, 74, 28, 0.55);
+
+  border-radius: 4px;
+
+  background:
+    rgba(12, 12, 12, 0.88);
+
+  color:
+    var(--text);
+
+  font:
+    600 22px/1
+    'Oswald',
+    sans-serif;
+
+  cursor:
+    pointer;
+
+  transition:
+    0.15s ease;
+
+  backdrop-filter:
+    blur(6px);
+}
+
+
+.map-toolbar button:hover {
+  border-color:
+    var(--orange-bright);
+
+  background:
+    rgba(34, 20, 15, 0.95);
+
+  color:
+    #fff;
+}
+
+
+/* =====================================================
+   MAP HINT
+===================================================== */
+
+.map-hint {
+  position: absolute;
+
+  z-index: 25;
+
+  left: 50%;
+
+  bottom: 16px;
+
+  transform:
+    translateX(-50%);
+
+  padding:
+    7px 12px;
+
+  border:
+    1px solid
+    rgba(255, 255, 255, 0.08);
+
+  border-radius:
+    3px;
+
+  background:
+    rgba(8, 8, 8, 0.72);
+
+  color:
+    #777;
+
+  font-size:
+    11px;
+
+  pointer-events:
+    none;
+
+  backdrop-filter:
+    blur(5px);
+}
+
+
+/* =====================================================
+   MODAL
+===================================================== */
+
+.modal {
+  position: fixed;
+
+  inset: 0;
+
+  z-index: 100;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  padding: 18px;
+
+  background:
+    rgba(0, 0, 0, 0.72);
+
+  backdrop-filter:
+    blur(3px);
+}
+
+
+.modal.hidden {
+  display:
+    none;
+}
+
+
+.modal-card {
+  width:
+    min(420px, 100%);
+
+  max-height:
+    calc(100vh - 30px);
+
+  overflow:
+    auto;
+
+  border:
+    1px solid
+    rgba(183, 74, 28, 0.55);
+
+  border-radius:
+    6px;
+
+  padding:
+    20px;
+
+  background:
+    #111;
+
+  box-shadow:
+    0 20px 60px
+    rgba(0, 0, 0, 0.55);
+}
+
+
+.modal-header {
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  gap: 12px;
+
+  margin-bottom:
+    14px;
+}
+
+
+.modal-card h3 {
+  margin:
+    0;
+
+  color:
+    #eee7e0;
+
+  font-size:
+    21px;
+
+  font-weight:
+    600;
+}
+
+
+.close-btn {
+  width:
+    30px;
+
+  height:
+    30px;
+
+  border:
+    1px solid
+    #3a3330;
+
+  border-radius:
+    4px;
+
+  background:
+    #171717;
+
+  color:
+    #aaa39d;
+
+  font:
+    500 20px/1
+    Arial,
+    sans-serif;
+
+  cursor:
+    pointer;
+}
+
+
+.close-btn:hover {
+  color:
+    #fff;
+
+  border-color:
+    var(--orange);
+}
+
+
+/* =====================================================
+   FORM
+===================================================== */
+
+.modal-card label {
+  display:
+    block;
+
+  margin:
+    11px 0 6px;
+
+  color:
+    #948b84;
+
+  font-size:
+    12px;
+
+  letter-spacing:
+    0.5px;
+}
+
+
+.modal-card input,
+.modal-card textarea,
+.modal-card select {
+  width: 100%;
+
+  border:
+    1px solid
+    #332b27;
+
+  border-radius:
+    4px;
+
+  outline:
+    none;
+
+  padding:
+    10px;
+
+  background:
+    #090909;
+
+  color:
+    #eee;
+
+  font:
+    400 14px/1.2
+    'Oswald',
+    sans-serif;
+}
+
+
+.modal-card textarea {
+  min-height:
+    80px;
+
+  resize:
+    vertical;
+
+  font-family:
+    Arial,
+    sans-serif;
+
+  line-height:
+    1.4;
+}
+
+
+.modal-card input:focus,
+.modal-card textarea:focus,
+.modal-card select:focus {
+  border-color:
+    var(--orange);
+
+  box-shadow:
+    0 0 0 2px
+    rgba(183, 74, 28, 0.1);
+}
+
+
+/* =====================================================
+   POINT MODAL
+===================================================== */
+
+.point-modal {
+  position: fixed;
+
+  inset: 0;
+
+  z-index: 100;
+
+  pointer-events: none;
+
+  background:
+    transparent;
+
+  display:
+    block;
+}
+
+
+.point-modal.hidden {
+  display:
+    none;
+}
+
+
+.point-modal
+.point-modal-card {
+  position:
+    fixed;
+
+  pointer-events:
+    auto;
+}
+
+
+/* =====================================================
+   BARVY
+===================================================== */
+
+.color-layout {
+  display:
+    flex;
+
+  align-items:
+    center;
+
+  gap:
+    18px;
+
+  margin-top:
+    8px;
+}
+
+
+.color-wheel {
+  position:
+    relative;
+
+  width:
+    150px;
+
+  height:
+    150px;
+
+  flex-shrink:
+    0;
+
+  border-radius:
+    50%;
+
+  cursor:
+    crosshair;
+
+  background:
+    conic-gradient(
+      red,
+      yellow,
+      lime,
+      cyan,
+      blue,
+      magenta,
+      red
+    );
+}
+
+
+.color-wheel::after {
+  content:
+    "";
+
+  position:
+    absolute;
+
+  inset:
+    20px;
+
+  border-radius:
+    50%;
+
+  background:
+    radial-gradient(
+      circle,
+      #fff 0%,
+      rgba(255,255,255,0) 72%
+    );
+}
+
+
+.color-wheel::before {
+  content:
+    "";
+
+  position:
+    absolute;
+
+  inset:
+    0;
+
+  border-radius:
+    50%;
+
+  background:
+    radial-gradient(
+      circle,
+      transparent 0%,
+      transparent 55%,
+      rgba(0,0,0,.2) 100%
+    );
+}
+
+
+.color-wheel-cursor {
+  position:
+    absolute;
+
+  left:
+    75px;
+
+  top:
+    75px;
+
+  width:
+    15px;
+
+  height:
+    15px;
+
+  border:
+    2px solid #fff;
+
+  border-radius:
+    50%;
+
+  box-shadow:
+    0 0 0 1px
+    rgba(0,0,0,.8);
+
+  transform:
+    translate(-50%,-50%);
+
+  pointer-events:
+    none;
+
+  z-index:
+    10;
+}
+
+
+.preset-side {
+  display:
+    flex;
+
+  flex-direction:
+    column;
+
+  align-items:
+    flex-start;
+
+  gap:
+    10px;
+}
+
+
+.preset-title {
+  color:
+    #8b837d;
+
+  font-size:
+    10px;
+
+  text-transform:
+    uppercase;
+
+  letter-spacing:
+    .6px;
+}
+
+
+.color-presets {
+  display:
+    flex;
+
+  gap:
+    8px;
+
+  flex-wrap:
+    wrap;
+
+  max-width:
+    130px;
+}
+
+
+.color-preset {
+  width:
+    28px;
+
+  height:
+    28px;
+
+  border:
+    2px solid
+    rgba(255,255,255,.25);
+
+  border-radius:
+    50%;
+
+  cursor:
+    pointer;
+
+  transition:
+    .12s;
+}
+
+
+.color-preset:hover {
+  transform:
+    scale(1.1);
+}
+
+
+.color-preset.selected {
+  border-color:
+    #fff;
+
+  box-shadow:
+    0 0 0 2px
+    var(--orange);
+}
+
+
+.color-preview {
+  width:
+    50px;
+
+  height:
+    50px;
+
+  border:
+    2px solid #fff;
+
+  border-radius:
+    50%;
+
+  box-shadow:
+    0 3px 10px
+    rgba(0,0,0,.5);
+}
+
+
+/* =====================================================
+   RGB
+===================================================== */
+
+.rgb-title {
+  margin-top:
+    15px;
+
+  color:
+    #948b84;
+
+  font-size:
+    12px;
+}
+
+
+.rgb-values {
+  display:
+    flex;
+
+  gap:
+    8px;
+}
+
+
+.rgb-values > div {
+  flex:
+    1;
+}
+
+
+.rgb-values label {
+  margin-top:
+    7px;
+}
+
+
+/* =====================================================
+   VELIKOST BODU
+===================================================== */
+
+.size-row {
+  display:
+    flex;
+
+  align-items:
+    center;
+
+  gap:
+    12px;
+}
+
+
+.size-row input[type="range"] {
+  flex:
+    1;
+
+  padding:
+    0;
+
+  border:
+    0;
+
+  accent-color:
+    var(--orange);
+}
+
+
+#pointSizeValue {
+  min-width:
+    42px;
+
+  color:
+    #ddd;
+
+  font-size:
+    12px;
+
+  text-align:
+    right;
+}
+
+
+/* =====================================================
+   MODAL BUTTONS
+===================================================== */
+
+.modal-actions {
+  display:
+    flex;
+
+  justify-content:
+    flex-end;
+
+  gap:
+    8px;
+
+  margin-top:
+    16px;
+}
+
+
+.secondary-btn,
+.primary-btn {
+  border-radius:
+    4px;
+
+  padding:
+    10px 14px;
+
+  font:
+    500 12px/1
+    'Oswald',
+    sans-serif;
+
+  cursor:
+    pointer;
+}
+
+
+.secondary-btn {
+  border:
+    1px solid
+    #3a3330;
+
+  background:
+    #171717;
+
+  color:
+    #aaa39d;
+}
+
+
+.primary-btn {
+  border:
+    1px solid
+    var(--orange);
+
+  background:
+    var(--orange);
+
+  color:
+    #fff;
+}
+
+
+.secondary-btn:hover {
+  background:
+    #202020;
+}
+
+
+.primary-btn:hover {
+  background:
+    var(--orange-bright);
+}
+
+
+/* =====================================================
+   CONTEXT MENU
+===================================================== */
+
+.point-context-menu {
+  position:
+    fixed;
+
+  z-index:
+    500;
+
+  min-width:
+    150px;
+
+  padding:
+    5px;
+
+  border:
+    1px solid
+    rgba(183,74,28,.55);
+
+  border-radius:
+    5px;
+
+  background:
+    #111;
+
+  box-shadow:
+    0 12px 30px
+    rgba(0,0,0,.6);
+}
+
+
+.point-context-menu button {
+  display:
+    block;
+
+  width:
+    100%;
+
+  border:
+    0;
+
+  border-radius:
+    3px;
+
+  padding:
+    9px 11px;
+
+  background:
+    transparent;
+
+  color:
+    #ddd;
+
+  text-align:
+    left;
+
+  font:
+    12px
+    'Oswald',
+    sans-serif;
+
+  cursor:
+    pointer;
+}
+
+
+.point-context-menu button:hover {
+  background:
+    #211814;
+}
+
+
+.point-context-menu
+.danger-context {
+  color:
+    #dc8170;
+}
+
+
+.point-context-menu
+.danger-context:hover {
+  background:
+    rgba(160,40,20,.16);
+
+  color:
+    #ff9a88;
+}
+
+
+/* =====================================================
+   MOBILE
+===================================================== */
+
+@media (max-width:760px) {
+
+  :root {
+    --sidebar-width:
+      235px;
+  }
+
+
+  .brand {
+    padding:
+      14px;
+  }
+
+
+  .map-hint {
+    display:
+      none;
+  }
+
+
+  .map-canvas {
+    width:
+      95vw;
+  }
+
+
+  .color-wheel {
+    width:
+      125px;
+
+    height:
+      125px;
+  }
+
+}
+
+
+/* =====================================================
+   IKONA KATEGORIE
+===================================================== */
+
+.category-icon-picker{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+
+.category-emoji-input{
+  width:72px !important;
+  height:52px;
+  padding:6px !important;
+  text-align:center;
+  font-family:Arial,sans-serif !important;
+  font-size:28px !important;
+}
+
+.category-emoji-presets{
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+}
+
+.category-emoji-preset{
+  width:34px;
+  height:34px;
+  border:1px solid rgba(183,74,28,.35);
+  border-radius:4px;
+  background:#171717;
+  color:#fff;
+  font-size:19px;
+  cursor:pointer;
+  transition:.12s;
+}
+
+.category-emoji-preset:hover{
+  border-color:var(--orange-light);
+  background:#241813;
+  transform:scale(1.06);
+}
+
+/* =====================================================
+   BODY = IKONA MÍSTO KOLEČKA
+===================================================== */
+
+.map-point{
+  width:auto !important;
+  height:auto !important;
+  min-width:18px;
+  min-height:18px;
+  overflow:visible;
+  background:transparent !important;
+  border:0 !important;
+  border-radius:0;
+  box-shadow:none !important;
+}
+
+.map-point-emoji{
+  position:static;
+  width:auto;
+  height:auto;
+  overflow:visible;
+  border-radius:0;
+  transform:none;
+  display:block;
+  line-height:1;
+  max-width:none;
+  max-height:none;
+  filter:drop-shadow(0 2px 3px rgba(0,0,0,.9));
+}
+
+.map-point:hover{
+  transform:translate(-50%,-50%) scale(1.18);
+  z-index:200;
+}
+
+.map-point.focused-point{
+  transform:translate(-50%,-50%) scale(1.45);
+  z-index:250;
+  box-shadow:none !important;
+  animation:pointFocusedPulse .7s ease-in-out infinite;
+}
+
+.map-point.category-hover-point{
+  transform:translate(-50%,-50%);
+  box-shadow:none !important;
+  animation:pointCategoryPulse .8s ease-in-out infinite;
+  z-index:220;
+}
+
+.map-point-preview{
+  background:transparent !important;
+  border:0 !important;
+  box-shadow:none !important;
+}
+
+@keyframes pointFocusedPulse{
+  0%{
+    transform:translate(-50%,-50%) scale(1.3);
+    filter:drop-shadow(0 2px 4px rgba(0,0,0,.9));
+  }
+  50%{
+    transform:translate(-50%,-50%) scale(1.65);
+    filter:
+      drop-shadow(0 0 8px rgba(255,255,255,.7))
+      drop-shadow(0 2px 4px rgba(0,0,0,.9));
+  }
+  100%{
+    transform:translate(-50%,-50%) scale(1.3);
+    filter:drop-shadow(0 2px 4px rgba(0,0,0,.9));
+  }
+}
+
+@keyframes pointCategoryPulse{
+  0%{
+    transform:translate(-50%,-50%) scale(1);
+    filter:drop-shadow(0 2px 3px rgba(0,0,0,.9));
+  }
+  50%{
+    transform:translate(-50%,-50%) scale(1.22);
+    filter:
+      drop-shadow(0 0 7px rgba(255,255,255,.55))
+      drop-shadow(0 2px 3px rgba(0,0,0,.9));
+  }
+  100%{
+    transform:translate(-50%,-50%) scale(1);
+    filter:drop-shadow(0 2px 3px rgba(0,0,0,.9));
+  }
+}
+
+/* =====================================================
+   CONTEXT MENU - ZAVŘÍT
+===================================================== */
+
+.point-context-menu .close-context-btn{
+  margin-top:4px;
+  border-top:1px solid rgba(255,255,255,.08);
+  color:#8f8882;
+}
+
+.point-context-menu .close-context-btn:hover{
+  color:#fff;
+  background:#171717;
+}
+
+
+/* ===== IKONA KATEGORIE ===== */
+.category-icon-picker{display:flex;flex-direction:column;gap:8px;}
+.category-emoji-input{width:72px !important;height:52px;padding:6px !important;text-align:center;font-family:Arial,sans-serif !important;font-size:28px !important;}
+.category-emoji-presets{display:flex;flex-wrap:wrap;gap:6px;}
+.category-emoji-preset{width:34px;height:34px;border:1px solid rgba(183,74,28,.35);border-radius:4px;background:#171717;color:#fff;font-size:19px;cursor:pointer;transition:.12s;}
+.category-emoji-preset:hover{border-color:var(--orange-light);background:#241813;transform:scale(1.06);}
+
+/* ===== IKONA MÍSTO BODU ===== */
+.map-point{width:auto !important;height:auto !important;min-width:18px;min-height:18px;overflow:visible;background:transparent !important;border:0 !important;border-radius:0;box-shadow:none !important;}
+.map-point-emoji{position:static;width:auto;height:auto;overflow:visible;border-radius:0;transform:none;display:block;line-height:1;max-width:none;max-height:none;filter:drop-shadow(0 2px 3px rgba(0,0,0,.9));}
+.map-point:hover{transform:translate(-50%,-50%) scale(1.18);z-index:200;}
+.map-point.focused-point{transform:translate(-50%,-50%) scale(1.45);z-index:250;box-shadow:none !important;animation:pointFocusedPulse .7s ease-in-out infinite;}
+.map-point.category-hover-point{transform:translate(-50%,-50%);box-shadow:none !important;animation:pointCategoryPulse .8s ease-in-out infinite;z-index:220;}
+.map-point-preview{background:transparent !important;border:0 !important;box-shadow:none !important;}
+@keyframes pointFocusedPulse{0%{transform:translate(-50%,-50%) scale(1.3);filter:drop-shadow(0 2px 4px rgba(0,0,0,.9));}50%{transform:translate(-50%,-50%) scale(1.65);filter:drop-shadow(0 0 8px rgba(255,255,255,.7)) drop-shadow(0 2px 4px rgba(0,0,0,.9));}100%{transform:translate(-50%,-50%) scale(1.3);filter:drop-shadow(0 2px 4px rgba(0,0,0,.9));}}
+@keyframes pointCategoryPulse{0%{transform:translate(-50%,-50%) scale(1);filter:drop-shadow(0 2px 3px rgba(0,0,0,.9));}50%{transform:translate(-50%,-50%) scale(1.22);filter:drop-shadow(0 0 7px rgba(255,255,255,.55)) drop-shadow(0 2px 3px rgba(0,0,0,.9));}100%{transform:translate(-50%,-50%) scale(1);filter:drop-shadow(0 2px 3px rgba(0,0,0,.9));}}
+.point-context-menu .close-context-btn{margin-top:4px;border-top:1px solid rgba(255,255,255,.08);color:#8f8882;}
+.point-context-menu .close-context-btn:hover{color:#fff;background:#171717;}
