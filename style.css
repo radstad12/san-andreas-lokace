@@ -2529,3 +2529,26 @@ body{
   }
 
 }
+/* =====================================================
+   OSTRÁ MAPA
+===================================================== */
+
+#mapImage{
+  image-rendering: auto;
+
+  opacity: 1;
+
+  filter: none;
+
+  transform: translateZ(0);
+
+  backface-visibility: hidden;
+
+  -webkit-backface-visibility: hidden;
+}
+
+.map-canvas{
+  transform-style: flat;
+
+  perspective: none;
+}
