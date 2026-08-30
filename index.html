@@ -3,511 +3,105 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
   <title>Verdugos Los Santos - Mapa</title>
-
   <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
-
-  <!-- =====================================================
-       LEVÉ MENU
-  ====================================================== -->
-
   <aside class="sidebar">
-
-    <!-- LOGO -->
-
-    <div class="brand">
-
-      <img
-        src="logo.png"
-        alt="Verdugos Los Santos"
-      >
-
-    </div>
-
-
-    <!-- MENU -->
+    <div class="brand"><img src="logo.png" alt="Verdugos Los Santos"></div>
 
     <div class="menu">
-
-      <!-- PŘIDAT BOD -->
-
-      <button
-        id="addPointBtn"
-        class="add-point"
-        type="button"
-      >
-        <span>📍</span>
-        Přidat bod
-      </button>
-
-
-      <!-- NÁPOVĚDA PŘI UMISŤOVÁNÍ BODU -->
-
-      <div
-        id="pointModeHint"
-        class="point-mode-hint hidden"
-      >
-        Klikni na místo na mapě
-      </div>
-
-
-      <!-- KATEGORIE -->
+      <button id="addPointBtn" class="add-point" type="button"><span>📍</span> Přidat bod</button>
+      <div id="pointModeHint" class="point-mode-hint hidden">Klikni na místo na mapě</div>
 
       <div class="category-header">
-
         <h2>KATEGORIE</h2>
-
-        <button
-          id="toggleAllBtn"
-          class="toggle-all"
-          type="button"
-        >
-          Skrýt vše
-        </button>
-
+        <button id="toggleAllBtn" class="toggle-all" type="button">Skrýt vše</button>
       </div>
 
+      <div id="categoryList" class="category-list"></div>
 
-      <div
-        id="categoryList"
-        class="category-list"
-      ></div>
-
-
-      <!-- PŘIDAT KATEGORII -->
-
-      <button
-        id="addCategoryBtn"
-        class="add-category"
-        type="button"
-      >
-        <span>＋</span>
-        Přidat kategorii
-      </button>
-
-
-      <div class="category-help">
-
-        Levý klik = zobrazit / skrýt<br>
-        Pravý klik = smazat kategorii<br>
-        Pravý klik na bod = smazat bod
-
-      </div>
-
+      <button id="addCategoryBtn" class="add-category" type="button"><span>＋</span> Přidat kategorii</button>
+      <div class="category-help">Levý klik = zobrazit / skrýt<br>Pravý klik = smazat kategorii nebo bod</div>
     </div>
 
-
-    <!-- FOOTER -->
-
-    <div class="sidebar-footer">
-
-      <span>
-        VERDUGOS MC
-      </span>
-
-      <span class="status-dot"></span>
-
-    </div>
-
+    <div class="sidebar-footer"><span>VERDUGOS MC</span><span class="status-dot"></span></div>
   </aside>
 
-
-
-  <!-- =====================================================
-       MAPA
-  ====================================================== -->
-
   <main class="map-area">
-
-    <!-- OVLÁDÁNÍ MAPY -->
-
     <div class="map-controls">
-
-      <button
-        id="zoomOut"
-        type="button"
-        aria-label="Oddálit"
-      >
-        −
-      </button>
-
-      <button
-        id="resetView"
-        type="button"
-        aria-label="Resetovat mapu"
-      >
-        ⌂
-      </button>
-
-      <button
-        id="zoomIn"
-        type="button"
-        aria-label="Přiblížit"
-      >
-        +
-      </button>
-
+      <button id="zoomOut" type="button">−</button>
+      <button id="resetView" type="button">⌂</button>
+      <button id="zoomIn" type="button">+</button>
     </div>
 
-
-    <!-- VIEWPORT -->
-
-    <div
-      id="mapViewport"
-      class="map-viewport"
-    >
-
-      <div
-        id="mapCanvas"
-        class="map-canvas"
-      >
-
-        <!-- MAPA -->
-
-        <img
-          id="mapImage"
-          src="mapa.png"
-          alt="Mapa Los Santos"
-          draggable="false"
-        >
-
-
-        <!-- VRSTVA S BODY -->
-
-        <div
-          id="pointsLayer"
-          class="points-layer"
-        ></div>
-
+    <div id="mapViewport" class="map-viewport">
+      <div id="mapCanvas" class="map-canvas">
+        <img id="mapImage" src="mapa.png" alt="Mapa Los Santos" draggable="false">
+        <div id="pointsLayer" class="points-layer"></div>
       </div>
-
     </div>
-
-
-    <!-- NÁPOVĚDA -->
-
-    <div class="map-hint">
-
-      Tažením mapu posuneš · kolečkem přiblížíš
-
-    </div>
-
+    <div class="map-hint">Tažením mapu posuneš · kolečkem přiblížíš</div>
   </main>
 
-
-
-  <!-- =====================================================
-       MODAL - PŘIDAT KATEGORII
-  ====================================================== -->
-
-  <div
-    id="categoryModal"
-    class="modal hidden"
-    aria-hidden="true"
-  >
-
-    <div class="modal-card">
-
+  <div id="pointModal" class="point-modal hidden" aria-hidden="true">
+    <div id="pointModalCard" class="modal-card point-modal-card" role="dialog" aria-modal="true">
       <div class="modal-header">
-
-        <h3>
-          Přidat kategorii
-        </h3>
-
-        <button
-          id="closeCategoryBtn"
-          class="close-btn"
-          type="button"
-          aria-label="Zavřít"
-        >
-          ×
-        </button>
-
+        <h3>Přidat bod</h3>
+        <button id="closePointBtn" class="close-btn" type="button">×</button>
       </div>
 
+      <label for="pointName">Název</label>
+      <input id="pointName" type="text" maxlength="60" placeholder="Např. Sklad" autocomplete="off">
 
-      <label for="categoryName">
-        Název kategorie
-      </label>
+      <label for="pointDescription">Popisek</label>
+      <textarea id="pointDescription" maxlength="300" placeholder="Krátký popis bodu..."></textarea>
 
+      <label for="pointCategory">Kategorie</label>
+      <select id="pointCategory"></select>
 
-      <input
-        id="categoryName"
-        type="text"
-        maxlength="40"
-        placeholder="Např. Sklady"
-        autocomplete="off"
-      >
-
-
-      <div class="modal-actions">
-
-        <button
-          id="cancelCategoryBtn"
-          class="secondary-btn"
-          type="button"
-        >
-          Zrušit
-        </button>
-
-
-        <button
-          id="saveCategoryBtn"
-          class="primary-btn"
-          type="button"
-        >
-          Přidat
-        </button>
-
-      </div>
-
-    </div>
-
-  </div>
-
-
-
-  <!-- =====================================================
-       MODAL - PŘIDAT BOD
-  ====================================================== -->
-
-  <div
-    id="pointModal"
-    class="modal hidden"
-    aria-hidden="true"
-  >
-
-    <div class="modal-card point-modal-card">
-
-      <div class="modal-header">
-
-        <h3>
-          Přidat bod
-        </h3>
-
-        <button
-          id="closePointBtn"
-          class="close-btn"
-          type="button"
-          aria-label="Zavřít"
-        >
-          ×
-        </button>
-
-      </div>
-
-
-      <!-- NÁZEV -->
-
-      <label for="pointName">
-        Název
-      </label>
-
-      <input
-        id="pointName"
-        type="text"
-        maxlength="60"
-        placeholder="Např. Sklad"
-        autocomplete="off"
-      >
-
-
-      <!-- POPISEK -->
-
-      <label for="pointDescription">
-        Popisek
-      </label>
-
-      <textarea
-        id="pointDescription"
-        maxlength="300"
-        placeholder="Krátký popis bodu..."
-      ></textarea>
-
-
-      <!-- KATEGORIE -->
-
-      <label for="pointCategory">
-        Kategorie
-      </label>
-
-      <select
-        id="pointCategory"
-      ></select>
-
-
-      <!-- BARVA -->
-
-      <label>
-        Barva bodu
-      </label>
-
-
+      <label>Barva bodu</label>
       <div class="color-layout">
-
-        <div class="color-wheel-wrapper">
-
-          <div
-            id="colorWheel"
-            class="color-wheel"
-          >
-
-            <div
-              id="colorWheelCursor"
-              class="color-wheel-cursor"
-            ></div>
-
-          </div>
-
-        </div>
-
-
+        <div id="colorWheel" class="color-wheel"><div id="colorWheelCursor" class="color-wheel-cursor"></div></div>
         <div class="preset-side">
-
-          <div class="preset-title">
-            Přednastavené
-          </div>
-
-
-          <div
-            id="colorPresets"
-            class="color-presets"
-          ></div>
-
-
-          <div
-            id="colorPreview"
-            class="color-preview"
-          ></div>
-
+          <div class="preset-title">Přednastavené</div>
+          <div id="colorPresets" class="color-presets"></div>
+          <div id="colorPreview" class="color-preview"></div>
         </div>
-
       </div>
 
-
-      <!-- RGB -->
-
-      <div class="rgb-title">
-        RGB
-      </div>
-
-
+      <div class="rgb-title">RGB</div>
       <div class="rgb-values">
-
-        <div>
-
-          <label for="redInput">
-            R
-          </label>
-
-          <input
-            id="redInput"
-            type="number"
-            min="0"
-            max="255"
-            value="255"
-          >
-
-        </div>
-
-
-        <div>
-
-          <label for="greenInput">
-            G
-          </label>
-
-          <input
-            id="greenInput"
-            type="number"
-            min="0"
-            max="255"
-            value="59"
-          >
-
-        </div>
-
-
-        <div>
-
-          <label for="blueInput">
-            B
-          </label>
-
-          <input
-            id="blueInput"
-            type="number"
-            min="0"
-            max="255"
-            value="48"
-          >
-
-        </div>
-
+        <div><label for="redInput">R</label><input id="redInput" type="number" min="0" max="255" value="255"></div>
+        <div><label for="greenInput">G</label><input id="greenInput" type="number" min="0" max="255" value="59"></div>
+        <div><label for="blueInput">B</label><input id="blueInput" type="number" min="0" max="255" value="48"></div>
       </div>
 
-
-      <!-- VELIKOST -->
-
-      <label for="pointSize">
-        Velikost bodu
-      </label>
-
-
-      <div class="size-row">
-
-        <input
-          id="pointSize"
-          type="range"
-          min="2"
-          max="30"
-          value="6"
-        >
-
-
-        <span id="pointSizeValue">
-          6 px
-        </span>
-
-      </div>
-
-
-      <!-- TLAČÍTKA -->
+      <label for="pointSize">Velikost bodu</label>
+      <div class="size-row"><input id="pointSize" type="range" min="2" max="30" value="6"><span id="pointSizeValue">6 px</span></div>
 
       <div class="modal-actions">
-
-        <button
-          id="cancelPointBtn"
-          class="secondary-btn"
-          type="button"
-        >
-          Zrušit
-        </button>
-
-
-        <button
-          id="savePointBtn"
-          class="primary-btn"
-          type="button"
-        >
-          Přidat bod
-        </button>
-
+        <button id="cancelPointBtn" class="secondary-btn" type="button">Zrušit</button>
+        <button id="savePointBtn" class="primary-btn" type="button">Přidat bod</button>
       </div>
-
     </div>
-
   </div>
 
-
-
-  <!-- JAVASCRIPT -->
+  <div id="categoryModal" class="modal hidden" aria-hidden="true">
+    <div class="modal-card" role="dialog" aria-modal="true">
+      <div class="modal-header">
+        <h3>Přidat kategorii</h3>
+        <button id="closeCategoryBtn" class="close-btn" type="button">×</button>
+      </div>
+      <label for="categoryName">Název kategorie</label>
+      <input id="categoryName" type="text" maxlength="40" placeholder="Např. Sklady" autocomplete="off">
+      <div class="modal-actions">
+        <button id="cancelCategoryBtn" class="secondary-btn" type="button">Zrušit</button>
+        <button id="saveCategoryBtn" class="primary-btn" type="button">Přidat</button>
+      </div>
+    </div>
+  </div>
 
   <script src="app.js"></script>
-
 </body>
 </html>
