@@ -2552,3 +2552,244 @@ body{
 
   perspective: none;
 }
+
+
+/* =====================================================
+   ÚZEMÍ
+===================================================== */
+
+.add-territory{
+  width:100%;
+  padding:12px;
+  margin-bottom:8px;
+
+  border:1px solid rgba(183,74,28,.65);
+  border-radius:4px;
+
+  background:rgba(183,74,28,.08);
+  color:#f0e9e2;
+
+  font:500 14px/1 'Oswald',sans-serif;
+  letter-spacing:.7px;
+
+  cursor:pointer;
+  transition:.15s ease;
+}
+
+.add-territory:hover,
+.add-territory.active{
+  background:rgba(183,74,28,.24);
+  border-color:var(--orange-light);
+  color:#fff;
+}
+
+.add-territory span{
+  margin-right:5px;
+}
+
+.map-viewport.add-territory-mode{
+  cursor:crosshair;
+}
+
+.territory-layer{
+  position:absolute;
+  inset:0;
+
+  width:100%;
+  height:100%;
+
+  overflow:visible;
+
+  pointer-events:none;
+  z-index:5;
+}
+
+.territory-layer polygon{
+  cursor:pointer;
+  vector-effect:non-scaling-stroke;
+  pointer-events:auto;
+}
+
+.territory-shape{
+  transition:
+    fill-opacity .18s ease,
+    stroke-width .18s ease,
+    filter .18s ease;
+}
+
+.territory-shape:hover{
+  fill-opacity:.30;
+  stroke-width:4;
+}
+
+.territory-focused{
+  animation:
+    territoryPulse
+    .65s
+    ease-in-out
+    infinite;
+}
+
+.territory-emoji{
+  font-family:
+    "Apple Color Emoji",
+    "Segoe UI Emoji",
+    "Noto Color Emoji",
+    sans-serif;
+
+  paint-order:stroke;
+  stroke:rgba(0,0,0,.8);
+  stroke-width:4px;
+
+  user-select:none;
+}
+
+.territory-vertex{
+  fill:#fff;
+  stroke:#111;
+  stroke-width:2;
+}
+
+.territory-start-vertex{
+  fill:var(--orange-light);
+  r:8;
+}
+
+.territory-preview{
+  pointer-events:none;
+}
+
+.territory-category-points{
+  margin-top:2px;
+}
+
+.territory-list-item{
+  cursor:pointer;
+}
+
+.territory-list-icon{
+  width:18px;
+  min-width:18px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:15px;
+  line-height:1;
+}
+
+.territory-modal{
+  position:fixed !important;
+  inset:0 !important;
+
+  width:100vw !important;
+  height:100vh !important;
+
+  display:block !important;
+
+  padding:0 !important;
+  margin:0 !important;
+
+  background:transparent !important;
+
+  pointer-events:none !important;
+
+  z-index:12000 !important;
+}
+
+.territory-modal.hidden{
+  display:none !important;
+}
+
+.territory-modal-card{
+  position:fixed !important;
+
+  left:0;
+  top:0;
+
+  width:min(430px,calc(100vw - 20px));
+  max-height:calc(100vh - 20px);
+
+  overflow:auto;
+
+  margin:0 !important;
+
+  pointer-events:auto !important;
+  z-index:12001 !important;
+}
+
+.territory-status-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:7px;
+  margin-top:7px;
+  margin-bottom:12px;
+}
+
+.territory-status-option{
+  min-height:64px;
+
+  display:flex;
+  align-items:center;
+  gap:9px;
+
+  padding:9px;
+
+  border:1px solid rgba(255,255,255,.09);
+  border-radius:4px;
+
+  background:#151515;
+  color:#cfc7c0;
+
+  font:500 12px/1.1 'Oswald',sans-serif;
+
+  cursor:pointer;
+}
+
+.territory-status-option:hover,
+.territory-status-option.selected{
+  border-color:var(--orange-light);
+  background:#241813;
+  color:#fff;
+}
+
+.territory-status-icon{
+  width:27px;
+  min-width:27px;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  font-size:20px;
+}
+
+.territory-preview-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+
+  margin:5px 0 12px;
+
+  color:#8f8983;
+  font:11px/1.2 Arial,sans-serif;
+}
+
+.territory-color-preview{
+  width:36px;
+  height:18px;
+
+  border-radius:3px;
+
+  border:1px solid rgba(255,255,255,.35);
+}
+
+@keyframes territoryPulse{
+  0%,100%{
+    filter:
+      drop-shadow(0 0 0 rgba(255,255,255,0));
+  }
+  50%{
+    filter:
+      drop-shadow(0 0 10px rgba(255,255,255,.8));
+  }
+}
