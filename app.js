@@ -2702,20 +2702,15 @@ function zoomAt(
 
 function renderMap() {
 
-  /*
-    Mapa je vždy transformována
-    z prostředku canvasu.
-  */
+  const transform =
+    `translate3d(
+      calc(-50% + ${x}px),
+      calc(-50% + ${y}px),
+      0
+    ) scale(${scale})`;
 
   canvas.style.transform =
-    `
-      translate3d(
-        calc(-50% + ${x}px),
-        calc(-50% + ${y}px),
-        0
-      )
-      scale(${scale})
-    `;
+    transform;
 
 }
 
@@ -4070,5 +4065,57 @@ if (mapImage) {
     );
 
   }
+
+}
+
+/* =====================================================
+   PRVNÍ OSTRÉ VYKRESLENÍ
+===================================================== */
+
+function sharpenInitialRender() {
+
+  requestAnimationFrame(() => {
+
+    requestAnimationFrame(() => {
+
+      renderMap();
+
+      if (pointsLayer) {
+
+        pointsLayer
+          .querySelectorAll(".map-point-icon")
+          .forEach(icon => {
+
+            void icon.offsetWidth;
+
+          });
+
+      }
+
+    });
+
+  });
+
+}
+
+
+if (document.fonts && document.fonts.ready) {
+
+  document.fonts.ready.then(() => {
+
+    sharpenInitialRender();
+
+  });
+
+}
+else {
+
+  window.addEventListener(
+    "load",
+    sharpenInitialRender,
+    {
+      once:true
+    }
+  );
 
 }
