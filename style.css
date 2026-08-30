@@ -33,7 +33,7 @@ body {
 
 .sidebar {
   position: relative;
-  z-index: 10;
+  z-index: 20;
   width: var(--sidebar-width);
   min-width: var(--sidebar-width);
   height: 100vh;
@@ -82,11 +82,11 @@ body {
 }
 
 .small-action {
-  border: 1px solid rgba(183, 74, 28, 0.45);
+  border: 1px solid rgba(183, 74, 28, 0.55);
   border-radius: 4px;
-  padding: 6px 9px;
-  background: rgba(18, 18, 18, 0.9);
-  color: #b8b0aa;
+  padding: 7px 10px;
+  background: rgba(18, 18, 18, 0.95);
+  color: #c8c0ba;
   font: 500 11px/1 'Oswald', sans-serif;
   letter-spacing: 0.4px;
   cursor: pointer;
@@ -128,16 +128,14 @@ body {
 }
 
 .category-item.hidden-category {
-  opacity: 0.5;
+  opacity: 0.48;
 }
 
-.category-icon {
-  width: 10px;
-  height: 10px;
-  flex: 0 0 10px;
-  border-radius: 50%;
-  background: var(--orange-bright);
-  box-shadow: 0 0 8px rgba(215, 106, 44, 0.35);
+.category-emoji {
+  width: 24px;
+  flex: 0 0 24px;
+  font-size: 17px;
+  text-align: center;
 }
 
 .category-name {
@@ -151,10 +149,10 @@ body {
 }
 
 .category-state {
-  font-size: 10px;
+  font-size: 9px;
   text-transform: uppercase;
   color: #756e69;
-  letter-spacing: 0.7px;
+  letter-spacing: 0.6px;
 }
 
 .add-category-btn {
@@ -254,7 +252,7 @@ body {
 
 .map-toolbar {
   position: absolute;
-  z-index: 5;
+  z-index: 25;
   top: 20px;
   right: 20px;
   display: flex;
@@ -283,7 +281,7 @@ body {
 
 .map-hint {
   position: absolute;
-  z-index: 5;
+  z-index: 25;
   left: 50%;
   bottom: 16px;
   transform: translateX(-50%);
@@ -305,7 +303,7 @@ body {
   align-items: center;
   justify-content: center;
   padding: 18px;
-  background: rgba(0, 0, 0, 0.7);
+  background: rgba(0, 0, 0, 0.72);
   backdrop-filter: blur(3px);
 }
 
@@ -315,18 +313,42 @@ body {
 
 .modal-card {
   width: min(420px, 100%);
-  border: 1px solid rgba(183, 74, 28, 0.45);
+  border: 1px solid rgba(183, 74, 28, 0.55);
   border-radius: 6px;
   padding: 20px;
   background: #111;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.55);
 }
 
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
 .modal-card h3 {
-  margin: 0 0 14px;
+  margin: 0;
   color: #eee7e0;
   font-size: 21px;
   font-weight: 600;
+}
+
+.close-btn {
+  width: 30px;
+  height: 30px;
+  border: 1px solid #3a3330;
+  border-radius: 4px;
+  background: #171717;
+  color: #aaa39d;
+  font: 500 20px/1 'Arial', sans-serif;
+  cursor: pointer;
+}
+
+.close-btn:hover {
+  color: #fff;
+  border-color: var(--orange);
 }
 
 .modal-card label {
@@ -350,6 +372,7 @@ body {
 
 .modal-card input:focus {
   border-color: var(--orange);
+  box-shadow: 0 0 0 2px rgba(183, 74, 28, 0.1);
 }
 
 .modal-actions {
