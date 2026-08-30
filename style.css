@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&display=swap');
+
 
 
 /* =====================================================
@@ -1337,6 +1337,67 @@ body{
     );
 }
 
+
+
+/* =====================================================
+   IKONY KATEGORIÍ - BOD NA MAPĚ
+===================================================== */
+
+.map-point-icon{
+  position:absolute;
+  left:50%;
+  top:50%;
+  transform:translate(-50%,-50%);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  line-height:1;
+  pointer-events:none;
+  user-select:none;
+  z-index:3;
+  font-family:'Segoe UI Emoji','Apple Color Emoji','Noto Color Emoji',sans-serif;
+  filter:drop-shadow(0 2px 3px rgba(0,0,0,.95));
+}
+
+.map-point{
+  background:transparent !important;
+  border:0 !important;
+  width:auto !important;
+  height:auto !important;
+  box-shadow:none !important;
+  overflow:visible;
+}
+
+.map-point:hover{
+  transform:translate(-50%,-50%) scale(1.18);
+  z-index:100;
+}
+
+.map-point.focused-point{
+  transform:translate(-50%,-50%) scale(1.65);
+  z-index:300;
+}
+
+.map-point.category-hover-point{
+  animation:pointCategoryPulse .8s ease-in-out infinite;
+  z-index:150;
+}
+
+.map-point-preview{
+  animation:pointPreviewPulse 1s ease-in-out infinite;
+}
+
+/* ikonky v seznamu kategorií */
+.category-emoji{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:24px;
+  min-width:24px;
+  font-family:'Segoe UI Emoji','Apple Color Emoji','Noto Color Emoji',sans-serif;
+  font-size:18px;
+  line-height:1;
+}
 
 /* =====================================================
    FOCUS BOD
