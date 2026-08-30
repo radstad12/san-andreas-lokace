@@ -12,9 +12,23 @@
       <img src="logo.png" alt="Verdugos Los Santos" />
     </div>
 
-    <div class="sidebar-content">
-      <!-- Budoucí menu / nástroje přijdou sem -->
-    </div>
+    <section class="menu-section">
+      <div class="section-title-row">
+        <h2>Kategorie</h2>
+        <button id="toggleAllBtn" class="small-action" type="button">Skrýt vše</button>
+      </div>
+
+      <div id="categoryList" class="category-list"></div>
+
+      <button id="addCategoryBtn" class="add-category-btn" type="button">
+        <span class="plus">+</span>
+        Přidat kategorii
+      </button>
+
+      <p class="menu-help">Pravým tlačítkem na kategorii ji můžeš smazat.</p>
+    </section>
+
+    <div class="sidebar-spacer"></div>
 
     <div class="sidebar-footer">
       <span>VERDUGOS MC</span>
@@ -37,6 +51,25 @@
 
     <div class="map-hint">Tažením mapu posuneš · kolečkem přiblížíš</div>
   </main>
+
+  <div id="categoryModal" class="modal hidden" aria-hidden="true">
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <h3 id="modalTitle">Přidat kategorii</h3>
+      <label for="categoryName">Název kategorie</label>
+      <input
+        id="categoryName"
+        type="text"
+        maxlength="40"
+        placeholder="Např. Území"
+        autocomplete="off"
+      />
+
+      <div class="modal-actions">
+        <button id="cancelCategoryBtn" class="secondary-btn" type="button">Zrušit</button>
+        <button id="saveCategoryBtn" class="primary-btn" type="button">Přidat</button>
+      </div>
+    </div>
+  </div>
 
   <script src="app.js"></script>
 </body>
