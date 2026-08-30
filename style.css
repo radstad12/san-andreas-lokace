@@ -5,48 +5,32 @@
    ZÁKLAD
 ===================================================== */
 
-:root {
-  --sidebar-width: 310px;
-
-  --bg: #080808;
-  --border: #3a2018;
-
-  --orange: #b74a1c;
-  --orange-bright: #d76a2c;
-
-  --text: #e7e1da;
-  --muted: #77716c;
-
-  --panel: #111;
-  --panel-hover: #1b1715;
+:root{
+  --sidebar-width:310px;
+  --background:#080808;
+  --orange:#b74a1c;
+  --orange-light:#d76a2c;
+  --text:#e7e1da;
+  --border:rgba(183,74,28,.35);
 }
 
-
-* {
-  box-sizing: border-box;
+*{
+  box-sizing:border-box;
 }
-
 
 html,
-body {
-  width: 100%;
-  height: 100%;
-  margin: 0;
-
-  overflow: hidden;
-
-  background: var(--bg);
-  color: var(--text);
-
-  font-family:
-    'Oswald',
-    Arial,
-    sans-serif;
+body{
+  width:100%;
+  height:100%;
+  margin:0;
+  overflow:hidden;
+  background:var(--background);
+  color:var(--text);
+  font-family:'Oswald',Arial,sans-serif;
 }
 
-
-body {
-  display: flex;
+body{
+  display:flex;
 }
 
 
@@ -54,37 +38,42 @@ body {
    SIDEBAR
 ===================================================== */
 
-.sidebar {
-  position: relative;
+.sidebar{
+  position:relative;
+  z-index:20;
 
-  z-index: 20;
+  width:var(--sidebar-width);
+  min-width:var(--sidebar-width);
+  height:100vh;
 
-  width: var(--sidebar-width);
-  min-width: var(--sidebar-width);
+  display:flex;
+  flex-direction:column;
 
-  height: 100vh;
-
-  display: flex;
-  flex-direction: column;
+  /*
+    Sidebar samotný se nesmí scrollovat.
+    Scrolluje pouze .menu.
+  */
+  overflow:hidden;
 
   background:
     radial-gradient(
-      circle at 50% 0%,
-      rgba(180, 70, 25, 0.08),
-      transparent 38%
+      circle at top,
+      rgba(183,74,28,.10),
+      transparent 40%
     ),
     linear-gradient(
       180deg,
-      #111 0%,
-      #090909 100%
+      #121212 0,
+      #080808 100%
     );
 
   border-right:
-    1px solid var(--border);
+    1px solid
+    var(--border);
 
   box-shadow:
     8px 0 30px
-    rgba(0, 0, 0, 0.45);
+    rgba(0,0,0,.5);
 }
 
 
@@ -92,106 +81,242 @@ body {
    LOGO
 ===================================================== */
 
-.brand {
-  padding:
-    22px 24px 18px;
+.brand{
+  flex-shrink:0;
+
+  padding:20px;
 
   border-bottom:
     1px solid
-    rgba(183, 74, 28, 0.25);
+    var(--border);
 }
 
+.brand img{
+  display:block;
 
-.brand img {
-  display: block;
+  width:100%;
+  height:auto;
 
-  width: 100%;
-  height: auto;
-
-  max-height: 250px;
-
-  object-fit: contain;
+  object-fit:contain;
 
   filter:
     drop-shadow(
-      0 8px 16px
-      rgba(0, 0, 0, 0.45)
+      0 8px 15px
+      rgba(0,0,0,.5)
     );
 }
 
 
 /* =====================================================
-   MENU
+   MENU - SCROLL
 ===================================================== */
 
-.menu-section {
+.menu{
+  flex:1;
+
+  /*
+    Velmi důležité pro flex container.
+    Bez min-height:0 se scrollbar často
+    nezapne správně.
+  */
+  min-height:0;
+
+  width:100%;
+
+  /*
+    Scroll pouze zde.
+  */
+  overflow-y:auto;
+  overflow-x:hidden;
+
   padding:
-    18px 16px 10px;
+    18px 15px 20px;
+
+  scroll-behavior:smooth;
+
+  /*
+    Firefox.
+  */
+  scrollbar-width:thin;
+
+  scrollbar-color:
+    rgba(183,74,28,.65)
+    rgba(255,255,255,.04);
 }
 
 
-.section-title-row {
-  display: flex;
+/* =====================================================
+   SCROLLBAR - CHROME / EDGE / BRAVE
+===================================================== */
 
-  align-items: center;
-
-  justify-content: space-between;
-
-  gap: 10px;
-
-  margin-bottom: 12px;
+.menu::-webkit-scrollbar{
+  width:7px;
 }
 
+.menu::-webkit-scrollbar-track{
+  background:
+    rgba(255,255,255,.035);
 
-.section-title-row h2 {
-  margin: 0;
-
-  color: #ddd5ce;
-
-  font-size: 18px;
-  font-weight: 600;
-
-  letter-spacing: 1.2px;
-
-  text-transform: uppercase;
+  border-radius:4px;
 }
 
+.menu::-webkit-scrollbar-thumb{
+  background:
+    rgba(183,74,28,.55);
 
-.small-action {
+  border-radius:4px;
+
   border:
     1px solid
-    rgba(183, 74, 28, 0.55);
+    rgba(0,0,0,.25);
+}
 
-  border-radius: 4px;
+.menu::-webkit-scrollbar-thumb:hover{
+  background:
+    rgba(215,106,44,.75);
+}
 
-  padding: 7px 10px;
+
+/* =====================================================
+   PŘIDAT BOD
+===================================================== */
+
+.add-point{
+  width:100%;
+
+  padding:12px;
+
+  margin-bottom:8px;
+
+  border:
+    1px solid
+    var(--orange);
+
+  border-radius:4px;
 
   background:
-    rgba(18, 18, 18, 0.95);
+    rgba(183,74,28,.13);
 
-  color: #c8c0ba;
+  color:#f0e9e2;
 
-  font:
-    500 11px/1
+  font-family:
     'Oswald',
     sans-serif;
 
-  letter-spacing: 0.4px;
+  font-size:14px;
 
-  cursor: pointer;
+  letter-spacing:.7px;
 
-  transition: 0.15s ease;
+  cursor:pointer;
+
+  transition:.15s;
+}
+
+.add-point:hover,
+.add-point.active{
+  background:
+    rgba(183,74,28,.28);
+
+  border-color:
+    var(--orange-light);
+
+  color:#fff;
+}
+
+.add-point span{
+  margin-right:5px;
 }
 
 
-.small-action:hover {
-  border-color:
-    var(--orange-bright);
+/* =====================================================
+   REŽIM PŘIDÁVÁNÍ
+===================================================== */
 
-  color: #fff;
+.point-mode-hint{
+  margin-bottom:15px;
+
+  padding:
+    8px 10px;
+
+  border:
+    1px dashed
+    var(--orange);
+
+  border-radius:4px;
 
   background:
-    rgba(39, 24, 18, 0.95);
+    rgba(183,74,28,.1);
+
+  color:#cfc5bd;
+
+  text-align:center;
+
+  font-size:11px;
+}
+
+.hidden{
+  display:none !important;
+}
+
+
+/* =====================================================
+   CATEGORY HEADER
+===================================================== */
+
+.category-header{
+  display:flex;
+
+  align-items:center;
+
+  justify-content:space-between;
+
+  gap:10px;
+
+  margin-bottom:12px;
+}
+
+.category-header h2{
+  margin:0;
+
+  font-size:19px;
+
+  font-weight:600;
+
+  letter-spacing:1.5px;
+}
+
+.toggle-all{
+  border:
+    1px solid
+    var(--border);
+
+  background:#151515;
+
+  color:#c5beb7;
+
+  border-radius:4px;
+
+  padding:
+    7px 10px;
+
+  font-family:
+    'Oswald',
+    sans-serif;
+
+  font-size:11px;
+
+  cursor:pointer;
+
+  transition:.15s;
+}
+
+.toggle-all:hover{
+  border-color:
+    var(--orange-light);
+
+  color:#fff;
+
+  background:#241813;
 }
 
 
@@ -199,235 +324,230 @@ body {
    KATEGORIE
 ===================================================== */
 
-.category-list {
-  display: flex;
+.category-list{
+  display:flex;
 
-  flex-direction: column;
+  flex-direction:column;
 
-  gap: 7px;
+  gap:7px;
+
+  /*
+    Obsah se nesmí rozlézt
+    mimo šířku menu.
+  */
+  min-width:0;
 }
 
+.category-wrap{
+  display:block;
 
-.category-wrap {
-  display: block;
+  min-width:0;
 }
 
+.category-item{
+  position:relative;
 
-.category-item {
-  position: relative;
+  width:100%;
 
-  width: 100%;
+  min-height:42px;
 
-  display: flex;
+  display:flex;
 
-  align-items: center;
+  align-items:center;
 
-  gap: 10px;
+  gap:9px;
 
   padding:
-    10px 11px;
+    9px 10px;
 
   border:
     1px solid
-    rgba(255, 255, 255, 0.07);
+    rgba(255,255,255,.07);
 
   border-left:
     3px solid
     var(--orange);
 
-  border-radius: 4px;
+  border-radius:4px;
 
   background:
-    rgba(17, 17, 17, 0.94);
+    rgba(18,18,18,.95);
 
-  color:
-    #d8d1cb;
+  color:#ddd6d0;
 
-  cursor: pointer;
+  cursor:pointer;
 
-  user-select: none;
+  user-select:none;
 
   transition:
-    0.15s ease;
+    background .15s,
+    border-color .15s,
+    transform .15s;
 }
 
-
-.category-item:hover {
-  background:
-    var(--panel-hover);
+.category-item:hover{
+  background:#1d1815;
 
   border-color:
-    rgba(183, 74, 28, 0.38);
+    rgba(183,74,28,.55);
 }
 
-
-.category-item.hidden-category {
-  opacity: 0.48;
+.category-item.hidden-category{
+  opacity:.42;
 }
 
+.category-emoji{
+  width:22px;
 
-.category-emoji {
-  width: 24px;
+  min-width:22px;
 
-  flex: 0 0 24px;
+  text-align:center;
 
-  font-size: 17px;
-
-  text-align: center;
+  font-size:16px;
 }
 
+.category-name{
+  flex:1;
 
-.category-name {
-  flex: 1;
+  min-width:0;
 
-  min-width: 0;
+  overflow:hidden;
 
-  overflow: hidden;
+  text-overflow:ellipsis;
 
-  text-overflow: ellipsis;
+  white-space:nowrap;
 
-  white-space: nowrap;
-
-  font-size: 14px;
-
-  letter-spacing: 0.4px;
+  font-size:14px;
 }
 
+.category-count{
+  min-width:23px;
 
-.category-state {
-  font-size: 9px;
+  height:23px;
 
-  text-transform: uppercase;
+  padding:
+    0 5px;
 
-  color: #756e69;
+  display:flex;
 
-  letter-spacing: 0.6px;
-}
+  align-items:center;
 
+  justify-content:center;
 
-/* =====================================================
-   POČET BODŮ
-===================================================== */
-
-.category-count {
-  min-width: 23px;
-
-  height: 23px;
-
-  padding: 0 5px;
-
-  display: flex;
-
-  align-items: center;
-
-  justify-content: center;
+  border-radius:50%;
 
   border:
     1px solid
-    rgba(183, 74, 28, 0.35);
+    rgba(183,74,28,.35);
 
-  border-radius: 50%;
+  background:#211814;
 
-  background:
-    #211814;
+  color:#ddd2cb;
 
-  color:
-    #ddd2cb;
+  font-size:10px;
+}
 
-  font-size: 10px;
+.category-state{
+  color:#716b66;
+
+  font-size:8px;
+
+  text-transform:uppercase;
+
+  letter-spacing:.4px;
 }
 
 
 /* =====================================================
-   PODKATEGORIE / BODY
+   PODBODY
 ===================================================== */
 
-.category-points {
+.category-points{
   margin:
     2px 0 1px 28px;
 
-  padding-left: 8px;
+  padding-left:8px;
 
   border-left:
     1px solid
-    rgba(183, 74, 28, 0.25);
+    rgba(183,74,28,.25);
 
-  display: flex;
+  display:flex;
 
-  flex-direction: column;
+  flex-direction:column;
 
-  gap: 2px;
+  gap:2px;
+
+  min-width:0;
 }
 
+.category-point{
+  display:flex;
 
-.category-point {
-  display: flex;
+  align-items:center;
 
-  align-items: center;
-
-  gap: 7px;
+  gap:7px;
 
   padding:
     6px 7px;
 
-  border-radius: 3px;
+  border-radius:3px;
 
-  color:
-    #aaa39d;
+  color:#aaa39d;
 
   font:
     11px/1.2
     Arial,
     sans-serif;
 
-  cursor: pointer;
+  cursor:pointer;
+
+  min-width:0;
 
   transition:
-    background 0.12s,
-    color 0.12s,
-    transform 0.12s;
+    background .12s,
+    color .12s,
+    transform .12s;
 }
 
-
-.category-point:hover {
+.category-point:hover{
   background:
-    rgba(183, 74, 28, 0.09);
+    rgba(183,74,28,.09);
 
-  color:
-    #eee;
+  color:#eee;
 
   transform:
     translateX(2px);
 }
 
+.category-point-dot{
+  width:6px;
 
-.category-point-dot {
-  width: 6px;
+  height:6px;
 
-  height: 6px;
-
-  min-width: 6px;
+  min-width:6px;
 
   border:
-    1px solid #fff;
+    1px solid
+    #fff;
 
-  border-radius: 50%;
+  border-radius:50%;
 
   box-shadow:
     0 1px 3px
-    rgba(0, 0, 0, 0.6);
+    rgba(0,0,0,.6);
 }
 
+.category-point-name{
+  flex:1;
 
-.category-point-name {
-  overflow:
-    hidden;
+  min-width:0;
 
-  text-overflow:
-    ellipsis;
+  overflow:hidden;
 
-  white-space:
-    nowrap;
+  text-overflow:ellipsis;
+
+  white-space:nowrap;
 }
 
 
@@ -435,79 +555,51 @@ body {
    PŘIDAT KATEGORII
 ===================================================== */
 
-.add-category-btn {
-  width: 100%;
+.add-category{
+  width:100%;
 
-  margin-top: 10px;
+  margin-top:10px;
+
+  padding:11px;
 
   border:
     1px dashed
-    rgba(183, 74, 28, 0.55);
+    rgba(183,74,28,.6);
 
-  border-radius: 4px;
+  border-radius:4px;
 
-  padding:
-    11px 12px;
+  background:transparent;
 
-  background:
-    transparent;
+  color:#cfc7c0;
 
-  color:
-    #c7beb7;
-
-  font:
-    500 13px/1
+  font-family:
     'Oswald',
     sans-serif;
 
-  letter-spacing:
-    0.8px;
+  font-size:13px;
 
-  cursor:
-    pointer;
+  letter-spacing:.7px;
 
-  transition:
-    0.15s ease;
+  cursor:pointer;
+
+  transition:.15s;
 }
 
-
-.add-category-btn:hover {
+.add-category:hover{
   border-color:
-    var(--orange-bright);
+    var(--orange-light);
 
   background:
-    rgba(183, 74, 28, 0.08);
+    rgba(183,74,28,.1);
 
-  color:
-    #fff;
+  color:#fff;
 }
 
+.add-category span{
+  font-size:17px;
 
-.plus {
-  margin-right: 6px;
-
-  font-size: 16px;
+  margin-right:5px;
 }
-
-
-/* =====================================================
-   NÁPOVĚDA
-===================================================== */
-
-.menu-help {
-  margin:
-    10px 2px 0;
-
-  color:
-    #5e5955;
-
-  font:
-    400 10px/1.45
-    Arial,
-    sans-serif;
-}
-
-
 
 
 /* =====================================================
@@ -516,312 +608,299 @@ body {
 
 .controls-btn{
   width:100%;
+
   margin-top:12px;
-  padding:10px 11px;
-  border:1px solid rgba(183,74,28,.40);
+
+  padding:
+    10px 11px;
+
+  border:
+    1px solid
+    rgba(183,74,28,.40);
+
   border-radius:4px;
-  background:rgba(18,18,18,.95);
+
+  background:
+    rgba(18,18,18,.95);
+
   color:#bcb4ad;
-  font:500 12px/1 'Oswald',sans-serif;
+
+  font:
+    500 12px/1
+    'Oswald',
+    sans-serif;
+
   letter-spacing:.5px;
+
   cursor:pointer;
-  transition:background .15s ease,border-color .15s ease,color .15s ease;
+
+  transition:
+    background .15s ease,
+    border-color .15s ease,
+    color .15s ease;
 }
 
 .controls-btn:hover{
   background:#1b1715;
-  border-color:rgba(183,74,28,.65);
+
+  border-color:
+    rgba(183,74,28,.65);
+
   color:#fff;
 }
 
 .controls-help{
   margin-top:7px;
-  padding:10px 11px;
-  border:1px solid rgba(183,74,28,.20);
+
+  padding:
+    10px 11px;
+
+  border:
+    1px solid
+    rgba(183,74,28,.20);
+
   border-radius:4px;
-  background:rgba(10,10,10,.75);
+
+  background:
+    rgba(10,10,10,.75);
+
   color:#77716c;
-  font:10px/1.55 Arial,sans-serif;
+
+  font:
+    10px/1.55
+    Arial,
+    sans-serif;
 }
 
 .controls-help strong{
   display:block;
-  margin-top:6px;
+
+  margin-top:5px;
   margin-bottom:3px;
+
   color:#aaa39d;
-  font:500 10px/1.2 'Oswald',sans-serif;
+
+  font:
+    500 10px/1.2
+    'Oswald',
+    sans-serif;
 }
 
 .controls-help strong:first-child{
   margin-top:0;
 }
 
+
 /* =====================================================
    SIDEBAR FOOTER
 ===================================================== */
 
-.sidebar-spacer {
-  flex: 1;
-}
+.sidebar-footer{
+  flex-shrink:0;
 
-
-.sidebar-footer {
-  display: flex;
-
-  align-items: center;
-
-  justify-content: space-between;
+  margin-top:0;
 
   padding:
-    15px 22px;
-
-  color:
-    #5e5955;
-
-  font-size:
-    12px;
-
-  letter-spacing:
-    2px;
+    15px 20px;
 
   border-top:
     1px solid
-    rgba(183, 74, 28, 0.18);
+    var(--border);
+
+  color:#5c5752;
+
+  font-size:11px;
+
+  letter-spacing:2px;
+
+  display:flex;
+
+  align-items:center;
+
+  justify-content:space-between;
 }
 
+.status-dot{
+  width:7px;
 
-.status-dot {
-  width: 7px;
+  height:7px;
 
-  height: 7px;
+  border-radius:50%;
 
-  border-radius: 50%;
-
-  background:
-    #7d9a48;
+  background:#7d9a48;
 
   box-shadow:
     0 0 9px
-    rgba(125, 154, 72, 0.7);
+    rgba(125,154,72,.7);
 }
 
 
 /* =====================================================
-   MAP SHELL
+   MAP
 ===================================================== */
 
-.map-shell {
-  position: relative;
+.map-area{
+  position:relative;
 
-  flex: 1;
+  flex:1;
 
-  min-width: 0;
+  min-width:0;
 
-  height: 100vh;
+  height:100vh;
 
-  background:
-    #060706;
+  overflow:hidden;
+
+  background:#050505;
 }
 
+.map-viewport{
+  position:absolute;
 
-/* =====================================================
-   MAP VIEWPORT
-===================================================== */
+  inset:0;
 
-.map-viewport {
-  position: absolute;
+  overflow:hidden;
 
-  inset: 0;
+  cursor:grab;
 
-  overflow: hidden;
+  background:#070807;
 
-  cursor: grab;
-
-  background:
-    radial-gradient(
-      circle at center,
-      rgba(45, 54, 45, 0.16),
-      transparent 65%
-    ),
-    #070807;
-
-  touch-action: none;
+  touch-action:none;
 }
 
-
-.map-viewport.is-dragging {
-  cursor:
-    grabbing;
+.map-viewport.is-dragging{
+  cursor:grabbing;
 }
 
-
-.map-viewport.add-point-mode {
-  cursor:
-    crosshair;
+.map-viewport.add-point-mode{
+  cursor:crosshair;
 }
 
+.map-canvas{
+  position:absolute;
 
-/* =====================================================
-   MAP CANVAS
-===================================================== */
+  left:50%;
 
-.map-canvas {
-  position: absolute;
-
-  left: 50%;
-  top: 50%;
+  top:50%;
 
   width:
-    min(82vw, 980px);
+    min(82vw,980px);
 
   transform-origin:
     center center;
 
-  user-select: none;
+  user-select:none;
 
-  will-change:
-    transform;
+  will-change:transform;
 
-  backface-visibility:
-    hidden;
+  backface-visibility:hidden;
 }
 
+.map-canvas img{
+  display:block;
 
-.map-canvas img {
-  display: block;
+  width:100%;
 
-  width: 100%;
+  height:auto;
 
-  height: auto;
+  user-select:none;
 
-  user-select: none;
+  -webkit-user-drag:none;
 
-  -webkit-user-drag: none;
+  pointer-events:none;
 
-  pointer-events: none;
-
-  image-rendering: auto;
-}
-
-
-/* =====================================================
-   VRSTVA BODŮ
-===================================================== */
-
-.points-layer {
-  position: absolute;
-
-  inset: 0;
-
-  /*
-    Vrstva sama neblokuje mapu.
-  */
-  pointer-events: none;
+  image-rendering:auto;
 }
 
 
 /* =====================================================
-   BOD
+   BODY
 ===================================================== */
 
-.map-point {
-  position: absolute;
+.points-layer{
+  position:absolute;
 
-  display: flex;
+  inset:0;
 
-  align-items: center;
+  pointer-events:none;
+}
 
-  justify-content: center;
+.map-point{
+  position:absolute;
+
+  display:flex;
+
+  align-items:center;
+
+  justify-content:center;
 
   /*
-    Tooltip je uvnitř elementu bodu,
-    proto NIKDY nesmí být hidden.
+    TOOLTIP NESMÍ BÝT OŘÍZNUTÝ.
   */
-  overflow: visible;
+  overflow:visible;
 
   transform:
-    translate(-50%, -50%);
+    translate(-50%,-50%);
 
   border:
     1px solid #fff;
 
-  border-radius: 50%;
+  border-radius:50%;
 
   box-shadow:
     0 2px 7px
-    rgba(0, 0, 0, 0.75);
+    rgba(0,0,0,.75);
 
-  pointer-events: auto;
+  pointer-events:auto;
 
-  cursor: pointer;
+  cursor:pointer;
 
-  z-index: 10;
+  z-index:10;
 
   transition:
-    transform 0.12s ease,
-    box-shadow 0.12s ease;
+    transform .12s ease,
+    box-shadow .12s ease;
 }
 
-
-/* =====================================================
-   HOVER PŘÍMO NA BOD
-===================================================== */
-
-.map-point:hover {
+.map-point:hover{
   transform:
-    translate(-50%, -50%)
+    translate(-50%,-50%)
     scale(1.35);
 
-  z-index: 80;
+  z-index:80;
 }
 
-
-/* =====================================================
-   BOD ZVÝRAZNĚNÝ Z MENU
-===================================================== */
-
-.map-point.focused-point {
+.map-point.focused-point{
   transform:
-    translate(-50%, -50%)
+    translate(-50%,-50%)
     scale(1.9);
 
-  z-index: 100;
+  z-index:100;
 
   box-shadow:
     0 0 0 4px
-    rgba(255, 255, 255, 0.18),
+    rgba(255,255,255,.18),
 
     0 0 14px
-    rgba(255, 255, 255, 0.55);
+    rgba(255,255,255,.55);
 
   animation:
     pointFocusedPulse
-    0.7s
+    .7s
     ease-in-out
     infinite;
 }
 
-
-/* =====================================================
-   CELÁ KATEGORIE
-===================================================== */
-
-.map-point.category-hover-point {
+.map-point.category-hover-point{
   animation:
     pointCategoryPulse
-    0.8s
+    .8s
     ease-in-out
     infinite;
 
-  z-index: 60;
+  z-index:60;
 }
 
-
-/* =====================================================
-   NÁHLED BODU
-===================================================== */
-
-.map-point-preview {
+.map-point-preview{
   animation:
     pointPreviewPulse
     1s
@@ -834,36 +913,39 @@ body {
    EMOJI
 ===================================================== */
 
-.map-point-emoji {
-  position: absolute;
+.map-point-emoji{
+  position:absolute;
 
-  left: 50%;
-  top: 50%;
+  left:50%;
+  top:50%;
 
-  width: 100%;
-  height: 100%;
+  width:100%;
+  height:100%;
 
-  display: flex;
+  display:flex;
 
-  align-items: center;
+  align-items:center;
 
-  justify-content: center;
+  justify-content:center;
 
   transform:
-    translate(-50%, -50%);
+    translate(-50%,-50%);
 
-  line-height: 1;
+  line-height:1;
 
-  pointer-events: none;
+  pointer-events:none;
 
-  overflow: hidden;
+  /*
+    Ořez pouze emoji.
+  */
+  overflow:hidden;
 
-  border-radius: 50%;
+  border-radius:50%;
 
-  z-index: 2;
+  z-index:2;
 
-  max-width: 100%;
-  max-height: 100%;
+  max-width:100%;
+  max-height:100%;
 }
 
 
@@ -871,10 +953,10 @@ body {
    TOOLTIP
 ===================================================== */
 
-.point-tooltip {
-  position: absolute;
+.point-tooltip{
+  position:absolute;
 
-  left: 50%;
+  left:50%;
 
   bottom:
     calc(100% + 10px);
@@ -882,64 +964,53 @@ body {
   transform:
     translateX(-50%);
 
-  width: max-content;
+  width:max-content;
 
-  min-width: 150px;
+  min-width:150px;
 
-  max-width: 280px;
+  max-width:280px;
 
   padding:
     9px 11px;
 
   border:
     1px solid
-    rgba(183, 74, 28, 0.65);
+    rgba(183,74,28,.65);
 
-  border-radius:
-    4px;
+  border-radius:4px;
 
   background:
-    rgba(8, 8, 8, 0.97);
+    rgba(8,8,8,.97);
 
   box-shadow:
     0 8px 24px
-    rgba(0, 0, 0, 0.70);
+    rgba(0,0,0,.70);
 
-  color:
-    #eee;
+  color:#eee;
 
-  opacity:
-    0;
+  opacity:0;
 
-  visibility:
-    hidden;
+  visibility:hidden;
 
-  pointer-events:
-    none;
+  pointer-events:none;
 
   transition:
-    opacity 0.12s ease,
-    visibility 0.12s ease;
+    opacity .12s ease,
+    visibility .12s ease;
 
-  z-index:
-    1000;
+  z-index:1000;
 
-  white-space:
-    normal;
+  white-space:normal;
 }
 
+.point-tooltip::after{
+  content:"";
 
-/* =====================================================
-   TOOLTIP ŠIPKA
-===================================================== */
+  position:absolute;
 
-.point-tooltip::after {
-  content: "";
+  left:50%;
 
-  position: absolute;
-
-  left: 50%;
-  top: 100%;
+  top:100%;
 
   transform:
     translateX(-50%);
@@ -952,80 +1023,52 @@ body {
 
   border-top:
     6px solid
-    rgba(183, 74, 28, 0.65);
+    rgba(183,74,28,.65);
 }
 
+.map-point:hover
+.point-tooltip{
+  opacity:1;
 
-/* =====================================================
-   TOOLTIP - HOVER BOD
-===================================================== */
-
-.map-point:hover .point-tooltip {
-  opacity: 1;
-
-  visibility: visible;
+  visibility:visible;
 }
 
+.map-point.focused-point
+.point-tooltip{
+  opacity:1;
 
-/* =====================================================
-   TOOLTIP - FOCUS
-===================================================== */
-
-.map-point.focused-point .point-tooltip {
-  opacity: 1;
-
-  visibility: visible;
+  visibility:visible;
 }
 
+.map-point.category-hover-point
+.point-tooltip{
+  opacity:1;
 
-/* =====================================================
-   TOOLTIP - KATEGORIE
-===================================================== */
-
-.map-point.category-hover-point .point-tooltip {
-  opacity: 1;
-
-  visibility: visible;
+  visibility:visible;
 }
 
-
-/* =====================================================
-   PREVIEW BEZ TOOLTIPU
-===================================================== */
-
-.map-point-preview .point-tooltip {
-  display:
-    none;
+.map-point-preview
+.point-tooltip{
+  display:none;
 }
 
+.point-tooltip-title{
+  margin-bottom:3px;
 
-/* =====================================================
-   TOOLTIP TEXT
-===================================================== */
+  font-size:14px;
 
-.point-tooltip-title {
-  margin-bottom:
-    3px;
-
-  font-size:
-    14px;
-
-  font-weight:
-    600;
+  font-weight:600;
 }
 
-
-.point-tooltip-description {
-  color:
-    #aaa;
+.point-tooltip-description{
+  color:#aaa;
 
   font:
     10px/1.4
     Arial,
     sans-serif;
 
-  white-space:
-    normal;
+  white-space:normal;
 }
 
 
@@ -1033,140 +1076,131 @@ body {
    ANIMACE
 ===================================================== */
 
-@keyframes pointPreviewPulse {
+@keyframes pointPreviewPulse{
 
-  0% {
+  0%{
     box-shadow:
       0 2px 7px
-      rgba(0, 0, 0, 0.75);
+      rgba(0,0,0,.75);
   }
 
-  50% {
+  50%{
     box-shadow:
       0 0 0 5px
-      rgba(215, 106, 44, 0.18),
+      rgba(215,106,44,.18),
 
       0 2px 7px
-      rgba(0, 0, 0, 0.75);
+      rgba(0,0,0,.75);
   }
 
-  100% {
+  100%{
     box-shadow:
       0 2px 7px
-      rgba(0, 0, 0, 0.75);
+      rgba(0,0,0,.75);
   }
-
 }
 
 
-@keyframes pointFocusedPulse {
+@keyframes pointFocusedPulse{
 
-  0% {
+  0%{
     transform:
-      translate(-50%, -50%)
+      translate(-50%,-50%)
       scale(1.7);
   }
 
-  50% {
+  50%{
     transform:
-      translate(-50%, -50%)
+      translate(-50%,-50%)
       scale(2.25);
   }
 
-  100% {
+  100%{
     transform:
-      translate(-50%, -50%)
+      translate(-50%,-50%)
       scale(1.7);
   }
-
 }
 
 
-@keyframes pointCategoryPulse {
+@keyframes pointCategoryPulse{
 
-  0% {
+  0%{
     transform:
-      translate(-50%, -50%)
+      translate(-50%,-50%)
       scale(1);
   }
 
-  50% {
+  50%{
     transform:
-      translate(-50%, -50%)
+      translate(-50%,-50%)
       scale(1.6);
   }
 
-  100% {
+  100%{
     transform:
-      translate(-50%, -50%)
+      translate(-50%,-50%)
       scale(1);
   }
-
 }
 
 
 /* =====================================================
-   MAP TOOLBAR
+   MAP CONTROLS
 ===================================================== */
 
-.map-toolbar {
-  position: absolute;
+.map-controls{
+  position:absolute;
 
-  z-index: 25;
+  right:20px;
 
-  top: 20px;
-  right: 20px;
+  top:20px;
 
-  display: flex;
+  z-index:25;
 
-  flex-direction: column;
+  display:flex;
 
-  gap: 6px;
+  flex-direction:column;
+
+  gap:6px;
 }
 
+.map-controls button{
+  width:42px;
 
-.map-toolbar button {
-  width: 42px;
-
-  height: 42px;
+  height:42px;
 
   border:
     1px solid
-    rgba(183, 74, 28, 0.55);
+    rgba(183,74,28,.55);
 
-  border-radius: 4px;
+  border-radius:4px;
 
   background:
-    rgba(12, 12, 12, 0.88);
+    rgba(12,12,12,.88);
 
-  color:
-    var(--text);
+  color:var(--text);
 
   font:
     600 22px/1
     'Oswald',
     sans-serif;
 
-  cursor:
-    pointer;
+  cursor:pointer;
 
-  transition:
-    0.15s ease;
+  transition:.15s;
 
-  backdrop-filter:
-    blur(6px);
+  backdrop-filter:blur(6px);
 }
 
-
-.map-toolbar button:hover {
+.map-controls button:hover{
   border-color:
-    var(--orange-bright);
+    var(--orange-light);
 
   background:
-    rgba(34, 20, 15, 0.95);
+    rgba(34,20,15,.95);
 
-  color:
-    #fff;
+  color:#fff;
 }
 
 
@@ -1174,14 +1208,14 @@ body {
    MAP HINT
 ===================================================== */
 
-.map-hint {
-  position: absolute;
+.map-hint{
+  position:absolute;
 
-  z-index: 25;
+  z-index:25;
 
-  left: 50%;
+  left:50%;
 
-  bottom: 16px;
+  bottom:16px;
 
   transform:
     translateX(-50%);
@@ -1191,25 +1225,18 @@ body {
 
   border:
     1px solid
-    rgba(255, 255, 255, 0.08);
+    rgba(255,255,255,.08);
 
-  border-radius:
-    3px;
+  border-radius:3px;
 
   background:
-    rgba(8, 8, 8, 0.72);
+    rgba(8,8,8,.72);
 
-  color:
-    #777;
+  color:#777;
 
-  font-size:
-    11px;
+  font-size:11px;
 
-  pointer-events:
-    none;
-
-  backdrop-filter:
-    blur(5px);
+  pointer-events:none;
 }
 
 
@@ -1217,210 +1244,103 @@ body {
    MODAL
 ===================================================== */
 
-.modal {
-  position: fixed;
+.modal{
+  position:fixed;
 
-  inset: 0;
+  inset:0;
 
-  z-index: 100;
+  z-index:100;
 
-  display: flex;
+  display:flex;
 
-  align-items: center;
+  align-items:center;
 
-  justify-content: center;
+  justify-content:center;
 
-  padding: 18px;
+  padding:18px;
 
   background:
-    rgba(0, 0, 0, 0.72);
+    rgba(0,0,0,.72);
 
   backdrop-filter:
     blur(3px);
 }
 
-
-.modal.hidden {
-  display:
-    none;
+.modal.hidden{
+  display:none;
 }
 
-
-.modal-card {
+.modal-card{
   width:
-    min(420px, 100%);
+    min(420px,100%);
 
   max-height:
     calc(100vh - 30px);
 
-  overflow:
-    auto;
+  overflow:auto;
 
   border:
     1px solid
-    rgba(183, 74, 28, 0.55);
+    rgba(183,74,28,.55);
 
-  border-radius:
-    6px;
+  border-radius:6px;
 
-  padding:
-    20px;
+  padding:20px;
 
-  background:
-    #111;
+  background:#111;
 
   box-shadow:
     0 20px 60px
-    rgba(0, 0, 0, 0.55);
+    rgba(0,0,0,.55);
 }
 
+.modal-header{
+  display:flex;
 
-.modal-header {
-  display: flex;
+  align-items:center;
 
-  align-items: center;
+  justify-content:space-between;
 
-  justify-content: space-between;
+  gap:10px;
 
-  gap: 12px;
-
-  margin-bottom:
-    14px;
+  margin-bottom:14px;
 }
 
+.modal-card h3{
+  margin:0;
 
-.modal-card h3 {
-  margin:
-    0;
+  color:#eee7e0;
 
-  color:
-    #eee7e0;
+  font-size:21px;
 
-  font-size:
-    21px;
-
-  font-weight:
-    600;
+  font-weight:600;
 }
 
+.close-btn{
+  width:30px;
 
-.close-btn {
-  width:
-    30px;
-
-  height:
-    30px;
+  height:30px;
 
   border:
     1px solid
     #3a3330;
 
-  border-radius:
-    4px;
+  border-radius:4px;
 
-  background:
-    #171717;
+  background:#171717;
 
-  color:
-    #aaa39d;
+  color:#aaa39d;
 
-  font:
-    500 20px/1
-    Arial,
-    sans-serif;
+  font-size:20px;
 
-  cursor:
-    pointer;
+  cursor:pointer;
 }
 
-
-.close-btn:hover {
-  color:
-    #fff;
+.close-btn:hover{
+  color:#fff;
 
   border-color:
     var(--orange);
-}
-
-
-/* =====================================================
-   FORM
-===================================================== */
-
-.modal-card label {
-  display:
-    block;
-
-  margin:
-    11px 0 6px;
-
-  color:
-    #948b84;
-
-  font-size:
-    12px;
-
-  letter-spacing:
-    0.5px;
-}
-
-
-.modal-card input,
-.modal-card textarea,
-.modal-card select {
-  width: 100%;
-
-  border:
-    1px solid
-    #332b27;
-
-  border-radius:
-    4px;
-
-  outline:
-    none;
-
-  padding:
-    10px;
-
-  background:
-    #090909;
-
-  color:
-    #eee;
-
-  font:
-    400 14px/1.2
-    'Oswald',
-    sans-serif;
-}
-
-
-.modal-card textarea {
-  min-height:
-    80px;
-
-  resize:
-    vertical;
-
-  font-family:
-    Arial,
-    sans-serif;
-
-  line-height:
-    1.4;
-}
-
-
-.modal-card input:focus,
-.modal-card textarea:focus,
-.modal-card select:focus {
-  border-color:
-    var(--orange);
-
-  box-shadow:
-    0 0 0 2px
-    rgba(183, 74, 28, 0.1);
 }
 
 
@@ -1428,76 +1348,121 @@ body {
    POINT MODAL
 ===================================================== */
 
-.point-modal {
-  position: fixed;
+.point-modal{
+  position:fixed;
 
-  inset: 0;
+  inset:0;
 
-  z-index: 100;
+  z-index:100;
 
-  pointer-events: none;
+  pointer-events:none;
 
   background:
     transparent;
 
-  display:
-    block;
+  display:block;
 }
 
-
-.point-modal.hidden {
-  display:
-    none;
+.point-modal.hidden{
+  display:none;
 }
-
 
 .point-modal
-.point-modal-card {
-  position:
-    fixed;
+.point-modal-card{
+  position:fixed;
 
-  pointer-events:
-    auto;
+  pointer-events:auto;
 }
 
 
 /* =====================================================
-   BARVY
+   FORM
 ===================================================== */
 
-.color-layout {
-  display:
-    flex;
+.modal-card label{
+  display:block;
 
-  align-items:
-    center;
+  margin:
+    11px 0 6px;
 
-  gap:
-    18px;
+  color:#948b84;
 
-  margin-top:
-    8px;
+  font-size:12px;
+
+  letter-spacing:.5px;
+}
+
+.modal-card input,
+.modal-card textarea,
+.modal-card select{
+  width:100%;
+
+  border:
+    1px solid
+    #332b27;
+
+  border-radius:4px;
+
+  outline:none;
+
+  padding:10px;
+
+  background:#090909;
+
+  color:#eee;
+
+  font:
+    400 14px/1.2
+    'Oswald',
+    sans-serif;
+}
+
+.modal-card textarea{
+  min-height:80px;
+
+  resize:vertical;
+
+  font-family:
+    Arial,
+    sans-serif;
+
+  line-height:1.4;
+}
+
+.modal-card input:focus,
+.modal-card textarea:focus,
+.modal-card select:focus{
+  border-color:
+    var(--orange);
 }
 
 
-.color-wheel {
-  position:
-    relative;
+/* =====================================================
+   COLOR WHEEL
+===================================================== */
 
-  width:
-    150px;
+.color-layout{
+  display:flex;
 
-  height:
-    150px;
+  align-items:center;
 
-  flex-shrink:
-    0;
+  gap:18px;
 
-  border-radius:
-    50%;
+  margin-top:8px;
+}
 
-  cursor:
-    crosshair;
+.color-wheel{
+  position:relative;
+
+  width:150px;
+
+  height:150px;
+
+  flex-shrink:0;
+
+  border-radius:50%;
+
+  cursor:crosshair;
 
   background:
     conic-gradient(
@@ -1511,19 +1476,14 @@ body {
     );
 }
 
+.color-wheel::after{
+  content:"";
 
-.color-wheel::after {
-  content:
-    "";
+  position:absolute;
 
-  position:
-    absolute;
+  inset:20px;
 
-  inset:
-    20px;
-
-  border-radius:
-    50%;
+  border-radius:50%;
 
   background:
     radial-gradient(
@@ -1533,19 +1493,14 @@ body {
     );
 }
 
+.color-wheel::before{
+  content:"";
 
-.color-wheel::before {
-  content:
-    "";
+  position:absolute;
 
-  position:
-    absolute;
+  inset:0;
 
-  inset:
-    0;
-
-  border-radius:
-    50%;
+  border-radius:50%;
 
   background:
     radial-gradient(
@@ -1556,28 +1511,21 @@ body {
     );
 }
 
+.color-wheel-cursor{
+  position:absolute;
 
-.color-wheel-cursor {
-  position:
-    absolute;
+  left:75px;
 
-  left:
-    75px;
+  top:75px;
 
-  top:
-    75px;
+  width:15px;
 
-  width:
-    15px;
-
-  height:
-    15px;
+  height:15px;
 
   border:
     2px solid #fff;
 
-  border-radius:
-    50%;
+  border-radius:50%;
 
   box-shadow:
     0 0 0 1px
@@ -1586,109 +1534,80 @@ body {
   transform:
     translate(-50%,-50%);
 
-  pointer-events:
-    none;
+  pointer-events:none;
 
-  z-index:
-    10;
+  z-index:10;
 }
 
+.preset-side{
+  display:flex;
 
-.preset-side {
-  display:
-    flex;
+  flex-direction:column;
 
-  flex-direction:
-    column;
+  align-items:flex-start;
 
-  align-items:
-    flex-start;
-
-  gap:
-    10px;
+  gap:10px;
 }
 
+.preset-title{
+  color:#8b837d;
 
-.preset-title {
-  color:
-    #8b837d;
-
-  font-size:
-    10px;
+  font-size:10px;
 
   text-transform:
     uppercase;
 
-  letter-spacing:
-    .6px;
+  letter-spacing:.6px;
 }
 
+.color-presets{
+  display:flex;
 
-.color-presets {
-  display:
-    flex;
+  gap:8px;
 
-  gap:
-    8px;
+  flex-wrap:wrap;
 
-  flex-wrap:
-    wrap;
-
-  max-width:
-    130px;
+  max-width:130px;
 }
 
+.color-preset{
+  width:28px;
 
-.color-preset {
-  width:
-    28px;
-
-  height:
-    28px;
+  height:28px;
 
   border:
     2px solid
     rgba(255,255,255,.25);
 
-  border-radius:
-    50%;
+  border-radius:50%;
 
-  cursor:
-    pointer;
+  cursor:pointer;
 
-  transition:
-    .12s;
+  transition:.12s;
 }
 
-
-.color-preset:hover {
+.color-preset:hover{
   transform:
     scale(1.1);
 }
 
-
-.color-preset.selected {
-  border-color:
-    #fff;
+.color-preset.selected{
+  border-color:#fff;
 
   box-shadow:
     0 0 0 2px
     var(--orange);
 }
 
+.color-preview{
+  width:50px;
 
-.color-preview {
-  width:
-    50px;
-
-  height:
-    50px;
+  height:50px;
 
   border:
     2px solid #fff;
 
-  border-radius:
-    50%;
+  border-radius:50%;
 
   box-shadow:
     0 3px 10px
@@ -1700,82 +1619,60 @@ body {
    RGB
 ===================================================== */
 
-.rgb-title {
-  margin-top:
-    15px;
+.rgb-title{
+  margin-top:15px;
 
-  color:
-    #948b84;
+  color:#948b84;
 
-  font-size:
-    12px;
+  font-size:12px;
 }
 
+.rgb-values{
+  display:flex;
 
-.rgb-values {
-  display:
-    flex;
-
-  gap:
-    8px;
+  gap:8px;
 }
 
-
-.rgb-values > div {
-  flex:
-    1;
+.rgb-values > div{
+  flex:1;
 }
 
-
-.rgb-values label {
-  margin-top:
-    7px;
+.rgb-values label{
+  margin-top:7px;
 }
 
 
 /* =====================================================
-   VELIKOST BODU
+   SIZE
 ===================================================== */
 
-.size-row {
-  display:
-    flex;
+.size-row{
+  display:flex;
 
-  align-items:
-    center;
+  align-items:center;
 
-  gap:
-    12px;
+  gap:12px;
 }
 
+.size-row input[type=range]{
+  flex:1;
 
-.size-row input[type="range"] {
-  flex:
-    1;
+  padding:0;
 
-  padding:
-    0;
-
-  border:
-    0;
+  border:0;
 
   accent-color:
     var(--orange);
 }
 
+#pointSizeValue{
+  min-width:42px;
 
-#pointSizeValue {
-  min-width:
-    42px;
+  color:#ddd;
 
-  color:
-    #ddd;
+  font-size:12px;
 
-  font-size:
-    12px;
-
-  text-align:
-    right;
+  text-align:right;
 }
 
 
@@ -1783,53 +1680,41 @@ body {
    MODAL BUTTONS
 ===================================================== */
 
-.modal-actions {
-  display:
-    flex;
+.modal-actions{
+  display:flex;
 
-  justify-content:
-    flex-end;
+  justify-content:flex-end;
 
-  gap:
-    8px;
+  gap:8px;
 
-  margin-top:
-    16px;
+  margin-top:18px;
 }
 
-
 .secondary-btn,
-.primary-btn {
-  border-radius:
-    4px;
+.primary-btn{
+  border-radius:4px;
 
-  padding:
-    10px 14px;
+  padding:10px 14px;
 
   font:
     500 12px/1
     'Oswald',
     sans-serif;
 
-  cursor:
-    pointer;
+  cursor:pointer;
 }
 
-
-.secondary-btn {
+.secondary-btn{
   border:
     1px solid
     #3a3330;
 
-  background:
-    #171717;
+  background:#171717;
 
-  color:
-    #aaa39d;
+  color:#aaa39d;
 }
 
-
-.primary-btn {
+.primary-btn{
   border:
     1px solid
     var(--orange);
@@ -1837,20 +1722,16 @@ body {
   background:
     var(--orange);
 
-  color:
-    #fff;
+  color:#fff;
 }
 
-
-.secondary-btn:hover {
-  background:
-    #202020;
+.secondary-btn:hover{
+  background:#202020;
 }
 
-
-.primary-btn:hover {
+.primary-btn:hover{
   background:
-    var(--orange-bright);
+    var(--orange-light);
 }
 
 
@@ -1858,90 +1739,68 @@ body {
    CONTEXT MENU
 ===================================================== */
 
-.point-context-menu {
-  position:
-    fixed;
+.point-context-menu{
+  position:fixed;
 
-  z-index:
-    500;
+  z-index:500;
 
-  min-width:
-    150px;
+  min-width:150px;
 
-  padding:
-    5px;
+  padding:5px;
 
   border:
     1px solid
     rgba(183,74,28,.55);
 
-  border-radius:
-    5px;
+  border-radius:5px;
 
-  background:
-    #111;
+  background:#111;
 
   box-shadow:
     0 12px 30px
     rgba(0,0,0,.6);
 }
 
+.point-context-menu button{
+  display:block;
 
-.point-context-menu button {
-  display:
-    block;
+  width:100%;
 
-  width:
-    100%;
+  border:0;
 
-  border:
-    0;
+  border-radius:3px;
 
-  border-radius:
-    3px;
+  padding:9px 11px;
 
-  padding:
-    9px 11px;
+  background:transparent;
 
-  background:
-    transparent;
+  color:#ddd;
 
-  color:
-    #ddd;
-
-  text-align:
-    left;
+  text-align:left;
 
   font:
     12px
     'Oswald',
     sans-serif;
 
-  cursor:
-    pointer;
+  cursor:pointer;
 }
 
-
-.point-context-menu button:hover {
-  background:
-    #211814;
+.point-context-menu button:hover{
+  background:#211814;
 }
-
 
 .point-context-menu
-.danger-context {
-  color:
-    #dc8170;
+.danger-context{
+  color:#dc8170;
 }
 
-
 .point-context-menu
-.danger-context:hover {
+.danger-context:hover{
   background:
     rgba(160,40,20,.16);
 
-  color:
-    #ff9a88;
+  color:#ff9a88;
 }
 
 
@@ -1949,156 +1808,28 @@ body {
    MOBILE
 ===================================================== */
 
-@media (max-width:760px) {
+@media (max-width:760px){
 
-  :root {
-    --sidebar-width:
-      235px;
+  :root{
+    --sidebar-width:230px;
   }
 
-
-  .brand {
-    padding:
-      14px;
+  .brand{
+    padding:14px;
   }
 
-
-  .map-hint {
-    display:
-      none;
+  .map-hint{
+    display:none;
   }
 
-
-  .map-canvas {
-    width:
-      95vw;
+  .map-canvas{
+    width:95vw;
   }
 
+  .color-wheel{
+    width:125px;
 
-  .color-wheel {
-    width:
-      125px;
-
-    height:
-      125px;
+    height:125px;
   }
 
-}
-
-/* =====================================================
-   KOMPATIBILITA S AKTUÁLNÍM INDEX.HTML
-===================================================== */
-
-.map-area {
-  position: relative;
-  flex: 1;
-  min-width: 0;
-  height: 100vh;
-  background: #060706;
-}
-
-.map-controls {
-  position: absolute;
-  z-index: 25;
-  top: 20px;
-  right: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.map-controls button {
-  width: 42px;
-  height: 42px;
-  border: 1px solid rgba(183,74,28,.55);
-  border-radius: 4px;
-  background: rgba(12,12,12,.88);
-  color: var(--text);
-  font: 600 22px/1 'Oswald',sans-serif;
-  cursor: pointer;
-  transition: .15s ease;
-  backdrop-filter: blur(6px);
-}
-
-.map-controls button:hover {
-  border-color: var(--orange-bright);
-  background: rgba(34,20,15,.95);
-  color: #fff;
-}
-
-.add-category {
-  width: 100%;
-  margin-top: 10px;
-  padding: 11px;
-  border: 1px dashed rgba(183,74,28,.6);
-  border-radius: 4px;
-  background: transparent;
-  color: #cfc7c0;
-  font-family: 'Oswald',sans-serif;
-  font-size: 13px;
-  letter-spacing: .7px;
-  cursor: pointer;
-  transition: .15s;
-}
-
-.add-category:hover {
-  border-color: var(--orange-bright);
-  background: rgba(183,74,28,.1);
-  color: #fff;
-}
-
-.add-category span {
-  margin-right: 5px;
-}
-
-.category-help {
-  margin-top: 10px;
-  color: #5e5955;
-  font: 10px/1.5 Arial,sans-serif;
-}
-
-.controls-btn {
-  width: 100%;
-  margin-top: 12px;
-  padding: 10px 11px;
-  border: 1px solid rgba(183,74,28,.40);
-  border-radius: 4px;
-  background: rgba(18,18,18,.95);
-  color: #bcb4ad;
-  font: 500 12px/1 'Oswald',sans-serif;
-  letter-spacing: .5px;
-  cursor: pointer;
-  transition: background .15s ease,border-color .15s ease,color .15s ease;
-}
-
-.controls-btn:hover {
-  background: #1b1715;
-  border-color: rgba(183,74,28,.65);
-  color: #fff;
-}
-
-.controls-help {
-  margin-top: 7px;
-  padding: 10px 11px;
-  border: 1px solid rgba(183,74,28,.20);
-  border-radius: 4px;
-  background: rgba(10,10,10,.75);
-  color: #77716c;
-  font: 10px/1.55 Arial,sans-serif;
-}
-
-.controls-help strong {
-  display: block;
-  margin-top: 6px;
-  margin-bottom: 3px;
-  color: #aaa39d;
-  font: 500 10px/1.2 'Oswald',sans-serif;
-}
-
-.controls-help strong:first-child {
-  margin-top: 0;
-}
-
-.hidden {
-  display: none !important;
 }
