@@ -12,7 +12,7 @@ let startMapX = 0;
 let startMapY = 0;
 
 const MIN_SCALE = 0.45;
-const MAX_SCALE = 8;
+const MAX_SCALE = 10;
 
 function render() {
   canvas.style.transform =
