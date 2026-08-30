@@ -4,26 +4,37 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>Verdugos Los Santos - Mapa</title>
+  <title>Verdugos Los Santos</title>
 
-  <link rel="stylesheet" href="style.css">
+  <link
+    rel="stylesheet"
+    href="style.css"
+  >
 </head>
 
 <body>
 
-  <!-- =====================================================
-       LEVÉ MENU
-  ====================================================== -->
+  <!-- =================================================
+       LEVÝ PANEL
+  ================================================== -->
 
   <aside class="sidebar">
 
+    <!-- LOGO -->
+
     <div class="brand">
+
       <img
         src="logo.png"
         alt="Verdugos Los Santos"
       >
+
     </div>
 
+
+    <!-- =================================================
+         SCROLLOVATELNÉ MENU
+    ================================================== -->
 
     <div class="menu">
 
@@ -34,24 +45,31 @@
         class="add-point"
         type="button"
       >
-        <span>📍</span>
+        <span>＋</span>
         Přidat bod
       </button>
 
+
+      <!-- REŽIM PŘIDÁVÁNÍ -->
 
       <div
         id="pointModeHint"
         class="point-mode-hint hidden"
       >
-        Klikni na místo na mapě
+        Klikni na mapu na místo,
+        kam chceš přidat bod.
       </div>
 
 
-      <!-- KATEGORIE -->
+      <!-- =================================================
+           KATEGORIE
+      ================================================== -->
 
       <div class="category-header">
 
-        <h2>KATEGORIE</h2>
+        <h2>
+          Kategorie
+        </h2>
 
         <button
           id="toggleAllBtn"
@@ -63,6 +81,8 @@
 
       </div>
 
+
+      <!-- SEZNAM KATEGORIÍ -->
 
       <div
         id="categoryList"
@@ -82,11 +102,83 @@
       </button>
 
 
+      <!-- =================================================
+           OVLÁDÁNÍ
+      ================================================== -->
+
+      <button
+        id="controlsBtn"
+        class="controls-btn"
+        type="button"
+        aria-expanded="false"
+      >
+        ⚙️ Ovládání
+      </button>
+
+
+      <div
+        id="controlsHelp"
+        class="controls-help hidden"
+      >
+
+        <strong>
+          🖱️ Myš
+        </strong>
+
+        <div>
+          Tažením mapu posuneš
+        </div>
+
+        <div>
+          Kolečkem přiblížíš / oddálíš
+        </div>
+
+
+        <strong>
+          ⌨️ Klávesnice
+        </strong>
+
+        <div>
+          W = nahoru
+        </div>
+
+        <div>
+          A = doleva
+        </div>
+
+        <div>
+          S = dolů
+        </div>
+
+        <div>
+          D = doprava
+        </div>
+
+
+        <strong>
+          📍 Body
+        </strong>
+
+        <div>
+          Klik na podbod = zvýraznit + tooltip
+        </div>
+
+        <div>
+          Pravý klik na bod = editovat / smazat
+        </div>
+
+        <div>
+          Pravý klik na kategorii = smazat
+        </div>
+
+      </div>
 
     </div>
 
 
-    <!-- FOOTER -->
+    <!-- =================================================
+         FOOTER
+    ================================================== -->
 
     <div class="sidebar-footer">
 
@@ -94,51 +186,21 @@
         VERDUGOS MC
       </span>
 
-      <span class="status-dot"></span>
+      <span
+        class="status-dot"
+        title="Online"
+      ></span>
 
     </div>
 
   </aside>
 
 
-  <!-- =====================================================
+  <!-- ===================================================
        MAPA
-  ====================================================== -->
+  ==================================================== -->
 
   <main class="map-area">
-
-    <!-- MAPOVÉ OVLÁDÁNÍ -->
-
-    <div class="map-controls">
-
-      <button
-        id="zoomOut"
-        type="button"
-        aria-label="Oddálit"
-      >
-        −
-      </button>
-
-      <button
-        id="resetView"
-        type="button"
-        aria-label="Domů"
-      >
-        ⌂
-      </button>
-
-      <button
-        id="zoomIn"
-        type="button"
-        aria-label="Přiblížit"
-      >
-        +
-      </button>
-
-    </div>
-
-
-    <!-- MAP VIEWPORT -->
 
     <div
       id="mapViewport"
@@ -152,13 +214,13 @@
 
         <img
           id="mapImage"
-          src="mapa.png"
-          alt="Mapa Los Santos"
+          src="map.png"
+          alt="Los Santos mapa"
           draggable="false"
         >
 
 
-        <!-- VRSTVA BODŮ -->
+        <!-- BODY -->
 
         <div
           id="pointsLayer"
@@ -167,113 +229,67 @@
 
       </div>
 
-    </div>
+
+      <!-- =================================================
+           OVLÁDÁNÍ MAPY
+      ================================================== -->
+
+      <div
+        class="map-controls"
+      >
+
+        <button
+          id="resetView"
+          type="button"
+          title="Domů"
+          aria-label="Domů"
+        >
+          ⌂
+        </button>
 
 
-    <!-- NÁPOVĚDA MAPY -->
+        <button
+          id="zoomIn"
+          type="button"
+          title="Přiblížit"
+          aria-label="Přiblížit"
+        >
+          +
+        </button>
 
-    <div class="map-hint">
-      🖱️ Tažením mapu posuneš&nbsp;&nbsp;·&nbsp;&nbsp;🛞 Kolečkem přiblížíš / oddálíš&nbsp;&nbsp;·&nbsp;&nbsp;⌨️ WASD pohyb
+
+        <button
+          id="zoomOut"
+          type="button"
+          title="Oddálit"
+          aria-label="Oddálit"
+        >
+          −
+        </button>
+
+      </div>
+
+
+      <!-- =================================================
+           NÁPOVĚDA NA MAPĚ
+      ================================================== -->
+
+      <div
+        class="map-hint"
+      >
+        Tažením mapu posuneš
+        • kolečkem přiblížíš
+        • WASD pohyb
+      </div>
+
     </div>
 
   </main>
 
 
-  <!-- =====================================================
-       MODAL - KATEGORIE
-  ====================================================== -->
-
-  <div
-    id="categoryModal"
-    class="modal hidden"
-    aria-hidden="true"
-  >
-
-    <div class="modal-card">
-
-      <div class="modal-header">
-
-        <h3>
-          Přidat kategorii
-        </h3>
-
-        <button
-          id="closeCategoryBtn"
-          class="close-btn"
-          type="button"
-          aria-label="Zavřít"
-        >
-          ×
-        </button>
-
-      </div>
-
-
-      <label for="categoryName">
-        Název kategorie
-      </label>
-
-
-      <input
-        id="categoryName"
-        type="text"
-        maxlength="40"
-        placeholder="Např. Sklady"
-        autocomplete="off"
-      >
-
-
-      <label for="categoryEmoji">
-        Ikonka kategorie
-      </label>
-
-      <div class="category-icon-picker">
-        <input
-          id="categoryEmoji"
-          class="category-emoji-input"
-          type="text"
-          maxlength="2"
-          placeholder="📌"
-          value="📌"
-          autocomplete="off"
-        >
-
-        <div
-          id="categoryEmojiPresets"
-          class="category-emoji-presets"
-        ></div>
-      </div>
-
-
-      <div class="modal-actions">
-
-        <button
-          id="cancelCategoryBtn"
-          class="secondary-btn"
-          type="button"
-        >
-          Zrušit
-        </button>
-
-
-        <button
-          id="saveCategoryBtn"
-          class="primary-btn"
-          type="button"
-        >
-          Přidat
-        </button>
-
-      </div>
-
-    </div>
-
-  </div>
-
-
-  <!-- =====================================================
+  <!-- ===================================================
        MODAL - BOD
-  ====================================================== -->
+  ==================================================== -->
 
   <div
     id="pointModal"
@@ -283,7 +299,7 @@
 
     <div
       id="pointModalCard"
-      class="modal-card point-modal-card"
+      class="modal-card"
     >
 
       <div class="modal-header">
@@ -291,6 +307,7 @@
         <h3 id="pointModalTitle">
           Přidat bod
         </h3>
+
 
         <button
           id="closePointBtn"
@@ -307,15 +324,14 @@
       <!-- NÁZEV -->
 
       <label for="pointName">
-        Název
+        Název bodu
       </label>
 
       <input
         id="pointName"
         type="text"
-        maxlength="60"
-        placeholder="Např. Sklad"
         autocomplete="off"
+        placeholder="Např. Sklad"
       >
 
 
@@ -327,8 +343,7 @@
 
       <textarea
         id="pointDescription"
-        maxlength="300"
-        placeholder="Krátký popis bodu..."
+        placeholder="Krátký popis místa..."
       ></textarea>
 
 
@@ -338,7 +353,32 @@
         Kategorie
       </label>
 
-      <select id="pointCategory"></select>
+      <select
+        id="pointCategory"
+      ></select>
+
+
+      <!-- VELIKOST -->
+
+      <label>
+        Velikost bodu
+      </label>
+
+      <div class="size-row">
+
+        <input
+          id="pointSize"
+          type="range"
+          min="2"
+          max="30"
+          value="6"
+        >
+
+        <span id="pointSizeValue">
+          6 px
+        </span>
+
+      </div>
 
 
       <!-- BARVA -->
@@ -355,10 +395,10 @@
           class="color-wheel"
         >
 
-          <div
+          <span
             id="colorWheelCursor"
             class="color-wheel-cursor"
-          ></div>
+          ></span>
 
         </div>
 
@@ -448,32 +488,7 @@
       </div>
 
 
-      <!-- VELIKOST -->
-
-      <label for="pointSize">
-        Velikost bodu
-      </label>
-
-
-      <div class="size-row">
-
-        <input
-          id="pointSize"
-          type="range"
-          min="2"
-          max="30"
-          value="6"
-        >
-
-
-        <span id="pointSizeValue">
-          6 px
-        </span>
-
-      </div>
-
-
-      <!-- TLAČÍTKA -->
+      <!-- BUTTONS -->
 
       <div class="modal-actions">
 
@@ -501,9 +516,111 @@
   </div>
 
 
-  <!-- =====================================================
-       MENU PO PRAVÉM KLIKU NA BOD
-  ====================================================== -->
+  <!-- ===================================================
+       MODAL - KATEGORIE
+  ==================================================== -->
+
+  <div
+    id="categoryModal"
+    class="modal hidden"
+    aria-hidden="true"
+  >
+
+    <div class="modal-card">
+
+      <div class="modal-header">
+
+        <h3>
+          Přidat kategorii
+        </h3>
+
+
+        <button
+          id="closeCategoryBtn"
+          class="close-btn"
+          type="button"
+          aria-label="Zavřít"
+        >
+          ×
+        </button>
+
+      </div>
+
+
+      <!-- NÁZEV -->
+
+      <label for="categoryName">
+        Název kategorie
+      </label>
+
+      <input
+        id="categoryName"
+        type="text"
+        autocomplete="off"
+        placeholder="Např. Území"
+      >
+
+
+      <!-- =================================================
+           IKONA KATEGORIE
+      ================================================== -->
+
+      <label for="categoryEmoji">
+        Ikonka kategorie
+      </label>
+
+      <input
+        id="categoryEmoji"
+        type="text"
+        maxlength="4"
+        autocomplete="off"
+        value="📌"
+        placeholder="📌"
+      >
+
+
+      <div class="preset-title">
+        Vyber ikonku
+      </div>
+
+
+      <div
+        id="categoryEmojiPresets"
+        class="category-emoji-presets"
+      ></div>
+
+
+      <!-- BUTTONS -->
+
+      <div class="modal-actions">
+
+        <button
+          id="cancelCategoryBtn"
+          class="secondary-btn"
+          type="button"
+        >
+          Zrušit
+        </button>
+
+
+        <button
+          id="saveCategoryBtn"
+          class="primary-btn"
+          type="button"
+        >
+          Přidat
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- ===================================================
+       CONTEXT MENU BODU
+  ==================================================== -->
 
   <div
     id="pointContextMenu"
@@ -520,22 +637,26 @@
 
     <button
       id="deletePointBtn"
-      type="button"
       class="danger-context"
+      type="button"
     >
       🗑️ Smazat
     </button>
 
+
     <button
       id="closeContextMenuBtn"
       type="button"
-      class="close-context-btn"
     >
       ✕ Zavřít
     </button>
 
   </div>
 
+
+  <!-- ===================================================
+       JAVASCRIPT
+  ==================================================== -->
 
   <script src="app.js"></script>
 
