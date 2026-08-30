@@ -1644,38 +1644,49 @@ body{
 ===================================================== */
 
 .point-modal{
-  position:fixed;
+  position:fixed !important;
 
-  inset:
-    0;
+  inset:0 !important;
 
-  z-index:
-    1100;
+  width:100vw !important;
+  height:100vh !important;
 
-  pointer-events:
-    none;
+  margin:0 !important;
+  padding:0 !important;
 
-  background:
-    transparent;
+  display:block !important;
 
-  display:
-    block;
+  background:transparent !important;
+
+  pointer-events:none !important;
+
+  z-index:11000 !important;
 }
 
 
 .point-modal.hidden{
-  display:
-    none;
+  display:none !important;
 }
 
 
-.point-modal
-.point-modal-card{
-  position:
-    fixed;
+.point-modal .point-modal-card,
+#pointModalCard{
+  position:fixed !important;
 
-  pointer-events:
-    auto;
+  left:0;
+  top:0;
+
+  width:min(420px, calc(100vw - 20px));
+
+  max-height:calc(100vh - 20px);
+
+  margin:0 !important;
+
+  overflow:auto;
+
+  pointer-events:auto !important;
+
+  z-index:11001 !important;
 }
 
 
