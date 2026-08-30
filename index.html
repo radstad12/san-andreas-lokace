@@ -38,6 +38,43 @@
 
     <div class="menu">
 
+      <!-- =================================================
+           OVLÁDÁNÍ
+      ================================================== -->
+
+      <button
+        id="controlsBtn"
+        class="controls-btn"
+        type="button"
+        aria-expanded="false"
+      >
+        ⚙️ Ovládání
+      </button>
+
+
+      <div
+        id="controlsHelp"
+        class="controls-help hidden"
+      >
+
+        <strong>🖱️ Myš</strong>
+        <div>Tažením mapu posuneš</div>
+        <div>Kolečkem přiblížíš / oddálíš</div>
+
+        <strong>⌨️ Klávesnice</strong>
+        <div>W = nahoru</div>
+        <div>A = doleva</div>
+        <div>S = dolů</div>
+        <div>D = doprava</div>
+
+        <strong>📍 Body</strong>
+        <div>Klik na podbod = zvýraznit + tooltip</div>
+        <div>Pravý klik na bod = editovat / smazat</div>
+        <div>Pravý klik na kategorii = smazat</div>
+
+      </div>
+
+
       <!-- PŘIDAT BOD -->
 
       <button
@@ -47,6 +84,18 @@
       >
         <span>＋</span>
         Přidat bod
+      </button>
+
+
+      <!-- PŘIDAT KATEGORII -->
+
+      <button
+        id="addCategoryBtn"
+        class="add-category"
+        type="button"
+      >
+        <span>＋</span>
+        Přidat kategorii
       </button>
 
 
@@ -67,9 +116,7 @@
 
       <div class="category-header">
 
-        <h2>
-          Kategorie
-        </h2>
+        <h2>Kategorie</h2>
 
         <button
           id="toggleAllBtn"
@@ -82,96 +129,10 @@
       </div>
 
 
-      <!-- SEZNAM KATEGORIÍ -->
-
       <div
         id="categoryList"
         class="category-list"
       ></div>
-
-
-      <!-- PŘIDAT KATEGORII -->
-
-      <button
-        id="addCategoryBtn"
-        class="add-category"
-        type="button"
-      >
-        <span>＋</span>
-        Přidat kategorii
-      </button>
-
-
-      <!-- =================================================
-           OVLÁDÁNÍ
-      ================================================== -->
-
-      <button
-        id="controlsBtn"
-        class="controls-btn"
-        type="button"
-        aria-expanded="false"
-      >
-        ⚙️ Ovládání
-      </button>
-
-
-      <div
-        id="controlsHelp"
-        class="controls-help hidden"
-      >
-
-        <strong>
-          🖱️ Myš
-        </strong>
-
-        <div>
-          Tažením mapu posuneš
-        </div>
-
-        <div>
-          Kolečkem přiblížíš / oddálíš
-        </div>
-
-
-        <strong>
-          ⌨️ Klávesnice
-        </strong>
-
-        <div>
-          W = nahoru
-        </div>
-
-        <div>
-          A = doleva
-        </div>
-
-        <div>
-          S = dolů
-        </div>
-
-        <div>
-          D = doprava
-        </div>
-
-
-        <strong>
-          📍 Body
-        </strong>
-
-        <div>
-          Klik na podbod = zvýraznit + tooltip
-        </div>
-
-        <div>
-          Pravý klik na bod = editovat / smazat
-        </div>
-
-        <div>
-          Pravý klik na kategorii = smazat
-        </div>
-
-      </div>
 
     </div>
 
