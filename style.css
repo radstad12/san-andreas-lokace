@@ -1,4 +1,4 @@
-
+@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&display=swap');
 
 
 /* =====================================================
@@ -277,6 +277,25 @@ body{
 .add-point span{
   margin-right:
     5px;
+}
+
+.cancel-point-mode{
+  width:100%;
+  padding:10px 12px;
+  margin-bottom:12px;
+  border:1px solid rgba(180,55,35,.65);
+  border-radius:4px;
+  background:rgba(120,30,20,.16);
+  color:#e7b2a8;
+  font:500 12px/1 'Oswald',sans-serif;
+  letter-spacing:.5px;
+  cursor:pointer;
+}
+
+.cancel-point-mode:hover{
+  background:rgba(160,45,25,.28);
+  border-color:#d76a2c;
+  color:#fff;
 }
 
 
@@ -1337,67 +1356,6 @@ body{
     );
 }
 
-
-
-/* =====================================================
-   IKONY KATEGORIÍ - BOD NA MAPĚ
-===================================================== */
-
-.map-point-icon{
-  position:absolute;
-  left:50%;
-  top:50%;
-  transform:translate(-50%,-50%);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  line-height:1;
-  pointer-events:none;
-  user-select:none;
-  z-index:3;
-  font-family:'Segoe UI Emoji','Apple Color Emoji','Noto Color Emoji',sans-serif;
-  filter:drop-shadow(0 2px 3px rgba(0,0,0,.95));
-}
-
-.map-point{
-  background:transparent !important;
-  border:0 !important;
-  width:auto !important;
-  height:auto !important;
-  box-shadow:none !important;
-  overflow:visible;
-}
-
-.map-point:hover{
-  transform:translate(-50%,-50%) scale(1.18);
-  z-index:100;
-}
-
-.map-point.focused-point{
-  transform:translate(-50%,-50%) scale(1.65);
-  z-index:300;
-}
-
-.map-point.category-hover-point{
-  animation:pointCategoryPulse .8s ease-in-out infinite;
-  z-index:150;
-}
-
-.map-point-preview{
-  animation:pointPreviewPulse 1s ease-in-out infinite;
-}
-
-/* ikonky v seznamu kategorií */
-.category-emoji{
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  width:24px;
-  min-width:24px;
-  font-family:'Segoe UI Emoji','Apple Color Emoji','Noto Color Emoji',sans-serif;
-  font-size:18px;
-  line-height:1;
-}
 
 /* =====================================================
    FOCUS BOD
@@ -2589,4 +2547,106 @@ body{
       repeat(5,1fr);
   }
 
+}
+
+
+/* =====================================================
+   POINT MODAL - FIXED ABOVE MAP
+===================================================== */
+.point-modal{
+  position:fixed !important;
+  inset:0 !important;
+  width:100vw !important;
+  height:100vh !important;
+  margin:0 !important;
+  padding:0 !important;
+  display:block !important;
+  background:transparent !important;
+  pointer-events:none !important;
+  z-index:11000 !important;
+}
+
+.point-modal.hidden{
+  display:none !important;
+}
+
+.point-modal .modal-card,
+#pointModalCard{
+  position:fixed !important;
+  left:0 !important;
+  top:0 !important;
+  width:min(420px, calc(100vw - 20px)) !important;
+  max-height:calc(100vh - 20px) !important;
+  margin:0 !important;
+  overflow:auto !important;
+  pointer-events:auto !important;
+  z-index:11001 !important;
+}
+
+.point-modal .modal-card input,
+.point-modal .modal-card textarea,
+.point-modal .modal-card select,
+.point-modal .modal-card button{
+  pointer-events:auto !important;
+}
+
+
+.point-modal{
+  position:fixed !important;
+  inset:0 !important;
+  width:100vw !important;
+  height:100vh !important;
+  margin:0 !important;
+  padding:0 !important;
+  display:block !important;
+  background:transparent !important;
+  pointer-events:none !important;
+  z-index:11000 !important;
+}
+.point-modal.hidden{display:none !important;}
+.point-modal .modal-card,
+#pointModalCard{
+  position:fixed !important;
+  left:0 !important;
+  top:0 !important;
+  width:min(420px,calc(100vw - 20px)) !important;
+  max-height:calc(100vh - 20px) !important;
+  margin:0 !important;
+  overflow:auto !important;
+  pointer-events:auto !important;
+  z-index:11001 !important;
+}
+.point-modal .modal-card input,
+.point-modal .modal-card textarea,
+.point-modal .modal-card select,
+.point-modal .modal-card button{pointer-events:auto !important;}
+
+/* Bod na mapě = pouze ikonka kategorie */
+.map-point{
+  background:transparent !important;
+  border:0 !important;
+  width:0 !important;
+  height:0 !important;
+  box-shadow:none !important;
+}
+.map-point-icon{
+  width:32px;
+  height:32px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:22px !important;
+  line-height:1;
+  transform:translate(-50%,-50%);
+  filter:drop-shadow(0 2px 4px rgba(0,0,0,.95));
+  pointer-events:none;
+}
+.map-point:hover .map-point-icon{
+  transform:translate(-50%,-50%) scale(1.18);
+}
+.map-point.focused-point .map-point-icon{
+  transform:translate(-50%,-50%) scale(1.4);
+}
+.map-point.category-hover-point .map-point-icon{
+  animation:none;
 }
