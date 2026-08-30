@@ -15,7 +15,9 @@ const toggleAllBtn = document.getElementById("toggleAllBtn");
 
 /* Point mode */
 const addPointBtn = document.getElementById("addPointBtn");
+const addTerritoryBtn = document.getElementById("addTerritoryBtn");
 const pointModeHint = document.getElementById("pointModeHint");
+const territoryLayer = document.getElementById("territoryLayer");
 
 /* Point modal */
 const pointModal = document.getElementById("pointModal");
@@ -114,6 +116,59 @@ let focusedPointTimer = null;
 ===================================================== */
 
 let contextPointId = null;
+
+
+/* =====================================================
+   ÚZEMÍ
+===================================================== */
+
+let addingTerritory = false;
+let territoryVertices = [];
+let territoryFormOpen = false;
+let territoryModal = null;
+
+const TERRITORY_STATUSES = {
+  friendly: {
+    label: "Přátelské",
+    emoji: "🛡️",
+    color: "#2f80ff"
+  },
+  hostile: {
+    label: "Nepřátelské",
+    emoji: "❗",
+    color: "#e53935"
+  },
+  neutral: {
+    label: "Neutrální",
+    emoji: "🤝",
+    color: "#f28c28"
+  },
+  ours: {
+    label: "Naše",
+    emoji: "🏠",
+    color: "#39b54a"
+  }
+};
+
+let territories = loadData(
+  "verdugosTerritories",
+  []
+).map(territory => ({
+  id: territory.id || createId(),
+  points: Array.isArray(territory.points) ? territory.points : [],
+  name: territory.name || "Bez názvu",
+  description: territory.description || "",
+  status: territory.status || "neutral"
+}));
+
+function saveTerritories() {
+  localStorage.setItem(
+    "verdugosTerritories",
+    JSON.stringify(territories)
+  );
+}
+
+saveTerritories();
 
 
 /* =====================================================
@@ -588,6 +643,8 @@ function renderCategories() {
 
           renderPoints();
 
+          ensureTerritoryLayer();
+
         }
       );
 
@@ -753,6 +810,73 @@ function renderCategories() {
           children
         );
 
+      }
+
+
+      /* -----------------------------------------------
+         ÚZEMÍ POD KATEGORIÍ ÚZEMÍ
+      ------------------------------------------------ */
+
+      if (
+        category.name.trim().toLowerCase() === "území"
+      ) {
+
+        const territoryChildren =
+          document.createElement("div");
+
+        territoryChildren.className =
+          "category-points territory-category-points";
+
+        territories.forEach(territory => {
+
+          const status =
+            TERRITORY_STATUSES[territory.status] ||
+            TERRITORY_STATUSES.neutral;
+
+          const child =
+            document.createElement("div");
+
+          child.className =
+            "category-point territory-list-item";
+
+          const icon =
+            document.createElement("span");
+
+          icon.className =
+            "territory-list-icon";
+
+          icon.textContent =
+            status.emoji;
+
+          const text =
+            document.createElement("span");
+
+          text.className =
+            "category-point-name";
+
+          text.textContent =
+            territory.name;
+
+          child.append(icon, text);
+
+          child.addEventListener("click", event => {
+            event.stopPropagation();
+            focusTerritory(territory.id);
+          });
+
+          child.addEventListener("contextmenu", event => {
+            event.preventDefault();
+            event.stopPropagation();
+            deleteTerritory(territory.id);
+          });
+
+          territoryChildren.appendChild(child);
+
+        });
+
+        if (territoryChildren.children.length) {
+          wrap.appendChild(territoryChildren);
+        }
       }
 
 
@@ -1008,6 +1132,10 @@ function deleteCategory(
   }
 
 
+  const deletingTerritoryCategory =
+    category.name.trim().toLowerCase() === "území";
+
+
   categories =
     categories.filter(
       category =>
@@ -1020,6 +1148,12 @@ function deleteCategory(
       point =>
         point.categoryId !== id
     );
+
+
+  if (deletingTerritoryCategory) {
+    territories = [];
+    saveTerritories();
+  }
 
 
   saveCategories();
@@ -1246,7 +1380,11 @@ function renderCategorySelect() {
     "";
 
 
-  categories.forEach(
+  categories
+    .filter(category =>
+      category.name.trim().toLowerCase() !== "území"
+    )
+    .forEach(
     category => {
 
       const option =
@@ -1280,6 +1418,10 @@ function renderCategorySelect() {
 ===================================================== */
 
 function startPointMode() {
+
+  if (addingTerritory) {
+    stopTerritoryMode();
+  }
 
   if (
     categories.length === 0
@@ -1425,6 +1567,1130 @@ function placeNewPoint(
     event.clientY
   );
 
+}
+
+
+
+/* =====================================================
+   ÚZEMÍ - VYKRESLENÍ
+===================================================== */
+
+function ensureTerritoryLayer() {
+  if (!territoryLayer) {
+    return;
+  }
+
+  territoryLayer.innerHTML = "";
+
+  const territoryCategory =
+    categories.find(category =>
+      category.name.trim().toLowerCase() === "území"
+    );
+
+  if (
+    territoryCategory &&
+    territoryCategory.visible
+  ) {
+    territories.forEach(territory => {
+      drawTerritory(territory);
+    });
+  }
+
+  if (addingTerritory) {
+    drawTerritoryPreview();
+  }
+}
+
+
+function svgElement(name) {
+  return document.createElementNS(
+    "http://www.w3.org/2000/svg",
+    name
+  );
+}
+
+
+function drawTerritory(territory) {
+  if (
+    !territoryLayer ||
+    !Array.isArray(territory.points) ||
+    territory.points.length < 3
+  ) {
+    return;
+  }
+
+  const status =
+    TERRITORY_STATUSES[territory.status] ||
+    TERRITORY_STATUSES.neutral;
+
+  const polygon = svgElement("polygon");
+
+  polygon.setAttribute(
+    "points",
+    territory.points
+      .map(point =>
+        `${point.x * 10},${point.y * 10}`
+      )
+      .join(" ")
+  );
+
+  polygon.setAttribute(
+    "fill",
+    status.color
+  );
+
+  polygon.setAttribute(
+    "fill-opacity",
+    "0.22"
+  );
+
+  polygon.setAttribute(
+    "stroke",
+    status.color
+  );
+
+  polygon.setAttribute(
+    "stroke-opacity",
+    "0.9"
+  );
+
+  polygon.setAttribute(
+    "stroke-width",
+    "3"
+  );
+
+  polygon.classList.add(
+    "territory-shape"
+  );
+
+  polygon.dataset.territoryId =
+    territory.id;
+
+  polygon.addEventListener(
+    "click",
+    event => {
+      event.stopPropagation();
+      focusTerritory(
+        territory.id
+      );
+    }
+  );
+
+  polygon.addEventListener(
+    "contextmenu",
+    event => {
+      event.preventDefault();
+      event.stopPropagation();
+      deleteTerritory(
+        territory.id
+      );
+    }
+  );
+
+  territoryLayer.appendChild(
+    polygon
+  );
+
+  const center =
+    territory.points.reduce(
+      (acc, point) => ({
+        x: acc.x + point.x,
+        y: acc.y + point.y
+      }),
+      {x:0,y:0}
+    );
+
+  center.x /=
+    territory.points.length;
+
+  center.y /=
+    territory.points.length;
+
+  const label =
+    svgElement("text");
+
+  label.setAttribute(
+    "x",
+    center.x * 10
+  );
+
+  label.setAttribute(
+    "y",
+    center.y * 10
+  );
+
+  label.setAttribute(
+    "text-anchor",
+    "middle"
+  );
+
+  label.setAttribute(
+    "dominant-baseline",
+    "central"
+  );
+
+  label.setAttribute(
+    "font-size",
+    "22"
+  );
+
+  label.setAttribute(
+    "class",
+    "territory-emoji"
+  );
+
+  label.textContent =
+    status.emoji;
+
+  label.style.pointerEvents =
+    "none";
+
+  territoryLayer.appendChild(
+    label
+  );
+}
+
+
+function drawTerritoryPreview() {
+  if (
+    !addingTerritory ||
+    territoryVertices.length < 1 ||
+    !territoryLayer
+  ) {
+    return;
+  }
+
+  const points =
+    territoryVertices
+      .map(point =>
+        `${point.x * 10},${point.y * 10}`
+      )
+      .join(" ");
+
+  const status =
+    TERRITORY_STATUSES.neutral;
+
+  const polygon =
+    svgElement("polygon");
+
+  polygon.setAttribute(
+    "points",
+    points
+  );
+
+  polygon.setAttribute(
+    "fill",
+    status.color
+  );
+
+  polygon.setAttribute(
+    "fill-opacity",
+    "0.12"
+  );
+
+  polygon.setAttribute(
+    "stroke",
+    status.color
+  );
+
+  polygon.setAttribute(
+    "stroke-opacity",
+    "0.75"
+  );
+
+  polygon.setAttribute(
+    "stroke-width",
+    "2"
+  );
+
+  polygon.setAttribute(
+    "stroke-dasharray",
+    "8 6"
+  );
+
+  polygon.classList.add(
+    "territory-preview"
+  );
+
+  territoryLayer.appendChild(
+    polygon
+  );
+
+  territoryVertices.forEach(
+    (point, index) => {
+
+      const circle =
+        svgElement("circle");
+
+      circle.setAttribute(
+        "cx",
+        point.x * 10
+      );
+
+      circle.setAttribute(
+        "cy",
+        point.y * 10
+      );
+
+      circle.setAttribute(
+        "r",
+        index === 0
+          ? "8"
+          : "5"
+      );
+
+      circle.setAttribute(
+        "class",
+        index === 0
+          ? "territory-vertex territory-start-vertex"
+          : "territory-vertex"
+      );
+
+      circle.style.pointerEvents =
+        "none";
+
+      territoryLayer.appendChild(
+        circle
+      );
+
+    }
+  );
+}
+
+
+/* =====================================================
+   ÚZEMÍ - START / STOP
+===================================================== */
+
+function startTerritoryMode() {
+
+  closeContextMenu();
+  closePointModal();
+
+  addingTerritory =
+    true;
+
+  territoryVertices =
+    [];
+
+  viewport.classList.add(
+    "add-territory-mode"
+  );
+
+  if (pointModeHint) {
+    pointModeHint.textContent =
+      "Klikáním vytvoř obrys území. Klikni znovu na první bod pro uzavření.";
+    pointModeHint.classList.remove(
+      "hidden"
+    );
+  }
+
+  if (addTerritoryBtn) {
+    addTerritoryBtn.classList.add(
+      "active"
+    );
+  }
+
+  ensureTerritoryLayer();
+}
+
+
+function stopTerritoryMode() {
+
+  addingTerritory =
+    false;
+
+  territoryVertices =
+    [];
+
+  viewport.classList.remove(
+    "add-territory-mode"
+  );
+
+  if (pointModeHint) {
+    pointModeHint.textContent =
+      "Klikni na mapu na místo, kam chceš přidat bod.";
+    pointModeHint.classList.add(
+      "hidden"
+    );
+  }
+
+  if (addTerritoryBtn) {
+    addTerritoryBtn.classList.remove(
+      "active"
+    );
+  }
+
+  ensureTerritoryLayer();
+}
+
+
+function addTerritoryVertex(
+  event
+) {
+
+  if (!addingTerritory) {
+    return;
+  }
+
+  if (
+    event.target.closest &&
+    event.target.closest(".map-controls")
+  ) {
+    return;
+  }
+
+  const rect =
+    mapImage.getBoundingClientRect();
+
+  if (
+    event.clientX < rect.left ||
+    event.clientX > rect.right ||
+    event.clientY < rect.top ||
+    event.clientY > rect.bottom
+  ) {
+    return;
+  }
+
+  const x =
+    (
+      (event.clientX - rect.left) /
+      rect.width
+    ) * 100;
+
+  const y =
+    (
+      (event.clientY - rect.top) /
+      rect.height
+    ) * 100;
+
+  if (territoryVertices.length >= 3) {
+
+    const first =
+      territoryVertices[0];
+
+    const distance =
+      Math.hypot(
+        first.x - x,
+        first.y - y
+      );
+
+    if (distance <= 2.2) {
+      finishTerritory(
+        event.clientX,
+        event.clientY
+      );
+      return;
+    }
+  }
+
+  territoryVertices.push({
+    x,
+    y
+  });
+
+  ensureTerritoryLayer();
+}
+
+
+function finishTerritory(
+  clientX,
+  clientY
+) {
+
+  if (
+    territoryVertices.length < 3
+  ) {
+    return;
+  }
+
+  addingTerritory =
+    false;
+
+  viewport.classList.remove(
+    "add-territory-mode"
+  );
+
+  if (addTerritoryBtn) {
+    addTerritoryBtn.classList.remove(
+      "active"
+    );
+  }
+
+  if (pointModeHint) {
+    pointModeHint.classList.add(
+      "hidden"
+    );
+  }
+
+  ensureTerritoryLayer();
+
+  openTerritoryModal(
+    clientX,
+    clientY
+  );
+}
+
+
+/* =====================================================
+   ÚZEMÍ - MODAL
+===================================================== */
+
+function ensureTerritoryModal() {
+
+  if (territoryModal) {
+    return territoryModal;
+  }
+
+  const overlay =
+    document.createElement("div");
+
+  overlay.id =
+    "territoryModal";
+
+  overlay.className =
+    "territory-modal hidden";
+
+  overlay.setAttribute(
+    "aria-hidden",
+    "true"
+  );
+
+  overlay.innerHTML = `
+    <div class="modal-card territory-modal-card" id="territoryModalCard">
+
+      <div class="modal-header">
+        <h3>Přidat území</h3>
+
+        <button
+          id="closeTerritoryBtn"
+          class="close-btn"
+          type="button"
+          aria-label="Zavřít"
+        >×</button>
+      </div>
+
+      <label for="territoryName">
+        Jméno
+      </label>
+
+      <input
+        id="territoryName"
+        type="text"
+        autocomplete="off"
+        placeholder="Např. Barrio"
+      >
+
+      <label for="territoryDescription">
+        Popisek
+      </label>
+
+      <textarea
+        id="territoryDescription"
+        placeholder="Krátký popis území..."
+      ></textarea>
+
+      <label>
+        Typ území
+      </label>
+
+      <div class="territory-status-grid">
+
+        <button
+          type="button"
+          class="territory-status-option"
+          data-status="friendly"
+        >
+          <span class="territory-status-icon">🛡️</span>
+          <span>Přátelské</span>
+        </button>
+
+        <button
+          type="button"
+          class="territory-status-option"
+          data-status="hostile"
+        >
+          <span class="territory-status-icon">❗</span>
+          <span>Nepřátelské</span>
+        </button>
+
+        <button
+          type="button"
+          class="territory-status-option"
+          data-status="neutral"
+        >
+          <span class="territory-status-icon">🤝</span>
+          <span>Neutrální</span>
+        </button>
+
+        <button
+          type="button"
+          class="territory-status-option"
+          data-status="ours"
+        >
+          <span class="territory-status-icon">🏠</span>
+          <span>Naše</span>
+        </button>
+
+      </div>
+
+      <div class="territory-preview-row">
+        <span>Barva území</span>
+        <span id="territoryColorPreview" class="territory-color-preview"></span>
+      </div>
+
+      <div class="modal-actions">
+        <button
+          id="cancelTerritoryBtn"
+          class="secondary-btn"
+          type="button"
+        >Zrušit</button>
+
+        <button
+          id="saveTerritoryBtn"
+          class="primary-btn"
+          type="button"
+        >Přidat území</button>
+      </div>
+
+    </div>
+  `;
+
+  document.body.appendChild(
+    overlay
+  );
+
+  territoryModal =
+    overlay;
+
+  const statusButtons =
+    overlay.querySelectorAll(
+      ".territory-status-option"
+    );
+
+  let selectedStatus =
+    "neutral";
+
+  overlay.dataset.status =
+    selectedStatus;
+
+  statusButtons.forEach(
+    button => {
+
+      button.addEventListener(
+        "click",
+        event => {
+
+          event.preventDefault();
+          event.stopPropagation();
+
+          selectedStatus =
+            button.dataset.status;
+
+          overlay.dataset.status =
+            selectedStatus;
+
+          statusButtons.forEach(
+            other => {
+              other.classList.toggle(
+                "selected",
+                other === button
+              );
+            }
+          );
+
+          const status =
+            TERRITORY_STATUSES[
+              selectedStatus
+            ];
+
+          const preview =
+            overlay.querySelector(
+              "#territoryColorPreview"
+            );
+
+          preview.style.background =
+            status.color;
+
+          drawTerritoryFormPreview(
+            selectedStatus
+          );
+        }
+      );
+
+    }
+  );
+
+  const initial =
+    overlay.querySelector(
+      '[data-status="neutral"]'
+    );
+
+  initial.classList.add(
+    "selected"
+  );
+
+  overlay.querySelector(
+    "#closeTerritoryBtn"
+  ).addEventListener(
+    "click",
+    closeTerritoryModal
+  );
+
+  overlay.querySelector(
+    "#cancelTerritoryBtn"
+  ).addEventListener(
+    "click",
+    closeTerritoryModal
+  );
+
+  overlay.querySelector(
+    "#saveTerritoryBtn"
+  ).addEventListener(
+    "click",
+    saveTerritory
+  );
+
+  overlay.querySelector(
+    "#territoryName"
+  ).addEventListener(
+    "input",
+    renderTerritoryModalPreview
+  );
+
+  overlay.querySelector(
+    "#territoryDescription"
+  ).addEventListener(
+    "input",
+    renderTerritoryModalPreview
+  );
+
+  return overlay;
+}
+
+
+function drawTerritoryFormPreview(
+  statusKey
+) {
+
+  const status =
+    TERRITORY_STATUSES[
+      statusKey
+    ];
+
+  if (
+    !territoryVertices.length ||
+    !territoryLayer
+  ) {
+    return;
+  }
+
+  /*
+    Po výběru statusu okamžitě překreslíme náhled
+    danou barvou a emoji.
+  */
+
+  ensureTerritoryLayer();
+
+  const points =
+    territoryVertices
+      .map(point =>
+        `${point.x * 10},${point.y * 10}`
+      )
+      .join(" ");
+
+  const polygon =
+    svgElement("polygon");
+
+  polygon.setAttribute(
+    "points",
+    points
+  );
+
+  polygon.setAttribute(
+    "fill",
+    status.color
+  );
+
+  polygon.setAttribute(
+    "fill-opacity",
+    "0.25"
+  );
+
+  polygon.setAttribute(
+    "stroke",
+    status.color
+  );
+
+  polygon.setAttribute(
+    "stroke-opacity",
+    "0.95"
+  );
+
+  polygon.setAttribute(
+    "stroke-width",
+    "3"
+  );
+
+  polygon.classList.add(
+    "territory-preview"
+  );
+
+  territoryLayer.appendChild(
+    polygon
+  );
+
+  const center =
+    territoryVertices.reduce(
+      (acc, point) => ({
+        x: acc.x + point.x,
+        y: acc.y + point.y
+      }),
+      {x:0,y:0}
+    );
+
+  center.x /=
+    territoryVertices.length;
+
+  center.y /=
+    territoryVertices.length;
+
+  const label =
+    svgElement("text");
+
+  label.setAttribute(
+    "x",
+    center.x * 10
+  );
+
+  label.setAttribute(
+    "y",
+    center.y * 10
+  );
+
+  label.setAttribute(
+    "text-anchor",
+    "middle"
+  );
+
+  label.setAttribute(
+    "dominant-baseline",
+    "central"
+  );
+
+  label.setAttribute(
+    "font-size",
+    "22"
+  );
+
+  label.classList.add(
+    "territory-emoji"
+  );
+
+  label.textContent =
+    status.emoji;
+
+  label.style.pointerEvents =
+    "none";
+
+  territoryLayer.appendChild(
+    label
+  );
+}
+
+
+function renderTerritoryModalPreview() {
+  drawTerritoryFormPreview(
+    territoryModal?.dataset.status ||
+    "neutral"
+  );
+}
+
+
+function openTerritoryModal(
+  clientX,
+  clientY
+) {
+
+  ensureTerritoryModal();
+
+  const nameInput =
+    territoryModal.querySelector(
+      "#territoryName"
+    );
+
+  const descriptionInput =
+    territoryModal.querySelector(
+      "#territoryDescription"
+    );
+
+  nameInput.value =
+    "";
+
+  descriptionInput.value =
+    "";
+
+  territoryModal.dataset.status =
+    "neutral";
+
+  territoryModal
+    .querySelectorAll(
+      ".territory-status-option"
+    )
+    .forEach(
+      button => {
+        button.classList.toggle(
+          "selected",
+          button.dataset.status ===
+          "neutral"
+        );
+      }
+    );
+
+  const preview =
+    territoryModal.querySelector(
+      "#territoryColorPreview"
+    );
+
+  preview.style.background =
+    TERRITORY_STATUSES.neutral.color;
+
+  territoryModal.classList.remove(
+    "hidden"
+  );
+
+  territoryModal.setAttribute(
+    "aria-hidden",
+    "false"
+  );
+
+  territoryFormOpen =
+    true;
+
+  positionTerritoryModal(
+    clientX,
+    clientY
+  );
+
+  setTimeout(
+    () => nameInput.focus(),
+    50
+  );
+
+  renderTerritoryFormPreview();
+}
+
+
+function positionTerritoryModal(
+  clientX,
+  clientY
+) {
+
+  const card =
+    territoryModal.querySelector(
+      "#territoryModalCard"
+    );
+
+  requestAnimationFrame(
+    () => {
+
+      const rect =
+        card.getBoundingClientRect();
+
+      const gap =
+        16;
+
+      let left =
+        clientX + gap;
+
+      let top =
+        clientY;
+
+      if (
+        left + rect.width >
+        window.innerWidth - 10
+      ) {
+        left =
+          window.innerWidth -
+          rect.width -
+          10;
+      }
+
+      if (
+        top + rect.height >
+        window.innerHeight - 10
+      ) {
+        top =
+          window.innerHeight -
+          rect.height -
+          10;
+      }
+
+      card.style.left =
+        `${Math.max(10,left)}px`;
+
+      card.style.top =
+        `${Math.max(10,top)}px`;
+    }
+  );
+}
+
+
+function closeTerritoryModal() {
+
+  if (!territoryModal) {
+    return;
+  }
+
+  territoryModal.classList.add(
+    "hidden"
+  );
+
+  territoryModal.setAttribute(
+    "aria-hidden",
+    "true"
+  );
+
+  territoryFormOpen =
+    false;
+
+  stopTerritoryMode();
+
+  ensureTerritoryLayer();
+}
+
+
+function saveTerritory() {
+
+  if (
+    territoryVertices.length < 3
+  ) {
+    return;
+  }
+
+  const name =
+    territoryModal
+      .querySelector(
+        "#territoryName"
+      )
+      .value
+      .trim();
+
+  if (!name) {
+
+    alert(
+      "Napiš jméno území."
+    );
+
+    return;
+  }
+
+  const description =
+    territoryModal
+      .querySelector(
+        "#territoryDescription"
+      )
+      .value
+      .trim();
+
+  const status =
+    territoryModal.dataset.status ||
+    "neutral";
+
+  territories.push({
+
+    id:
+      createId(),
+
+    points:
+      territoryVertices.map(point => ({
+        x:point.x,
+        y:point.y
+      })),
+
+    name,
+
+    description,
+
+    status
+
+  });
+
+  saveTerritories();
+
+  closeTerritoryModal();
+
+  renderCategories();
+
+  ensureTerritoryLayer();
+}
+
+
+function focusTerritory(
+  id
+) {
+
+  const element =
+    territoryLayer?.querySelector(
+      `[data-territory-id="${id}"]`
+    );
+
+  if (!element) {
+    return;
+  }
+
+  element.classList.remove(
+    "territory-focused"
+  );
+
+  void element.offsetWidth;
+
+  element.classList.add(
+    "territory-focused"
+  );
+
+  setTimeout(
+    () => {
+      element.classList.remove(
+        "territory-focused"
+      );
+    },
+    2500
+  );
+}
+
+
+function deleteTerritory(
+  id
+) {
+
+  const territory =
+    territories.find(
+      item => item.id === id
+    );
+
+  if (!territory) {
+    return;
+  }
+
+  if (
+    !confirm(
+      `Opravdu chceš smazat území „${territory.name}“?`
+    )
+  ) {
+    return;
+  }
+
+  territories =
+    territories.filter(
+      item => item.id !== id
+    );
+
+  saveTerritories();
+
+  renderCategories();
+
+  ensureTerritoryLayer();
 }
 
 
@@ -1773,6 +3039,20 @@ function savePoint() {
 
   const categoryId =
     pointCategorySelect.value;
+
+  const selectedCategory =
+    getCategory(categoryId);
+
+  if (
+    !categoryId ||
+    !selectedCategory ||
+    selectedCategory.name.trim().toLowerCase() === "území"
+  ) {
+    alert(
+      "Pro vytvoření území použij tlačítko „Přidat území“."
+    );
+    return;
+  }
 
 
   if (!categoryId) {
@@ -2582,6 +3862,16 @@ viewport.addEventListener(
 viewport.addEventListener(
   "click",
   event => {
+
+    if (addingTerritory) {
+
+      addTerritoryVertex(
+        event
+      );
+
+      return;
+    }
+
 
     if (
       !addingPoint
@@ -3908,6 +5198,14 @@ closeCategoryBtn.addEventListener(
 );
 
 
+if (addTerritoryBtn) {
+  addTerritoryBtn.addEventListener(
+    "click",
+    startTerritoryMode
+  );
+}
+
+
 addPointBtn.addEventListener(
   "click",
   startPointMode
@@ -4016,6 +5314,24 @@ document.addEventListener(
 
     }
 
+
+    if (
+      addingTerritory
+    ) {
+
+      stopTerritoryMode();
+
+    }
+
+
+    if (
+      territoryFormOpen
+    ) {
+
+      closeTerritoryModal();
+
+    }
+
   }
 );
 
@@ -4035,6 +5351,8 @@ renderPoints();
 renderColorPresets();
 
 updatePreview();
+
+ensureTerritoryLayer();
 
 renderMap();
 
